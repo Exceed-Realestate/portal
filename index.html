@@ -397,8 +397,9 @@
       grid-template-columns: 1fr 1fr;
       gap: 18px;
     }
-    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
     .field.full { grid-column: 1 / -1; }
+    .register-section form > * { min-width: 0; }
     label {
       font-size: 11px;
       letter-spacing: 1.5px;
