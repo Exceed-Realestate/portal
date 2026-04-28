@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Exceed Real Estate — Dashboard</title>
+  <link rel="icon" type="image/jpeg" href="logo.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@500;600;700&family=Noto+Serif+JP:wght@400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy-0: #051428;
+      --navy-1: #0a1f3d;        /* logo bg */
+      --navy-2: #102a4f;
+      --navy-3: #173663;
+      --line: rgba(255, 255, 255, 0.10);
+      --line-strong: rgba(255, 255, 255, 0.20);
+      --text: #f5f7fb;
+      --muted: #9aa8c2;
+      --cream: #f1ead8;
+      --gold: #d4b87a;
+      --accent: #ffffff;
+      --radius: 16px;
+      --shadow: 0 30px 80px -20px rgba(0,0,0,.7);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    html[lang="ja"] body { font-family: 'Noto Sans JP', 'Inter', system-ui, sans-serif; }
+    html[lang="ja"] h1, html[lang="ja"] h2, html[lang="ja"] h3,
+    html[lang="ja"] .brand-name { font-family: 'Noto Serif JP', 'Playfair Display', serif; }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      color: var(--text);
+      background: var(--navy-0);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Animated gradient background */
+    .bg-gradient {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      background:
+        radial-gradient(900px 600px at 80% -10%, rgba(212,184,122,0.10), transparent 60%),
+        radial-gradient(800px 600px at -10% 110%, rgba(23,54,99,0.7), transparent 60%),
+        radial-gradient(700px 500px at 50% 50%, rgba(10,31,61,0.4), transparent 70%),
+        var(--navy-0);
+      animation: bgShift 20s ease-in-out infinite alternate;
+    }
+    @keyframes bgShift {
+      0% { background-position: 0% 0%, 0% 100%, 50% 50%; }
+      100% { background-position: 100% 20%, 20% 80%, 60% 40%; }
+    }
+
+    /* Floating shapes */
+    .shapes {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .shape {
+      position: absolute;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 30%;
+      animation: float 18s ease-in-out infinite;
+    }
+    .shape.s1 { width: 260px; height: 260px; top: 10%; left: -60px; animation-delay: 0s; }
+    .shape.s2 { width: 180px; height: 180px; top: 60%; right: -40px; animation-delay: -6s; border-radius: 20%; }
+    .shape.s3 { width: 120px; height: 120px; top: 30%; right: 20%; animation-delay: -12s; border-radius: 50%; }
+    .shape.s4 { width: 200px; height: 200px; bottom: 10%; left: 30%; animation-delay: -3s; border-radius: 40%; }
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      33% { transform: translate(30px, -40px) rotate(120deg); }
+      66% { transform: translate(-20px, 20px) rotate(240deg); }
+    }
+
+    /* Top bar */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 40px;
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(10px);
+      background: rgba(5,20,40,0.5);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: transform .3s ease;
+    }
+    .brand:hover { transform: scale(1.02); }
+    .brand-logo {
+      width: 48px; height: 48px;
+      border-radius: 10px;
+      object-fit: cover;
+      box-shadow: 0 6px 20px -6px rgba(0,0,0,.6);
+      transition: transform .4s cubic-bezier(.34,1.56,.64,1);
+    }
+    .brand:hover .brand-logo { transform: rotate(-6deg) scale(1.06); }
+    .brand-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      letter-spacing: 2.5px;
+      font-weight: 600;
+      line-height: 1;
+    }
+    .brand-name span { color: var(--gold); font-weight: 400; }
+    .brand-name small {
+      display: block;
+      font-family: 'Inter', sans-serif;
+      font-size: 10px;
+      letter-spacing: 4px;
+      color: var(--muted);
+      margin-top: 4px;
+      font-weight: 400;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+    .topbar-meta {
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    /* Language toggle */
+    .lang-toggle {
+      display: inline-flex;
+      align-items: center;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 4px;
+      position: relative;
+    }
+    .lang-toggle button {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: color .25s ease;
+      position: relative;
+      z-index: 1;
+    }
+    .lang-toggle button.active { color: var(--navy-0); }
+    .lang-toggle .pill {
+      position: absolute;
+      top: 4px; bottom: 4px;
+      background: var(--cream);
+      border-radius: 999px;
+      transition: transform .35s cubic-bezier(.34,1.56,.64,1), width .35s ease;
+      z-index: 0;
+    }
+
+    /* Hero */
+    .hero {
+      padding: 70px 24px 30px;
+      max-width: 1100px;
+      margin: 0 auto;
+      text-align: center;
+      position: relative;
+    }
+    .eyebrow {
+      color: var(--gold);
+      letter-spacing: 6px;
+      font-size: 11px;
+      text-transform: uppercase;
+      margin-bottom: 22px;
+      opacity: 0;
+      animation: fadeUp .8s ease forwards;
+    }
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-weight: 500;
+      font-size: clamp(40px, 6vw, 68px);
+      line-height: 1.1;
+      margin: 0 0 50px;
+      letter-spacing: -0.5px;
+      opacity: 0;
+      animation: fadeUp .9s .15s ease forwards;
+    }
+    h1 em {
+      font-style: italic;
+      font-weight: 600;
+      background: linear-gradient(135deg, var(--gold), var(--cream));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      position: relative;
+    }
+    .lede {
+      color: var(--muted);
+      font-size: 17px;
+      max-width: 640px;
+      margin: 0 auto 40px;
+      line-height: 1.7;
+      opacity: 0;
+      animation: fadeUp .9s .3s ease forwards;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Stats strip */
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 50px;
+      margin: 0 auto 50px;
+      flex-wrap: wrap;
+      opacity: 0;
+      animation: fadeUp .9s .45s ease forwards;
+    }
+    .stat { text-align: center; }
+    .stat-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 32px;
+      font-weight: 600;
+      color: var(--cream);
+      line-height: 1;
+    }
+    html[lang="ja"] .stat-num { font-family: 'Noto Serif JP', serif; }
+    .stat-label {
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    /* Login cards */
+    .login-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 22px;
+      max-width: 780px;
+      margin: 0 auto;
+      opacity: 0;
+      animation: fadeUp .9s .6s ease forwards;
+    }
+    .login-card {
+      background: linear-gradient(180deg, rgba(16,42,79,0.85), rgba(10,31,61,0.85));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 36px 30px;
+      cursor: pointer;
+      transition: transform .35s cubic-bezier(.34,1.56,.64,1), border-color .25s ease, box-shadow .25s ease;
+      text-align: left;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+    }
+    .login-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(500px 240px at var(--mx, 50%) var(--my, 0%), rgba(212,184,122,0.18), transparent 60%);
+      opacity: 0;
+      transition: opacity .35s ease;
+      pointer-events: none;
+    }
+    .login-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(212,184,122,0.4);
+      box-shadow: 0 30px 60px -20px rgba(0,0,0,.6), 0 0 0 1px rgba(212,184,122,0.2) inset;
+    }
+    .login-card:hover::before { opacity: 1; }
+
+    .card-icon {
+      width: 54px; height: 54px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(212,184,122,0.2), rgba(212,184,122,0.08));
+      border: 1px solid rgba(212,184,122,0.3);
+      display: grid; place-items: center;
+      color: var(--gold);
+      margin-bottom: 22px;
+      transition: transform .4s ease;
+    }
+    .login-card:hover .card-icon {
+      transform: rotate(-8deg) scale(1.08);
+    }
+    .card-icon svg { width: 26px; height: 26px; }
+
+    .login-card h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px;
+      font-weight: 600;
+      margin: 0 0 8px;
+    }
+    .login-card p {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+      margin: 0 0 24px;
+    }
+    .card-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--gold);
+      font-weight: 600;
+      font-size: 12px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+    .card-cta svg {
+      width: 16px; height: 16px;
+      transition: transform .3s ease;
+    }
+    .login-card:hover .card-cta svg { transform: translateX(6px); }
+
+    /* Divider */
+    .divider {
+      max-width: 780px;
+      margin: 70px auto 40px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--line), transparent);
+    }
+    .divider .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--gold);
+      box-shadow: 0 0 12px var(--gold);
+    }
+
+    /* Register section */
+    .register-section {
+      max-width: 780px;
+      margin: 0 auto 80px;
+      background: linear-gradient(180deg, rgba(16,42,79,0.85), rgba(10,31,61,0.85));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 44px 40px;
+      backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+    }
+    .register-section::before {
+      content: '';
+      position: absolute;
+      top: -1px; left: 20%; right: 20%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      opacity: 0.6;
+    }
+    .register-section h2 {
+      font-family: 'Playfair Display', serif;
+      font-weight: 600;
+      font-size: 28px;
+      margin: 0 0 8px;
+      letter-spacing: -0.3px;
+    }
+    .register-section .sub {
+      color: var(--muted);
+      font-size: 14px;
+      margin: 0 0 30px;
+      line-height: 1.6;
+    }
+    .register-section .sub strong { color: var(--cream); font-weight: 600; }
+
+    form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field.full { grid-column: 1 / -1; }
+    label {
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+    input, select {
+      background: rgba(5,20,40,0.7);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      color: var(--text);
+      padding: 14px 16px;
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      transition: border-color .2s ease, background .2s ease, box-shadow .2s ease;
+    }
+    input::placeholder { color: #5d6c87; }
+    input:focus, select:focus {
+      border-color: var(--gold);
+      background: rgba(5,20,40,0.95);
+      box-shadow: 0 0 0 3px rgba(212,184,122,0.12);
+    }
+    .submit-row {
+      grid-column: 1 / -1;
+      margin-top: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 14px;
+    }
+    .submit-row .btn-primary { width: 100%; padding: 16px 30px; font-size: 13px; }
+    .submit-row .terms { text-align: center; }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--cream), var(--gold));
+      color: var(--navy-0);
+      border: none;
+      padding: 14px 30px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      font-family: inherit;
+      transition: transform .2s ease, box-shadow .25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #fff, var(--cream));
+      opacity: 0;
+      transition: opacity .25s ease;
+    }
+    .btn-primary span { position: relative; z-index: 1; }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 32px -10px rgba(212,184,122,.5);
+    }
+    .btn-primary:hover::before { opacity: 1; }
+    .terms { color: var(--muted); font-size: 12px; }
+
+    /* Register reveal toggle */
+    .register-cta-wrap {
+      max-width: 780px;
+      margin: 60px auto 80px;
+      text-align: center;
+    }
+    .register-cta-wrap .lead-text {
+      color: var(--muted);
+      font-size: 14px;
+      margin: 0 0 18px;
+      letter-spacing: 0.3px;
+    }
+    .register-toggle {
+      background: transparent;
+      color: var(--cream);
+      border: 1px solid rgba(212,184,122,0.4);
+      padding: 14px 32px;
+      border-radius: 999px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background .25s ease, border-color .25s ease, color .25s ease, transform .15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .register-toggle:hover {
+      background: rgba(212,184,122,0.1);
+      border-color: var(--gold);
+      color: #fff;
+    }
+    .register-toggle .chev {
+      width: 14px; height: 14px;
+      transition: transform .35s ease;
+    }
+    .register-toggle.open .chev { transform: rotate(180deg); }
+
+    .register-section {
+      max-height: 0;
+      overflow: hidden;
+      padding: 0 40px;
+      margin: 0 auto;
+      opacity: 0;
+      text-align: left;
+      transition: max-height .55s ease, opacity .35s ease, padding .4s ease, margin .4s ease;
+      border: 1px solid transparent;
+    }
+    .register-section.open {
+      max-height: 2200px;
+      padding: 44px 40px;
+      margin: 24px auto 0;
+      opacity: 1;
+      border-color: var(--line);
+    }
+    .register-section form { text-align: left; }
+
+    /* Email composite + phone composite */
+    .composite {
+      display: flex;
+      align-items: stretch;
+      background: rgba(5,20,40,0.7);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      transition: border-color .2s ease, background .2s ease, box-shadow .2s ease;
+      overflow: hidden;
+    }
+    .composite:focus-within {
+      border-color: var(--gold);
+      background: rgba(5,20,40,0.95);
+      box-shadow: 0 0 0 3px rgba(212,184,122,0.12);
+    }
+    .composite input,
+    .composite select {
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      padding: 14px 14px;
+      flex: 1;
+      min-width: 0;
+    }
+    .composite input:focus, .composite select:focus { box-shadow: none; }
+    .composite .email-suffix {
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      background: rgba(255,255,255,0.04);
+      color: var(--cream);
+      font-family: ui-monospace, 'SF Mono', monospace;
+      font-size: 13px;
+      border-left: 1px solid var(--line);
+      white-space: nowrap;
+    }
+    .composite select.country-code {
+      flex: 0 0 auto;
+      max-width: 110px;
+      border-right: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+      padding-right: 8px;
+      font-size: 13px;
+      color: var(--text);
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none' stroke='%239aa8c2' stroke-width='1.5'><path d='M1 1l4 4 4-4'/></svg>");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      padding-right: 26px;
+    }
+    .composite select.country-code option { background: var(--navy-1); color: var(--text); }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 30px; left: 50%;
+      transform: translateX(-50%) translateY(120%);
+      background: rgba(16,42,79,0.95);
+      border: 1px solid rgba(212,184,122,0.4);
+      color: var(--text);
+      padding: 14px 22px;
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+      font-size: 14px;
+      transition: transform .35s cubic-bezier(.34,1.56,.64,1);
+      z-index: 999;
+      backdrop-filter: blur(10px);
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* Skyline */
+    .skyline {
+      width: 100%;
+      height: 110px;
+      display: block;
+      margin-top: -20px;
+      opacity: 0.35;
+    }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 11px;
+      padding: 0 20px 30px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    /* Confetti */
+    .confetti {
+      position: fixed;
+      width: 8px; height: 14px;
+      pointer-events: none;
+      z-index: 998;
+      will-change: transform;
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(5, 12, 24, 0.75);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity .25s ease;
+    }
+    .modal-backdrop.show { display: flex; opacity: 1; }
+    .modal {
+      background: linear-gradient(180deg, var(--navy-2), var(--navy-1));
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      padding: 36px 32px;
+      width: min(420px, calc(100% - 32px));
+      box-shadow: var(--shadow);
+      transform: translateY(20px) scale(0.97);
+      transition: transform .35s cubic-bezier(.34,1.56,.64,1);
+      position: relative;
+    }
+    .modal-backdrop.show .modal { transform: translateY(0) scale(1); }
+    .modal-close {
+      position: absolute;
+      top: 14px; right: 14px;
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      display: grid; place-items: center;
+      transition: background .2s ease, color .2s ease;
+    }
+    .modal-close:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+    .modal h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px;
+      font-weight: 600;
+      margin: 0 0 6px;
+    }
+    html[lang="ja"] .modal h3 { font-family: 'Noto Serif JP', serif; }
+    .modal .modal-sub {
+      color: var(--muted);
+      font-size: 13px;
+      margin: 0 0 22px;
+    }
+    .modal form {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .modal .field { gap: 6px; }
+    .modal .modal-actions {
+      margin-top: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .modal .btn-primary { width: 100%; }
+    .modal .demo-hint {
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+      margin: 0;
+      padding: 10px;
+      background: rgba(212,184,122,0.08);
+      border-radius: 8px;
+      border: 1px dashed rgba(212,184,122,0.25);
+    }
+    .modal .demo-hint code {
+      color: var(--cream);
+      font-family: ui-monospace, 'SF Mono', monospace;
+      font-size: 11px;
+    }
+
+    @media (max-width: 640px) {
+      .login-grid { grid-template-columns: 1fr; }
+      form { grid-template-columns: 1fr; }
+      .topbar { padding: 16px 18px; flex-wrap: wrap; gap: 14px; }
+      .topbar-meta { display: none; }
+      .register-section.open { padding: 28px 22px; }
+      .hero { padding-top: 50px; }
+      .stats { gap: 28px; }
+      .stat-num { font-size: 26px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-gradient"></div>
+  <div class="shapes">
+    <div class="shape s1"></div>
+    <div class="shape s2"></div>
+    <div class="shape s3"></div>
+    <div class="shape s4"></div>
+  </div>
+
+  <header class="topbar">
+    <div class="brand">
+      <img src="logo.jpg" alt="Exceed Real Estate" class="brand-logo" />
+      <div class="brand-name">
+        EXCEED <span>REAL ESTATE</span>
+        <small data-i18n="tagline">DUBAI · OFF-PLAN & RESALE</small>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-meta" data-i18n="topbarMeta">EST. DUBAI</div>
+      <div class="lang-toggle" id="langToggle">
+        <span class="pill" id="langPill"></span>
+        <button data-lang="ja" class="active">日本語</button>
+        <button data-lang="en">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Exceed <em>Portal</em></h1>
+
+      <div class="login-grid">
+        <div class="login-card" onclick="handleLogin('agent')" onmousemove="cardMove(event,this)" onmouseleave="cardLeave(this)">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
+          <h3 data-i18n="agentTitle">エージェントログイン</h3>
+          <p data-i18n="agentDesc">CRM、リードパイプライン、リスティング、コミッションダッシュボードへアクセス。</p>
+          <span class="card-cta">
+            <span data-i18n="agentCta">エージェントとして続ける</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"/>
+              <polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </span>
+        </div>
+
+        <div class="login-card" onclick="handleLogin('client')" onmousemove="cardMove(event,this)" onmouseleave="cardLeave(this)">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 9.5L12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V9.5z"/>
+            </svg>
+          </div>
+          <h3 data-i18n="clientTitle">クライアントログイン</h3>
+          <p data-i18n="clientDesc">厳選された物件の閲覧、内見の管理、ポートフォリオの追跡まで。</p>
+          <span class="card-cta">
+            <span data-i18n="clientCta">クライアントとして続ける</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"/>
+              <polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <div class="register-cta-wrap">
+      <p class="lead-text" data-i18n="regLead">新しいエージェントですか？</p>
+      <button type="button" class="register-toggle" id="registerToggle" onclick="toggleRegister()">
+        <span data-i18n="registerOpen">エージェント登録</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+
+      <section class="register-section" id="registerSection">
+        <h2 data-i18n="regTitle">エージェント登録</h2>
+        <p class="sub" data-i18n-html="regSub">登録は <strong>@exceed-re.ae</strong> の会社メールを持つExceedスタッフのみ可能です。</p>
+
+        <form id="register-form" onsubmit="handleRegister(event)" novalidate>
+          <div class="field">
+            <label for="firstName" data-i18n="firstName">名</label>
+            <input id="firstName" type="text" required data-i18n-attr-placeholder="phFirst" placeholder="例: Aisha" />
+          </div>
+          <div class="field">
+            <label for="lastName" data-i18n="lastName">姓</label>
+            <input id="lastName" type="text" required data-i18n-attr-placeholder="phLast" placeholder="例: Khan" />
+          </div>
+          <div class="field">
+            <label for="emailLocal" data-i18n="email">会社メール</label>
+            <div class="composite">
+              <input id="emailLocal" type="text" required data-i18n-attr-placeholder="phEmailLocal" placeholder="name" pattern="^[A-Za-z0-9._%+\-]+$" />
+              <span class="email-suffix">@exceed-re.ae</span>
+            </div>
+          </div>
+          <div class="field">
+            <label for="phoneNumber" data-i18n="phone">電話番号</label>
+            <div class="composite">
+              <select id="countryCode" class="country-code" aria-label="Country code">
+                <option value="+971" selected>🇦🇪 +971</option>
+                <option value="+81">🇯🇵 +81</option>
+                <option value="+91">🇮🇳 +91</option>
+                <option value="+1">🇺🇸 +1</option>
+                <option value="+44">🇬🇧 +44</option>
+                <option value="+86">🇨🇳 +86</option>
+                <option value="+966">🇸🇦 +966</option>
+                <option value="+65">🇸🇬 +65</option>
+                <option value="+852">🇭🇰 +852</option>
+              </select>
+              <input id="phoneNumber" type="tel" required data-i18n-attr-placeholder="phPhone" placeholder="50 123 4567" pattern="^[0-9 \-]{6,}$" />
+            </div>
+          </div>
+          <div class="field full">
+            <label for="password" data-i18n="password">パスワード作成</label>
+            <input id="password" type="password" required minlength="8" data-i18n-attr-placeholder="phPassword" placeholder="8文字以上" />
+          </div>
+          <div class="submit-row">
+            <span class="terms" data-i18n="terms">登録によりExceedの利用規約とデータポリシーに同意したものとみなされます。</span>
+            <button type="submit" class="btn-primary"><span data-i18n="submit">登録を送信</span></button>
+          </div>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <svg class="skyline" viewBox="0 0 1200 110" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path fill="#0a1f3d" d="M0,110 L0,80 L40,80 L40,60 L70,60 L70,40 L90,40 L90,70 L130,70 L130,50 L160,50 L160,30 L180,30 L180,55 L220,55 L220,75 L260,75 L260,45 L290,45 L290,20 L310,20 L310,55 L340,55 L340,80 L380,80 L380,40 L420,40 L420,10 L440,10 L440,55 L470,55 L470,75 L510,75 L510,50 L540,50 L540,25 L570,25 L570,60 L610,60 L610,80 L650,80 L650,50 L690,50 L690,30 L720,30 L720,15 L740,15 L740,55 L780,55 L780,75 L820,75 L820,40 L850,40 L850,20 L880,20 L880,60 L920,60 L920,80 L960,80 L960,50 L1000,50 L1000,30 L1030,30 L1030,10 L1050,10 L1050,55 L1090,55 L1090,75 L1130,75 L1130,45 L1160,45 L1160,70 L1200,70 L1200,110 Z"/>
+  </svg>
+
+  <footer>© 2026 Exceed Real Estate · <span data-i18n="footerLoc">ドバイ, UAE</span></footer>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- Login Modal -->
+  <div class="modal-backdrop" id="loginModal" onclick="if(event.target===this)closeLogin()">
+    <div class="modal">
+      <button class="modal-close" onclick="closeLogin()" aria-label="Close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <h3 data-i18n="loginTitle">エージェントログイン</h3>
+      <p class="modal-sub" data-i18n="loginSub">会社の認証情報でサインインしてください。</p>
+      <form id="login-form" onsubmit="submitLogin(event)" novalidate>
+        <div class="field">
+          <label for="loginEmail" data-i18n="email">会社メール</label>
+          <input id="loginEmail" type="email" required placeholder="name@exceed-re.ae"
+                 pattern="^[^@\s]+@exceed-re\.ae$" />
+        </div>
+        <div class="field">
+          <label for="loginPassword" data-i18n="password">パスワード</label>
+          <input id="loginPassword" type="password" required minlength="6" />
+        </div>
+        <div class="modal-actions">
+          <button type="submit" class="btn-primary"><span data-i18n="loginBtn">ログイン</span></button>
+          <p class="demo-hint" data-i18n-html="demoHint">デモアカウント: <code>demo@exceed-re.ae</code> / <code>demo1234</code></p>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // ----- i18n -----
+    const i18n = {
+      ja: {
+        tagline: 'ドバイ · オフプラン & 中古',
+        topbarMeta: 'ドバイ拠点',
+        eyebrow: 'ようこそ',
+        h1pre: 'EXCEED', h1em: 'ポータル', h1post: 'へ',
+        lede: 'エージェントとクライアントのための統合ワークスペース。リスティング管理、案件追跡、そしてドバイで最も洗練された不動産機会の発掘まで。',
+        stat1: '物件リスティング', stat2: '専属エージェント', stat3: '成約クライアント',
+        agentTitle: 'エージェントログイン',
+        agentDesc: 'CRM、リードパイプライン、リスティング、コミッションダッシュボードへアクセス。',
+        agentCta: 'エージェントとして続ける',
+        clientTitle: 'クライアントログイン',
+        clientDesc: '厳選された物件の閲覧、内見の管理、ポートフォリオの追跡まで。',
+        clientCta: 'クライアントとして続ける',
+        divider: '新規エージェント',
+        regTitle: 'エージェント登録',
+        regSub: '登録は <strong>@exceed-re.ae</strong> の会社メールを持つExceedスタッフのみ可能です。',
+        firstName: '名', lastName: '姓', email: '会社メール', phone: '電話番号', password: 'パスワード作成',
+        phFirst: '例: Aisha', phLast: '例: Khan', phPassword: '8文字以上',
+        phEmailLocal: 'name', phPhone: '50 123 4567',
+        regLead: '新しいエージェントですか？',
+        registerOpen: 'エージェント登録', registerClose: '閉じる',
+        emailTitle: '@exceed-re.ae の会社メールのみ使用可能です',
+        terms: '登録によりExceedの利用規約とデータポリシーに同意したものとみなされます。',
+        submit: '登録を送信',
+        footerLoc: 'ドバイ, UAE',
+        toastAgent: 'エージェントログインは近日公開。',
+        toastClient: 'クライアントログインは近日公開。',
+        toastDomain: '@exceed-re.ae の会社メールのみ登録可能です。',
+        toastFields: '必須項目をすべて入力してください。',
+        toastSuccess: '登録完了 — ログインできます。',
+        toastLoginInvalid: 'メールアドレスまたはパスワードが正しくありません。',
+        toastLoginSuccess: 'ログイン成功。ダッシュボードへ移動中...',
+        toastClientSoon: 'クライアントログインは近日公開。',
+        loginTitle: 'エージェントログイン',
+        loginSub: '会社の認証情報でサインインしてください。',
+        loginBtn: 'ログイン',
+        demoHint: 'デモアカウント: <code>demo@exceed-re.ae</code> / <code>demo1234</code>'
+      },
+      en: {
+        tagline: 'DUBAI · OFF-PLAN & RESALE',
+        topbarMeta: 'EST. DUBAI',
+        eyebrow: 'Welcome',
+        h1pre: 'Step into the', h1em: 'Exceed', h1post: 'portal',
+        lede: 'A unified workspace for our agents and clients — manage listings, track deals, and explore Dubai\'s most exclusive real estate opportunities.',
+        stat1: 'Property Listings', stat2: 'Active Agents', stat3: 'Happy Clients',
+        agentTitle: 'Agent Login',
+        agentDesc: 'Access your CRM, leads pipeline, listings, and commission dashboard.',
+        agentCta: 'Continue as Agent',
+        clientTitle: 'Client Login',
+        clientDesc: 'View curated properties, track viewings, and manage your portfolio with us.',
+        clientCta: 'Continue as Client',
+        divider: 'New Agent',
+        regTitle: 'Register as an Agent',
+        regSub: 'Registration is restricted to Exceed staff with an <strong>@exceed-re.ae</strong> company email.',
+        firstName: 'First Name', lastName: 'Last Name', email: 'Work Email', phone: 'Phone', password: 'Create Password',
+        phFirst: 'e.g. Aisha', phLast: 'e.g. Khan', phPassword: 'Min 8 characters',
+        phEmailLocal: 'name', phPhone: '50 123 4567',
+        regLead: 'New to Exceed?',
+        registerOpen: 'Register as Agent', registerClose: 'Close',
+        emailTitle: 'Only @exceed-re.ae company emails are allowed',
+        terms: 'By registering you agree to Exceed\'s terms & data policy.',
+        submit: 'Submit Registration',
+        footerLoc: 'Dubai, UAE',
+        toastAgent: 'Agent login coming soon.',
+        toastClient: 'Client login coming soon.',
+        toastDomain: 'Registration is restricted to @exceed-re.ae company emails.',
+        toastFields: 'Please complete all required fields.',
+        toastSuccess: 'Registered — you can now log in.',
+        toastLoginInvalid: 'Email or password is incorrect.',
+        toastLoginSuccess: 'Logged in. Redirecting…',
+        toastClientSoon: 'Client login coming soon.',
+        loginTitle: 'Agent Login',
+        loginSub: 'Sign in with your company credentials.',
+        loginBtn: 'Sign In',
+        demoHint: 'Demo account: <code>demo@exceed-re.ae</code> / <code>demo1234</code>'
+      }
+    };
+
+    let currentLang = 'ja';
+
+    function setLang(lang) {
+      currentLang = lang;
+      const dict = i18n[lang];
+      document.documentElement.lang = lang;
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (dict[key]) el.textContent = dict[key];
+      });
+      document.querySelectorAll('[data-i18n-html]').forEach(el => {
+        const key = el.getAttribute('data-i18n-html');
+        if (dict[key]) el.innerHTML = dict[key];
+      });
+      document.querySelectorAll('[data-i18n-attr-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-attr-placeholder');
+        if (dict[key]) el.placeholder = dict[key];
+      });
+      document.querySelectorAll('[data-i18n-attr-title]').forEach(el => {
+        const key = el.getAttribute('data-i18n-attr-title');
+        if (dict[key]) el.title = dict[key];
+      });
+      // Update toggle pill
+      const buttons = document.querySelectorAll('.lang-toggle button');
+      buttons.forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+      positionPill();
+      // Sync register button label with current open/closed state
+      const btn = document.getElementById('registerToggle');
+      if (btn) {
+        const isOpen = btn.classList.contains('open');
+        btn.querySelector('span').textContent = dict[isOpen ? 'registerClose' : 'registerOpen'];
+      }
+    }
+
+    function positionPill() {
+      const pill = document.getElementById('langPill');
+      const active = document.querySelector('.lang-toggle button.active');
+      if (!active || !pill) return;
+      const parent = active.parentElement;
+      const parentRect = parent.getBoundingClientRect();
+      const rect = active.getBoundingClientRect();
+      pill.style.width = rect.width + 'px';
+      pill.style.transform = `translateX(${rect.left - parentRect.left - 4}px)`;
+    }
+
+    document.querySelectorAll('.lang-toggle button').forEach(btn => {
+      btn.addEventListener('click', () => setLang(btn.dataset.lang));
+    });
+
+    // ----- Agent storage (localStorage demo backend) -----
+    const AGENTS_KEY = 'exceed_agents_v1';
+    const SESSION_KEY = 'exceed_session_v1';
+
+    function loadAgents() {
+      try { return JSON.parse(localStorage.getItem(AGENTS_KEY) || '{}'); }
+      catch { return {}; }
+    }
+    function saveAgents(agents) {
+      localStorage.setItem(AGENTS_KEY, JSON.stringify(agents));
+    }
+    function seedDemoAgent() {
+      const agents = loadAgents();
+      if (!agents['demo@exceed-re.ae']) {
+        agents['demo@exceed-re.ae'] = {
+          firstName: 'Demo', lastName: 'Agent',
+          email: 'demo@exceed-re.ae', phone: '+971 50 000 0000',
+          password: 'demo1234'
+        };
+        saveAgents(agents);
+      }
+    }
+
+    // ----- Login & register handlers -----
+    function handleLogin(role) {
+      const dict = i18n[currentLang];
+      if (role === 'agent') openLogin();
+      else showToast(dict.toastClientSoon);
+    }
+
+    function openLogin() {
+      const m = document.getElementById('loginModal');
+      m.classList.add('show');
+      setTimeout(() => document.getElementById('loginEmail').focus(), 200);
+    }
+    function closeLogin() {
+      document.getElementById('loginModal').classList.remove('show');
+    }
+
+    function submitLogin(e) {
+      e.preventDefault();
+      const dict = i18n[currentLang];
+      const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+      const pwd = document.getElementById('loginPassword').value;
+      if (!/^[^@\s]+@exceed-re\.ae$/.test(email)) { showToast(dict.toastDomain); return; }
+      const agents = loadAgents();
+      const agent = agents[email];
+      if (!agent || agent.password !== pwd) { showToast(dict.toastLoginInvalid); return; }
+      localStorage.setItem(SESSION_KEY, JSON.stringify({ email, loggedInAt: Date.now() }));
+      showToast(dict.toastLoginSuccess);
+      setTimeout(() => { window.location.href = 'agent.html'; }, 700);
+    }
+
+    function handleRegister(e) {
+      e.preventDefault();
+      const dict = i18n[currentLang];
+      const form = e.target;
+      const local = form.emailLocal.value.trim().toLowerCase();
+      const email = local + '@exceed-re.ae';
+      const allowed = /^[A-Za-z0-9._%+\-]+$/.test(local) && local.length > 0;
+      if (!allowed) { showToast(dict.toastDomain); form.emailLocal.focus(); return; }
+      if (!form.checkValidity()) { showToast(dict.toastFields); return; }
+      const agents = loadAgents();
+      const code = form.countryCode.value;
+      agents[email] = {
+        firstName: form.firstName.value.trim(),
+        lastName: form.lastName.value.trim(),
+        email,
+        phone: code + ' ' + form.phoneNumber.value.trim(),
+        password: form.password.value
+      };
+      saveAgents(agents);
+      showToast(dict.toastSuccess);
+      fireConfetti();
+      form.reset();
+      // After a moment, collapse the form
+      setTimeout(() => toggleRegister(false), 1500);
+    }
+
+    function toggleRegister(force) {
+      const section = document.getElementById('registerSection');
+      const btn = document.getElementById('registerToggle');
+      const willOpen = (typeof force === 'boolean') ? force : !section.classList.contains('open');
+      section.classList.toggle('open', willOpen);
+      btn.classList.toggle('open', willOpen);
+      const labelKey = willOpen ? 'registerClose' : 'registerOpen';
+      btn.querySelector('span').textContent = i18n[currentLang][labelKey];
+      if (willOpen) {
+        setTimeout(() => section.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80);
+      }
+    }
+
+    // Close modal on ESC
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeLogin();
+    });
+
+    function showToast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      clearTimeout(el._t);
+      el._t = setTimeout(() => el.classList.remove('show'), 2800);
+    }
+
+    // ----- Confetti -----
+    function fireConfetti() {
+      const colors = ['#d4b87a', '#f1ead8', '#ffffff', '#173663'];
+      const count = 60;
+      for (let i = 0; i < count; i++) {
+        const c = document.createElement('div');
+        c.className = 'confetti';
+        c.style.background = colors[Math.floor(Math.random() * colors.length)];
+        c.style.left = (50 + (Math.random() - 0.5) * 30) + '%';
+        c.style.top = '60%';
+        c.style.transform = `rotate(${Math.random() * 360}deg)`;
+        document.body.appendChild(c);
+        const dx = (Math.random() - 0.5) * 600;
+        const dy = -300 - Math.random() * 200;
+        const rot = Math.random() * 720;
+        c.animate([
+          { transform: `translate(0,0) rotate(0deg)`, opacity: 1 },
+          { transform: `translate(${dx}px, ${dy}px) rotate(${rot}deg)`, opacity: 1, offset: 0.3 },
+          { transform: `translate(${dx * 1.4}px, ${500}px) rotate(${rot * 1.5}deg)`, opacity: 0 }
+        ], { duration: 2000 + Math.random() * 800, easing: 'cubic-bezier(.2,.7,.4,1)' });
+        setTimeout(() => c.remove(), 3000);
+      }
+    }
+
+    // ----- Card hover spotlight -----
+    function cardMove(e, el) {
+      const r = el.getBoundingClientRect();
+      el.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
+      el.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100) + '%');
+    }
+    function cardLeave(el) {
+      el.style.removeProperty('--mx');
+      el.style.removeProperty('--my');
+    }
+
+    // ----- Counter animation -----
+    function animateCount(el) {
+      const target = parseInt(el.dataset.count, 10);
+      const suffix = el.dataset.suffix || '';
+      const prefix = el.dataset.prefix || '';
+      const dur = 1400;
+      const start = performance.now();
+      function tick(now) {
+        const p = Math.min((now - start) / dur, 1);
+        const eased = 1 - Math.pow(1 - p, 3);
+        el.textContent = prefix + Math.floor(target * eased).toLocaleString() + suffix;
+        if (p < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }
+    function startCounters() {
+      document.querySelectorAll('.stat-num').forEach(animateCount);
+    }
+
+    // ----- Init -----
+    window.addEventListener('load', () => {
+      seedDemoAgent();
+      setLang('ja');
+    });
+    window.addEventListener('resize', positionPill);
+  </script>
+</body>
+</html>

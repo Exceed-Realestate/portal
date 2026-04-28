@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agent Dashboard — Exceed Real Estate</title>
+  <link rel="icon" type="image/jpeg" href="logo.jpg">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600&family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy-0: #051428;
+      --navy-1: #0a1f3d;
+      --navy-2: #102a4f;
+      --line: rgba(255,255,255,0.10);
+      --line-strong: rgba(255,255,255,0.18);
+      --text: #f5f7fb;
+      --muted: #9aa8c2;
+      --gold: #d4b87a;
+      --cream: #f1ead8;
+      --radius: 14px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: 'Noto Sans JP', 'Inter', sans-serif;
+      background:
+        radial-gradient(900px 600px at 80% -10%, rgba(212,184,122,0.08), transparent 60%),
+        radial-gradient(800px 600px at -10% 110%, rgba(23,54,99,0.6), transparent 60%),
+        var(--navy-0);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 32px;
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(8px);
+      background: rgba(5,20,40,0.5);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand img { width: 40px; height: 40px; border-radius: 8px; }
+    .brand-name {
+      font-family: 'Playfair Display', serif;
+      letter-spacing: 2px;
+      font-weight: 600;
+    }
+    .brand-name span { color: var(--gold); font-weight: 400; }
+    .user-meta {
+      display: flex; align-items: center; gap: 16px;
+      color: var(--muted); font-size: 13px;
+    }
+    .user-meta strong { color: var(--cream); font-weight: 600; }
+    .logout-btn {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--line);
+      color: var(--text);
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: background .2s ease, border-color .2s ease;
+    }
+    .logout-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--line-strong); }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 50px 32px; }
+    .welcome {
+      text-align: center;
+      padding: 50px 24px;
+      background: linear-gradient(180deg, rgba(16,42,79,0.85), rgba(10,31,61,0.85));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+    .welcome .eyebrow {
+      color: var(--gold); letter-spacing: 5px; font-size: 11px;
+      text-transform: uppercase; margin-bottom: 14px;
+    }
+    .welcome h1 {
+      font-family: 'Noto Serif JP', 'Playfair Display', serif;
+      font-weight: 500;
+      font-size: clamp(28px, 4vw, 44px);
+      margin: 0 0 12px;
+    }
+    .welcome p { color: var(--muted); margin: 0 0 28px; font-size: 15px; }
+    .placeholder-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .ph-card {
+      background: rgba(5,20,40,0.5);
+      border: 1px dashed var(--line-strong);
+      border-radius: 10px;
+      padding: 20px 16px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .ph-card strong { display: block; color: var(--cream); margin-bottom: 4px; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img src="logo.jpg" alt="Exceed" />
+      <div class="brand-name">EXCEED <span>REAL ESTATE</span></div>
+    </div>
+    <div class="user-meta">
+      <span>こんにちは、<strong id="userName">エージェント</strong></span>
+      <button class="logout-btn" onclick="logout()">ログアウト</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="welcome">
+      <div class="eyebrow">Agent Dashboard</div>
+      <h1>ログインに成功しました</h1>
+      <p>これは仮ダッシュボードです。次のセクションを順番に組み立てていきます。</p>
+      <div class="placeholder-grid">
+        <div class="ph-card"><strong>Leads</strong>パイプライン</div>
+        <div class="ph-card"><strong>Listings</strong>物件管理</div>
+        <div class="ph-card"><strong>Deals</strong>案件追跡</div>
+        <div class="ph-card"><strong>Commissions</strong>報酬</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const session = JSON.parse(localStorage.getItem('exceed_session_v1') || 'null');
+    if (!session) { window.location.href = 'index.html'; }
+    else {
+      const agents = JSON.parse(localStorage.getItem('exceed_agents_v1') || '{}');
+      const agent = agents[session.email];
+      if (agent) {
+        document.getElementById('userName').textContent = `${agent.firstName} ${agent.lastName}`;
+      } else {
+        document.getElementById('userName').textContent = session.email;
+      }
+    }
+    function logout() {
+      localStorage.removeItem('exceed_session_v1');
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html>
