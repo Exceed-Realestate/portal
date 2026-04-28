@@ -47,24 +47,17 @@
       z-index: -3;
       background-image: url('skyline.jpg');
       background-size: cover;
-      background-position: center bottom;
+      background-position: center center;
       background-repeat: no-repeat;
-      filter: saturate(0.85);
     }
-    /* Navy overlay over skyline to keep brand identity & contrast */
+    /* Subtle navy vignette so the photo shows but text stays readable */
     .bg-overlay {
       position: fixed;
       inset: 0;
       z-index: -2;
       background:
-        radial-gradient(900px 600px at 80% -10%, rgba(212,184,122,0.10), transparent 60%),
-        radial-gradient(900px 700px at 50% 100%, rgba(5,20,40,0.85) 0%, rgba(5,20,40,0.55) 50%, transparent 100%),
-        linear-gradient(180deg, rgba(5,20,40,0.78) 0%, rgba(5,20,40,0.55) 40%, rgba(5,20,40,0.85) 100%);
-      animation: bgShift 20s ease-in-out infinite alternate;
-    }
-    @keyframes bgShift {
-      0% { background-position: 0% 0%, 50% 100%, 0% 0%; }
-      100% { background-position: 100% 20%, 60% 80%, 0% 100%; }
+        radial-gradient(80% 50% at 50% 40%, transparent 0%, rgba(5,20,40,0.35) 100%),
+        linear-gradient(180deg, rgba(5,20,40,0.30) 0%, rgba(5,20,40,0.10) 35%, rgba(5,20,40,0.55) 100%);
     }
 
     /* Floating shapes */
