@@ -251,86 +251,38 @@
       margin-top: 6px;
     }
 
-    /* Login cards */
+    /* Login buttons */
     .login-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 22px;
-      max-width: 780px;
+      gap: 18px;
+      max-width: 640px;
       margin: 0 auto;
       opacity: 0;
       animation: fadeUp .9s .6s ease forwards;
     }
-    .login-card {
+    .login-btn {
       background: linear-gradient(180deg, rgba(16,42,79,0.85), rgba(10,31,61,0.85));
       border: 1px solid var(--line);
       border-radius: var(--radius);
-      padding: 36px 30px;
+      padding: 26px 20px;
       cursor: pointer;
-      transition: transform .35s cubic-bezier(.34,1.56,.64,1), border-color .25s ease, box-shadow .25s ease;
-      text-align: left;
-      position: relative;
-      overflow: hidden;
+      color: var(--cream);
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease, background .25s ease;
       backdrop-filter: blur(10px);
     }
-    .login-card::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(500px 240px at var(--mx, 50%) var(--my, 0%), rgba(212,184,122,0.18), transparent 60%);
-      opacity: 0;
-      transition: opacity .35s ease;
-      pointer-events: none;
+    html[lang="ja"] .login-btn { font-family: 'Noto Serif JP', serif; }
+    .login-btn:hover {
+      transform: translateY(-3px);
+      border-color: rgba(212,184,122,0.5);
+      box-shadow: 0 20px 40px -16px rgba(0,0,0,.5);
+      color: #fff;
     }
-    .login-card:hover {
-      transform: translateY(-6px);
-      border-color: rgba(212,184,122,0.4);
-      box-shadow: 0 30px 60px -20px rgba(0,0,0,.6), 0 0 0 1px rgba(212,184,122,0.2) inset;
-    }
-    .login-card:hover::before { opacity: 1; }
-
-    .card-icon {
-      width: 54px; height: 54px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, rgba(212,184,122,0.2), rgba(212,184,122,0.08));
-      border: 1px solid rgba(212,184,122,0.3);
-      display: grid; place-items: center;
-      color: var(--gold);
-      margin-bottom: 22px;
-      transition: transform .4s ease;
-    }
-    .login-card:hover .card-icon {
-      transform: rotate(-8deg) scale(1.08);
-    }
-    .card-icon svg { width: 26px; height: 26px; }
-
-    .login-card h3 {
-      font-family: 'Playfair Display', serif;
-      font-size: 24px;
-      font-weight: 600;
-      margin: 0 0 8px;
-    }
-    .login-card p {
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.6;
-      margin: 0 0 24px;
-    }
-    .card-cta {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--gold);
-      font-weight: 600;
-      font-size: 12px;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-    }
-    .card-cta svg {
-      width: 16px; height: 16px;
-      transition: transform .3s ease;
-    }
-    .login-card:hover .card-cta svg { transform: translateX(6px); }
+    .login-btn:active { transform: translateY(-1px); }
 
     /* Divider */
     .divider {
@@ -747,42 +699,8 @@
       <h1>Exceed <em>Portal</em></h1>
 
       <div class="login-grid">
-        <div class="login-card" onclick="handleLogin('agent')" onmousemove="cardMove(event,this)" onmouseleave="cardLeave(this)">
-          <div class="card-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-              <circle cx="9" cy="7" r="4"/>
-              <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-            </svg>
-          </div>
-          <h3 data-i18n="agentTitle">エージェントログイン</h3>
-          <p data-i18n="agentDesc">CRM、リードパイプライン、リスティング、コミッションダッシュボードへアクセス。</p>
-          <span class="card-cta">
-            <span data-i18n="agentCta">エージェントとして続ける</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="5" y1="12" x2="19" y2="12"/>
-              <polyline points="12 5 19 12 12 19"/>
-            </svg>
-          </span>
-        </div>
-
-        <div class="login-card" onclick="handleLogin('client')" onmousemove="cardMove(event,this)" onmouseleave="cardLeave(this)">
-          <div class="card-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 9.5L12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V9.5z"/>
-            </svg>
-          </div>
-          <h3 data-i18n="clientTitle">クライアントログイン</h3>
-          <p data-i18n="clientDesc">厳選された物件の閲覧、内見の管理、ポートフォリオの追跡まで。</p>
-          <span class="card-cta">
-            <span data-i18n="clientCta">クライアントとして続ける</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="5" y1="12" x2="19" y2="12"/>
-              <polyline points="12 5 19 12 12 19"/>
-            </svg>
-          </span>
-        </div>
+        <button class="login-btn" onclick="handleLogin('agent')" data-i18n="agentTitle">Agent Login</button>
+        <button class="login-btn" onclick="handleLogin('client')" data-i18n="clientTitle">Client Login</button>
       </div>
     </section>
 
@@ -899,11 +817,7 @@
         lede: 'エージェントとクライアントのための統合ワークスペース。リスティング管理、案件追跡、そしてドバイで最も洗練された不動産機会の発掘まで。',
         stat1: '物件リスティング', stat2: '専属エージェント', stat3: '成約クライアント',
         agentTitle: 'エージェントログイン',
-        agentDesc: 'CRM、リードパイプライン、リスティング、コミッションダッシュボードへアクセス。',
-        agentCta: 'エージェントとして続ける',
         clientTitle: 'クライアントログイン',
-        clientDesc: '厳選された物件の閲覧、内見の管理、ポートフォリオの追跡まで。',
-        clientCta: 'クライアントとして続ける',
         divider: '新規エージェント',
         regTitle: 'エージェント登録',
         regSub: '登録は <strong>@exceed-re.ae</strong> の会社メールを持つExceedスタッフのみ可能です。',
@@ -940,11 +854,7 @@
         lede: 'A unified workspace for our agents and clients — manage listings, track deals, and explore Dubai\'s most exclusive real estate opportunities.',
         stat1: 'Property Listings', stat2: 'Active Agents', stat3: 'Happy Clients',
         agentTitle: 'Agent Login',
-        agentDesc: 'Access your CRM, leads pipeline, listings, and commission dashboard.',
-        agentCta: 'Continue as Agent',
         clientTitle: 'Client Login',
-        clientDesc: 'View curated properties, track viewings, and manage your portfolio with us.',
-        clientCta: 'Continue as Client',
         divider: 'New Agent',
         regTitle: 'Register as an Agent',
         regSub: 'Registration is restricted to Exceed staff with an <strong>@exceed-re.ae</strong> company email.',
