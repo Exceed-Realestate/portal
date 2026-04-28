@@ -40,21 +40,31 @@
       overflow-x: hidden;
     }
 
-    /* Animated gradient background */
-    .bg-gradient {
+    /* Dubai skyline background */
+    .bg-skyline {
+      position: fixed;
+      inset: 0;
+      z-index: -3;
+      background-image: url('https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=2400&q=80&auto=format&fit=crop');
+      background-size: cover;
+      background-position: center bottom;
+      background-repeat: no-repeat;
+      filter: saturate(0.85);
+    }
+    /* Navy overlay over skyline to keep brand identity & contrast */
+    .bg-overlay {
       position: fixed;
       inset: 0;
       z-index: -2;
       background:
         radial-gradient(900px 600px at 80% -10%, rgba(212,184,122,0.10), transparent 60%),
-        radial-gradient(800px 600px at -10% 110%, rgba(23,54,99,0.7), transparent 60%),
-        radial-gradient(700px 500px at 50% 50%, rgba(10,31,61,0.4), transparent 70%),
-        var(--navy-0);
+        radial-gradient(900px 700px at 50% 100%, rgba(5,20,40,0.85) 0%, rgba(5,20,40,0.55) 50%, transparent 100%),
+        linear-gradient(180deg, rgba(5,20,40,0.78) 0%, rgba(5,20,40,0.55) 40%, rgba(5,20,40,0.85) 100%);
       animation: bgShift 20s ease-in-out infinite alternate;
     }
     @keyframes bgShift {
-      0% { background-position: 0% 0%, 0% 100%, 50% 50%; }
-      100% { background-position: 100% 20%, 20% 80%, 60% 40%; }
+      0% { background-position: 0% 0%, 50% 100%, 0% 0%; }
+      100% { background-position: 100% 20%, 60% 80%, 0% 100%; }
     }
 
     /* Floating shapes */
@@ -801,11 +811,13 @@
       createUserWithEmailAndPassword,
       signInWithEmailAndPassword,
       onAuthStateChanged,
-      updateProfile
+      updateProfile,
+      signOut
     } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
     import {
-      doc, setDoc, serverTimestamp
+      doc, setDoc, getDoc, serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    import { isAdmin } from './firebase-init.js';
 
     // ----- i18n -----
     const i18n = {
@@ -834,13 +846,15 @@
         toastClient: 'クライアントログインは近日公開。',
         toastDomain: '@exceed-re.ae の会社メールのみ登録可能です。',
         toastFields: '必須項目をすべて入力してください。',
-        toastSuccess: '登録完了 — ログインできます。',
+        toastSuccess: '登録完了 — 管理者の承認後にログインできます。',
         toastLoginInvalid: 'メールアドレスまたはパスワードが正しくありません。',
         toastLoginSuccess: 'ログイン成功。ダッシュボードへ移動中...',
         toastClientSoon: 'クライアントログインは近日公開。',
         toastEmailInUse: 'このメールアドレスは既に登録されています。',
         toastWeakPassword: 'パスワードは6文字以上で設定してください。',
         toastNetwork: 'ネットワークエラーが発生しました。もう一度お試しください。',
+        toastPending: 'アカウントは管理者の承認待ちです。',
+        toastSuspended: 'このアカウントは停止されています。管理者に連絡してください。',
         loginTitle: 'エージェントログイン',
         loginSub: '会社の認証情報でサインインしてください。',
         loginBtn: 'ログイン',
@@ -871,13 +885,15 @@
         toastClient: 'Client login coming soon.',
         toastDomain: 'Registration is restricted to @exceed-re.ae company emails.',
         toastFields: 'Please complete all required fields.',
-        toastSuccess: 'Registered — you can now log in.',
+        toastSuccess: 'Registered — you can log in once an admin approves.',
         toastLoginInvalid: 'Email or password is incorrect.',
         toastLoginSuccess: 'Logged in. Redirecting…',
         toastClientSoon: 'Client login coming soon.',
         toastEmailInUse: 'This email is already registered.',
         toastWeakPassword: 'Password must be at least 6 characters.',
         toastNetwork: 'Network error. Please try again.',
+        toastPending: 'Account is awaiting admin approval.',
+        toastSuspended: 'This account has been suspended. Contact your admin.',
         loginTitle: 'Agent Login',
         loginSub: 'Sign in with your company credentials.',
         loginBtn: 'Sign In',
@@ -978,7 +994,24 @@
       const btn = e.target.querySelector('button[type=submit]');
       btn.disabled = true;
       try {
-        await signInWithEmailAndPassword(auth, email, pwd);
+        const cred = await signInWithEmailAndPassword(auth, email, pwd);
+        // Admins bypass the status gate
+        if (!isAdmin(email)) {
+          const snap = await getDoc(doc(db, 'agents', cred.user.uid));
+          if (snap.exists()) {
+            const status = snap.data().status;
+            if (status === 'pending') {
+              await signOut(auth);
+              showToast(dict.toastPending);
+              return;
+            }
+            if (status === 'suspended') {
+              await signOut(auth);
+              showToast(dict.toastSuspended);
+              return;
+            }
+          }
+        }
         showToast(dict.toastLoginSuccess);
         setTimeout(() => { window.location.href = 'agent.html'; }, 600);
       } catch (err) {
@@ -1010,16 +1043,15 @@
         await setDoc(doc(db, 'agents', cred.user.uid), {
           firstName, lastName, email, phone,
           uid: cred.user.uid,
-          status: 'active',
+          status: 'pending',
           createdAt: serverTimestamp()
         });
+        // Sign out immediately — must be approved before login
+        try { await signOut(auth); } catch (e) {}
         showToast(dict.toastSuccess);
         fireConfetti();
         form.reset();
-        setTimeout(() => {
-          toggleRegister(false);
-          window.location.href = 'agent.html';
-        }, 1500);
+        setTimeout(() => toggleRegister(false), 1500);
       } catch (err) {
         showToast(mapAuthError(err.code, dict));
       } finally {

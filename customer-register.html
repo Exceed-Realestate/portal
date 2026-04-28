@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>お客さんを登録 — Exceed Portal</title>
+  <link rel="icon" type="image/jpeg" href="logo.jpg">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600&family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy-0: #051428;
+      --navy-1: #0a1f3d;
+      --navy-2: #102a4f;
+      --line: rgba(255,255,255,0.10);
+      --line-strong: rgba(255,255,255,0.18);
+      --text: #f5f7fb;
+      --muted: #9aa8c2;
+      --gold: #d4b87a;
+      --cream: #f1ead8;
+      --radius: 14px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; min-height: 100%; }
+    body {
+      font-family: 'Noto Sans JP', 'Inter', sans-serif;
+      background:
+        radial-gradient(900px 600px at 80% -10%, rgba(212,184,122,0.08), transparent 60%),
+        radial-gradient(800px 600px at -10% 110%, rgba(23,54,99,0.6), transparent 60%),
+        var(--navy-0);
+      color: var(--text);
+    }
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 32px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(5,20,40,0.7);
+      backdrop-filter: blur(8px);
+      position: sticky; top: 0; z-index: 10;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand img { width: 40px; height: 40px; border-radius: 8px; }
+    .brand-name {
+      font-family: 'Playfair Display', serif;
+      letter-spacing: 2px;
+      font-weight: 600;
+    }
+    .brand-name span { color: var(--gold); font-weight: 400; }
+    .topbar-actions { display: flex; gap: 10px; }
+    .btn {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--line);
+      color: var(--text);
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      text-decoration: none;
+      display: inline-flex; align-items: center; gap: 8px;
+      transition: background .2s ease, border-color .2s ease;
+    }
+    .btn:hover { background: rgba(255,255,255,0.1); border-color: var(--line-strong); }
+    .btn svg { width: 14px; height: 14px; }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--cream), var(--gold));
+      color: var(--navy-0);
+      border: none;
+      padding: 14px 28px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      font-family: inherit;
+      transition: transform .15s ease, box-shadow .25s ease;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 14px 32px -10px rgba(212,184,122,.5); }
+    .btn-primary:disabled { opacity: 0.6; cursor: wait; transform: none; box-shadow: none; }
+
+    .container { max-width: 720px; margin: 0 auto; padding: 50px 32px; }
+    .page-head { margin-bottom: 28px; text-align: center; }
+    .page-head .eyebrow {
+      color: var(--gold); letter-spacing: 5px; font-size: 11px;
+      text-transform: uppercase; margin-bottom: 12px;
+    }
+    .page-head h1 {
+      font-family: 'Noto Serif JP', 'Playfair Display', serif;
+      font-weight: 600;
+      font-size: clamp(24px, 3vw, 32px);
+      margin: 0 0 8px;
+    }
+    .page-head p { color: var(--muted); margin: 0; font-size: 14px; }
+
+    .card {
+      background: linear-gradient(180deg, rgba(16,42,79,0.85), rgba(10,31,61,0.85));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 36px 32px;
+      backdrop-filter: blur(10px);
+    }
+
+    form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    form > * { min-width: 0; }
+    .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+    .field.full { grid-column: 1 / -1; }
+    label {
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+    label .opt { color: #5d6c87; text-transform: none; letter-spacing: 0.3px; font-size: 11px; margin-left: 6px; }
+    input {
+      background: rgba(5,20,40,0.7);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      color: var(--text);
+      padding: 13px 14px;
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      transition: border-color .2s ease, background .2s ease, box-shadow .2s ease;
+      width: 100%;
+    }
+    input::placeholder { color: #5d6c87; }
+    input:focus {
+      border-color: var(--gold);
+      background: rgba(5,20,40,0.95);
+      box-shadow: 0 0 0 3px rgba(212,184,122,0.12);
+    }
+    .composite {
+      display: flex; align-items: stretch;
+      background: rgba(5,20,40,0.7);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      transition: border-color .2s ease, background .2s ease, box-shadow .2s ease;
+      overflow: hidden;
+    }
+    .composite:focus-within {
+      border-color: var(--gold);
+      background: rgba(5,20,40,0.95);
+      box-shadow: 0 0 0 3px rgba(212,184,122,0.12);
+    }
+    .composite input { background: transparent; border: none; box-shadow: none; padding: 13px 14px; flex: 1; }
+    .composite input:focus { box-shadow: none; }
+    .composite select {
+      flex: 0 0 auto;
+      max-width: 110px;
+      padding: 13px 26px 13px 12px;
+      font-size: 13px;
+      color: var(--text);
+      background: rgba(255,255,255,0.04);
+      border: none;
+      border-right: 1px solid var(--line);
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none' stroke='%239aa8c2' stroke-width='1.5'><path d='M1 1l4 4 4-4'/></svg>");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      font-family: inherit;
+    }
+    .composite select option { background: var(--navy-1); color: var(--text); }
+
+    .submit-row {
+      grid-column: 1 / -1;
+      display: flex; flex-direction: column;
+      align-items: stretch; gap: 12px; margin-top: 12px;
+    }
+    .submit-row .btn-primary { width: 100%; padding: 16px; font-size: 13px; }
+    .terms { color: var(--muted); font-size: 12px; text-align: center; }
+
+    /* Success view */
+    .success-view { text-align: center; }
+    .success-view .check {
+      width: 64px; height: 64px;
+      margin: 0 auto 18px;
+      border-radius: 50%;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      display: grid; place-items: center;
+      color: #34d399;
+    }
+    .success-view .check svg { width: 30px; height: 30px; }
+    .success-view h2 {
+      font-family: 'Noto Serif JP', serif;
+      font-weight: 600;
+      font-size: 24px;
+      margin: 0 0 6px;
+    }
+    .success-view .who { color: var(--muted); font-size: 14px; margin: 0 0 30px; }
+    .reg-number-block {
+      background: rgba(5,20,40,0.6);
+      border: 1px dashed rgba(212,184,122,0.4);
+      border-radius: var(--radius);
+      padding: 24px 20px;
+      margin: 0 0 24px;
+    }
+    .reg-number-block .label {
+      color: var(--gold);
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .reg-number {
+      font-family: ui-monospace, 'SF Mono', monospace;
+      font-size: clamp(28px, 5vw, 40px);
+      font-weight: 700;
+      color: var(--cream);
+      letter-spacing: 4px;
+      margin: 0 0 16px;
+      user-select: all;
+    }
+    .copy-btn {
+      background: transparent;
+      border: 1px solid rgba(212,184,122,0.4);
+      color: var(--cream);
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      transition: background .2s ease, color .2s ease;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .copy-btn:hover { background: rgba(212,184,122,0.15); color: #fff; }
+    .copy-btn.copied { background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.4); color: #34d399; }
+    .copy-btn svg { width: 13px; height: 13px; }
+    .hint {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+      margin: 0 0 24px;
+    }
+    .actions-row {
+      display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 30px; left: 50%;
+      transform: translateX(-50%) translateY(120%);
+      background: rgba(16,42,79,0.95);
+      border: 1px solid rgba(212,184,122,0.4);
+      color: var(--text);
+      padding: 14px 22px;
+      border-radius: 10px;
+      font-size: 14px;
+      transition: transform .35s cubic-bezier(.34,1.56,.64,1);
+      z-index: 999;
+      backdrop-filter: blur(10px);
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 640px) {
+      .container { padding: 30px 18px; }
+      .card { padding: 24px 18px; }
+      form { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img src="logo.jpg" alt="Exceed" />
+      <div class="brand-name">EXCEED <span>REAL ESTATE</span></div>
+    </div>
+    <div class="topbar-actions">
+      <a class="btn" href="agent.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        ダッシュボード
+      </a>
+      <button class="btn" onclick="logout()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        ログアウト
+      </button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="page-head">
+      <div class="eyebrow">Customer Registration</div>
+      <h1>お客さんを登録</h1>
+      <p>新規顧客の情報を入力してください。登録すると固有のクライアント番号が発行されます。</p>
+    </div>
+
+    <div class="card" id="formCard">
+      <form id="customerForm" novalidate>
+        <div class="field">
+          <label for="firstName">名 (First Name)</label>
+          <input id="firstName" type="text" required placeholder="例: 太郎" />
+        </div>
+        <div class="field">
+          <label for="lastName">姓 (Last Name)</label>
+          <input id="lastName" type="text" required placeholder="例: 田中" />
+        </div>
+        <div class="field">
+          <label for="email">メールアドレス (Email)</label>
+          <input id="email" type="email" required placeholder="customer@example.com" />
+        </div>
+        <div class="field">
+          <label for="phoneNumber">電話番号 (Phone)</label>
+          <div class="composite">
+            <select id="countryCode" aria-label="Country code">
+              <option value="+971" selected>🇦🇪 +971</option>
+              <option value="+81">🇯🇵 +81</option>
+              <option value="+91">🇮🇳 +91</option>
+              <option value="+1">🇺🇸 +1</option>
+              <option value="+44">🇬🇧 +44</option>
+              <option value="+86">🇨🇳 +86</option>
+              <option value="+966">🇸🇦 +966</option>
+              <option value="+65">🇸🇬 +65</option>
+              <option value="+852">🇭🇰 +852</option>
+            </select>
+            <input id="phoneNumber" type="tel" required placeholder="50 123 4567" pattern="^[0-9 \-]{6,}$" />
+          </div>
+        </div>
+        <div class="field full">
+          <label for="company">会社名 <span class="opt">(任意 / Optional)</span></label>
+          <input id="company" type="text" placeholder="ABC Holdings Ltd." />
+        </div>
+
+        <div class="submit-row">
+          <button type="submit" class="btn-primary" id="submitBtn">顧客を登録 / Register Customer</button>
+          <span class="terms">入力された情報はExceedのデータポリシーに従って管理されます。</span>
+        </div>
+      </form>
+    </div>
+
+    <div class="card success-view" id="successCard" style="display:none">
+      <div class="check">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <h2>登録完了</h2>
+      <p class="who" id="successWho">—</p>
+
+      <div class="reg-number-block">
+        <div class="label">クライアント登録番号</div>
+        <div class="reg-number" id="regNumberDisplay">EXC-XXXXXX</div>
+        <button class="copy-btn" id="copyBtn" onclick="copyNumber()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2"/>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+          番号をコピー
+        </button>
+      </div>
+
+      <p class="hint">この番号をお客様にお伝えください。お客様は <strong style="color:var(--cream)">クライアントログイン</strong> でこの番号を使ってログインできます。</p>
+
+      <div class="actions-row">
+        <button class="btn" onclick="resetForm()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          別の顧客を登録
+        </button>
+        <a class="btn" href="agent.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          ダッシュボードへ戻る
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script type="module">
+    import { auth, db } from './firebase-init.js';
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+    import {
+      doc, setDoc, getDoc, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+    let currentUser = null;
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) { window.location.href = 'index.html'; return; }
+      currentUser = user;
+    });
+
+    // Generate registration number: EXC-XXXXXX, alphabet excludes 0,O,1,I,L for clarity
+    const ALPHABET = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
+    function generateRegNumber() {
+      let s = 'EXC-';
+      for (let i = 0; i < 6; i++) s += ALPHABET[Math.floor(Math.random() * ALPHABET.length)];
+      return s;
+    }
+
+    async function generateUniqueRegNumber() {
+      // Try a few times to avoid the (extremely rare) collision
+      for (let i = 0; i < 5; i++) {
+        const candidate = generateRegNumber();
+        const snap = await getDoc(doc(db, 'customers', candidate));
+        if (!snap.exists()) return candidate;
+      }
+      throw new Error('Could not generate unique number — please try again.');
+    }
+
+    function showToast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      clearTimeout(el._t);
+      el._t = setTimeout(() => el.classList.remove('show'), 2800);
+    }
+
+    document.getElementById('customerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentUser) { showToast('セッションが切れました。再度ログインしてください。'); return; }
+      const form = e.target;
+      const submitBtn = document.getElementById('submitBtn');
+
+      const firstName = form.firstName.value.trim();
+      const lastName = form.lastName.value.trim();
+      const email = form.email.value.trim().toLowerCase();
+      const phone = form.countryCode.value + ' ' + form.phoneNumber.value.trim();
+      const company = form.company.value.trim();
+
+      if (!firstName || !lastName || !email || !form.phoneNumber.value.trim()) {
+        showToast('必須項目をすべて入力してください。');
+        return;
+      }
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+        showToast('有効なメールアドレスを入力してください。');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = '登録中…';
+      try {
+        const regNumber = await generateUniqueRegNumber();
+        await setDoc(doc(db, 'customers', regNumber), {
+          regNumber,
+          firstName, lastName, email, phone,
+          company: company || null,
+          status: 'active',
+          registeredBy: currentUser.uid,
+          registeredByEmail: currentUser.email,
+          createdAt: serverTimestamp()
+        });
+
+        document.getElementById('regNumberDisplay').textContent = regNumber;
+        document.getElementById('successWho').textContent = `${firstName} ${lastName} · ${email}`;
+        document.getElementById('formCard').style.display = 'none';
+        document.getElementById('successCard').style.display = '';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (err) {
+        showToast('エラー: ' + (err.message || 'もう一度お試しください'));
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '顧客を登録 / Register Customer';
+      }
+    });
+
+    window.copyNumber = async function() {
+      const num = document.getElementById('regNumberDisplay').textContent;
+      try {
+        await navigator.clipboard.writeText(num);
+        const btn = document.getElementById('copyBtn');
+        btn.classList.add('copied');
+        const original = btn.innerHTML;
+        btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>コピーしました`;
+        setTimeout(() => { btn.classList.remove('copied'); btn.innerHTML = original; }, 1800);
+      } catch {
+        showToast('コピーに失敗しました。手動でコピーしてください。');
+      }
+    };
+
+    window.resetForm = function() {
+      document.getElementById('customerForm').reset();
+      document.getElementById('successCard').style.display = 'none';
+      document.getElementById('formCard').style.display = '';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    window.logout = async function() {
+      try { await signOut(auth); } catch (e) {}
+      window.location.href = 'index.html';
+    };
+  </script>
+</body>
+</html>

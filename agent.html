@@ -257,6 +257,23 @@
       </div>
 
       <div class="tools-grid">
+        <div class="tool-card" onclick="window.location.href='customer-register.html'">
+          <div class="tool-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <line x1="19" y1="8" x2="19" y2="14"/>
+              <line x1="22" y1="11" x2="16" y2="11"/>
+            </svg>
+          </div>
+          <h3>お客さんを登録</h3>
+          <p>新規顧客を登録し、固有のクライアント番号を発行します。</p>
+          <span class="tool-cta">
+            開く
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </span>
+        </div>
+
         <div class="tool-card" onclick="openTool('irr')">
           <div class="tool-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
@@ -298,13 +315,26 @@
           </span>
         </div>
 
-        <div class="tool-card" id="adminCard" style="display:none" onclick="openAdmin()">
+        <div class="tool-card" id="adminCard" style="display:none" onclick="window.location.href='admin.html'">
           <span class="badge-soon" style="background: rgba(212,184,122,0.15); border-color: rgba(212,184,122,0.4); color: var(--gold);">Admin</span>
           <div class="tool-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           </div>
           <h3>Registered Agents</h3>
-          <p>登録済みエージェントの一覧を表示・管理します。</p>
+          <p>登録済みエージェントの一覧を表示・承認します。</p>
+          <span class="tool-cta">
+            開く
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </span>
+        </div>
+
+        <div class="tool-card" id="customersAdminCard" style="display:none" onclick="window.location.href='customers-admin.html'">
+          <span class="badge-soon" style="background: rgba(212,184,122,0.15); border-color: rgba(212,184,122,0.4); color: var(--gold);">Admin</span>
+          <div class="tool-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <h3>Registered Customers</h3>
+          <p>登録済み顧客の一覧と発行されたクライアント番号を表示します。</p>
           <span class="tool-cta">
             開く
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
@@ -350,27 +380,37 @@
       }
     };
 
+    function deriveFirstName(user, agentData) {
+      if (agentData && agentData.firstName) return agentData.firstName;
+      if (user.displayName && user.displayName.trim()) return user.displayName.trim().split(/\s+/)[0];
+      if (user.email) {
+        // Use local part of email, capitalize first letter
+        const local = user.email.split('@')[0].split(/[._-]/)[0];
+        return local.charAt(0).toUpperCase() + local.slice(1);
+      }
+      return 'Agent';
+    }
+
     // Auth gate
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
         window.location.href = 'index.html';
         return;
       }
-      let name = user.displayName || user.email;
+      let agentData = null;
       try {
         const snap = await getDoc(doc(db, 'agents', user.uid));
-        if (snap.exists()) {
-          const a = snap.data();
-          name = `${a.firstName} ${a.lastName}`;
-        }
-      } catch (e) { /* fall back to displayName/email */ }
-      document.getElementById('userName').textContent = name;
-      document.getElementById('welcomeName').textContent = name;
+        if (snap.exists()) agentData = snap.data();
+      } catch (e) {}
+      const firstName = deriveFirstName(user, agentData);
+      document.getElementById('userName').textContent = firstName;
+      document.getElementById('welcomeName').textContent = firstName;
 
-      // Show admin tile if applicable
       if (isAdmin(user.email)) {
         const adminCard = document.getElementById('adminCard');
         if (adminCard) adminCard.style.display = '';
+        const customersAdminCard = document.getElementById('customersAdminCard');
+        if (customersAdminCard) customersAdminCard.style.display = '';
       }
     });
 

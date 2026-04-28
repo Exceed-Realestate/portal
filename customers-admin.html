@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Registered Agents — Exceed Portal</title>
+  <title>Registered Customers — Exceed Portal</title>
   <link rel="icon" type="image/jpeg" href="logo.jpg">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600&family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@500;600&display=swap" rel="stylesheet">
   <style>
@@ -64,7 +64,7 @@
     .btn:hover { background: rgba(255,255,255,0.1); border-color: var(--line-strong); }
     .btn svg { width: 14px; height: 14px; }
 
-    .container { max-width: 1200px; margin: 0 auto; padding: 40px 32px; }
+    .container { max-width: 1280px; margin: 0 auto; padding: 40px 32px; }
     .page-head {
       display: flex; align-items: end; justify-content: space-between;
       margin-bottom: 24px; gap: 16px; flex-wrap: wrap;
@@ -76,14 +76,10 @@
       margin: 0;
     }
     .page-head .count {
-      color: var(--muted);
-      font-size: 13px;
-      margin-top: 6px;
-      letter-spacing: 1px;
-      text-transform: uppercase;
+      color: var(--muted); font-size: 13px; margin-top: 6px;
+      letter-spacing: 1px; text-transform: uppercase;
     }
     .page-head .count strong { color: var(--cream); font-weight: 600; }
-
     .search {
       background: rgba(5,20,40,0.7);
       border: 1px solid var(--line);
@@ -92,8 +88,7 @@
       color: var(--text);
       font-family: inherit;
       font-size: 14px;
-      width: 280px;
-      max-width: 100%;
+      width: 280px; max-width: 100%;
       outline: none;
       transition: border-color .2s ease;
     }
@@ -104,12 +99,10 @@
       background: linear-gradient(180deg, rgba(16,42,79,0.85), rgba(10,31,61,0.85));
       border: 1px solid var(--line);
       border-radius: var(--radius);
-      overflow: hidden;
+      overflow-x: auto;
     }
-    table { width: 100%; border-collapse: collapse; }
-    thead {
-      background: rgba(5,20,40,0.5);
-    }
+    table { width: 100%; border-collapse: collapse; min-width: 720px; }
+    thead { background: rgba(5,20,40,0.5); }
     th {
       text-align: left;
       padding: 14px 18px;
@@ -128,39 +121,29 @@
     tbody tr:last-child td { border-bottom: none; }
     tbody tr:hover { background: rgba(255,255,255,0.025); }
     .name { font-weight: 600; color: var(--cream); }
-    .email { font-family: ui-monospace, 'SF Mono', monospace; font-size: 12px; color: var(--muted); }
-    .status {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-    }
-    .status.active { background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.25); }
-    .status.pending { background: rgba(245, 158, 11, 0.12); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.25); }
-    .status.suspended { background: rgba(239, 68, 68, 0.12); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.25); }
-    .row-actions { display: flex; gap: 6px; flex-wrap: wrap; }
-    .act-btn {
-      background: transparent;
-      border: 1px solid var(--line);
-      color: var(--text);
-      padding: 6px 12px;
-      border-radius: 6px;
+    .reg-num {
+      font-family: ui-monospace, 'SF Mono', monospace;
+      font-size: 13px;
+      color: var(--gold);
+      letter-spacing: 1.5px;
+      font-weight: 700;
       cursor: pointer;
-      font-family: inherit;
-      font-size: 11px;
-      letter-spacing: 0.5px;
-      transition: background .2s ease, border-color .2s ease, color .2s ease;
     }
-    .act-btn:disabled { opacity: 0.5; cursor: wait; }
-    .act-btn.approve { border-color: rgba(16, 185, 129, 0.4); color: #34d399; }
-    .act-btn.approve:hover:not(:disabled) { background: rgba(16, 185, 129, 0.12); }
-    .act-btn.suspend { border-color: rgba(239, 68, 68, 0.4); color: #f87171; }
-    .act-btn.suspend:hover:not(:disabled) { background: rgba(239, 68, 68, 0.12); }
-    .act-btn.reactivate { border-color: rgba(212, 184, 122, 0.4); color: var(--gold); }
-    .act-btn.reactivate:hover:not(:disabled) { background: rgba(212, 184, 122, 0.12); }
+    .reg-num:hover { color: #fff; }
+    .email, .phone { font-family: ui-monospace, 'SF Mono', monospace; font-size: 12px; color: var(--muted); }
+    .empty, .loading {
+      text-align: center; padding: 60px 24px; color: var(--muted); font-size: 14px;
+    }
+    .denied {
+      max-width: 480px; margin: 100px auto;
+      text-align: center; padding: 40px 32px;
+      background: linear-gradient(180deg, rgba(16,42,79,0.85), rgba(10,31,61,0.85));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+    .denied h2 { font-family: 'Playfair Display', serif; margin: 0 0 12px; color: var(--cream); }
+    .denied p { color: var(--muted); margin: 0 0 22px; font-size: 14px; }
+
     .toast {
       position: fixed;
       bottom: 30px; left: 50%;
@@ -176,33 +159,6 @@
       backdrop-filter: blur(10px);
     }
     .toast.show { transform: translateX(-50%) translateY(0); }
-    .empty, .loading {
-      text-align: center;
-      padding: 60px 24px;
-      color: var(--muted);
-      font-size: 14px;
-    }
-    .denied {
-      max-width: 480px;
-      margin: 100px auto;
-      text-align: center;
-      padding: 40px 32px;
-      background: linear-gradient(180deg, rgba(16,42,79,0.85), rgba(10,31,61,0.85));
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-    }
-    .denied h2 {
-      font-family: 'Playfair Display', serif;
-      margin: 0 0 12px;
-      color: var(--cream);
-    }
-    .denied p { color: var(--muted); margin: 0 0 22px; font-size: 14px; }
-
-    @media (max-width: 720px) {
-      .container { padding: 24px 18px; }
-      th, td { padding: 12px 12px; font-size: 13px; }
-      .hide-sm { display: none; }
-    }
   </style>
 </head>
 <body>
@@ -229,90 +185,17 @@
   <script type="module">
     import { auth, db, isAdmin } from './firebase-init.js';
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-    import { collection, getDocs, query, orderBy, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
     const content = document.getElementById('content');
+    let allCustomers = [];
+
     function showToast(msg) {
       const el = document.getElementById('toast');
       el.textContent = msg;
       el.classList.add('show');
       clearTimeout(el._t);
-      el._t = setTimeout(() => el.classList.remove('show'), 2400);
-    }
-
-    function renderLoading() {
-      content.innerHTML = `<div class="container"><div class="loading">読み込み中…</div></div>`;
-    }
-    function renderDenied() {
-      content.innerHTML = `
-        <div class="denied">
-          <h2>アクセスが許可されていません</h2>
-          <p>このページは管理者専用です。ダッシュボードに戻ってください。</p>
-          <a class="btn" href="agent.html">ダッシュボードへ</a>
-        </div>`;
-    }
-
-    function fmtDate(ts) {
-      if (!ts) return '—';
-      const d = ts.toDate ? ts.toDate() : new Date(ts);
-      return d.toLocaleString('ja-JP', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-    }
-
-    let allAgents = [];
-
-    function actionsFor(a) {
-      const s = a.status || 'active';
-      if (s === 'pending') return `
-        <button class="act-btn approve" data-uid="${esc(a.uid)}" data-action="approve">承認</button>
-        <button class="act-btn suspend" data-uid="${esc(a.uid)}" data-action="suspend">却下</button>`;
-      if (s === 'active') return `
-        <button class="act-btn suspend" data-uid="${esc(a.uid)}" data-action="suspend">停止</button>`;
-      if (s === 'suspended') return `
-        <button class="act-btn reactivate" data-uid="${esc(a.uid)}" data-action="approve">再有効化</button>`;
-      return '';
-    }
-
-    function renderTable(filter = '') {
-      const f = filter.trim().toLowerCase();
-      const rows = allAgents.filter(a =>
-        !f || `${a.firstName} ${a.lastName} ${a.email} ${a.phone || ''}`.toLowerCase().includes(f)
-      );
-      const tbody = rows.length ? rows.map(a => {
-        const status = a.status || 'active';
-        return `
-        <tr data-uid="${esc(a.uid)}">
-          <td><div class="name">${esc(a.firstName)} ${esc(a.lastName)}</div></td>
-          <td class="email">${esc(a.email)}</td>
-          <td class="hide-sm">${esc(a.phone || '—')}</td>
-          <td class="hide-sm">${fmtDate(a.createdAt)}</td>
-          <td><span class="status ${status}">${status}</span></td>
-          <td><div class="row-actions">${actionsFor(a)}</div></td>
-        </tr>`;
-      }).join('')
-        : `<tr><td colspan="6" class="empty">該当するエージェントが見つかりません。</td></tr>`;
-      document.getElementById('agentRows').innerHTML = tbody;
-      document.getElementById('countShown').textContent = rows.length;
-      // Wire up action buttons
-      document.querySelectorAll('.act-btn').forEach(btn => {
-        btn.addEventListener('click', () => handleAction(btn));
-      });
-    }
-
-    async function handleAction(btn) {
-      const uid = btn.getAttribute('data-uid');
-      const action = btn.getAttribute('data-action');
-      const newStatus = action === 'approve' ? 'active' : 'suspended';
-      btn.disabled = true;
-      try {
-        await updateDoc(doc(db, 'agents', uid), { status: newStatus });
-        const idx = allAgents.findIndex(a => a.uid === uid);
-        if (idx >= 0) allAgents[idx].status = newStatus;
-        renderTable(document.getElementById('searchInput').value);
-        showToast(action === 'approve' ? 'エージェントを承認しました。' : 'エージェントを停止しました。');
-      } catch (err) {
-        showToast('エラー: ' + (err.message || 'もう一度お試しください'));
-        btn.disabled = false;
-      }
+      el._t = setTimeout(() => el.classList.remove('show'), 2200);
     }
 
     function esc(s) {
@@ -321,52 +204,97 @@
       }[c]));
     }
 
-    async function loadAgents() {
+    function fmtDate(ts) {
+      if (!ts) return '—';
+      const d = ts.toDate ? ts.toDate() : new Date(ts);
+      return d.toLocaleString('ja-JP', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+
+    function renderDenied() {
+      content.innerHTML = `
+        <div class="denied">
+          <h2>アクセスが許可されていません</h2>
+          <p>このページは管理者専用です。</p>
+          <a class="btn" href="agent.html">ダッシュボードへ</a>
+        </div>`;
+    }
+
+    function renderTable(filter = '') {
+      const f = filter.trim().toLowerCase();
+      const rows = allCustomers.filter(c =>
+        !f || `${c.firstName} ${c.lastName} ${c.email} ${c.phone || ''} ${c.regNumber || ''} ${c.company || ''}`.toLowerCase().includes(f)
+      );
+      const tbody = rows.length ? rows.map(c => `
+        <tr>
+          <td><span class="reg-num" onclick="copyRegNum('${esc(c.regNumber)}')">${esc(c.regNumber)}</span></td>
+          <td><div class="name">${esc(c.firstName)} ${esc(c.lastName)}</div></td>
+          <td class="email">${esc(c.email)}</td>
+          <td class="phone">${esc(c.phone || '—')}</td>
+          <td>${esc(c.company || '—')}</td>
+          <td>${fmtDate(c.createdAt)}</td>
+          <td class="email">${esc(c.registeredByEmail || '—')}</td>
+        </tr>`).join('')
+        : `<tr><td colspan="7" class="empty">該当する顧客が見つかりません。</td></tr>`;
+      document.getElementById('customerRows').innerHTML = tbody;
+      document.getElementById('countShown').textContent = rows.length;
+    }
+
+    window.copyRegNum = async function(num) {
+      try {
+        await navigator.clipboard.writeText(num);
+        showToast(num + ' をコピーしました');
+      } catch {
+        showToast('コピーに失敗しました');
+      }
+    };
+
+    async function loadCustomers() {
       content.innerHTML = `
         <div class="container">
           <div class="page-head">
             <div>
-              <h1>Registered Agents</h1>
-              <div class="count"><strong id="countShown">0</strong> / <strong id="countTotal">0</strong> エージェント</div>
+              <h1>Registered Customers</h1>
+              <div class="count"><strong id="countShown">0</strong> / <strong id="countTotal">0</strong> 顧客</div>
             </div>
-            <input class="search" id="searchInput" placeholder="名前・メール・電話で検索…" />
+            <input class="search" id="searchInput" placeholder="番号・名前・メール・会社で検索…" />
           </div>
           <div class="table-wrap">
             <table>
               <thead>
                 <tr>
+                  <th>Reg. Number</th>
                   <th>Name</th>
                   <th>Email</th>
-                  <th class="hide-sm">Phone</th>
-                  <th class="hide-sm">Registered</th>
-                  <th>Status</th>
-                  <th>Actions</th>
+                  <th>Phone</th>
+                  <th>Company</th>
+                  <th>Registered</th>
+                  <th>By Agent</th>
                 </tr>
               </thead>
-              <tbody id="agentRows">
-                <tr><td colspan="6" class="loading">読み込み中…</td></tr>
+              <tbody id="customerRows">
+                <tr><td colspan="7" class="loading">読み込み中…</td></tr>
               </tbody>
             </table>
           </div>
         </div>`;
       try {
-        const q = query(collection(db, 'agents'), orderBy('createdAt', 'desc'));
+        const q = query(collection(db, 'customers'), orderBy('createdAt', 'desc'));
         const snap = await getDocs(q);
-        allAgents = snap.docs.map(d => d.data());
-        document.getElementById('countTotal').textContent = allAgents.length;
+        allCustomers = snap.docs.map(d => d.data());
+        document.getElementById('countTotal').textContent = allCustomers.length;
         renderTable();
         document.getElementById('searchInput').addEventListener('input', e => renderTable(e.target.value));
       } catch (err) {
-        document.getElementById('agentRows').innerHTML =
-          `<tr><td colspan="5" class="empty">エラー: ${esc(err.message)}</td></tr>`;
+        document.getElementById('customerRows').innerHTML =
+          `<tr><td colspan="7" class="empty">エラー: ${esc(err.message)}</td></tr>`;
       }
     }
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) { window.location.href = 'index.html'; return; }
       if (!isAdmin(user.email)) { renderDenied(); return; }
-      renderLoading();
-      loadAgents();
+      content.innerHTML = `<div class="container"><div class="loading">読み込み中…</div></div>`;
+      loadCustomers();
     });
 
     window.logout = async function() {
