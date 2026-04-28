@@ -1,0 +1,31 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Agents collection: each doc keyed by Firebase Auth UID
+    match /agents/{userId} {
+
+      // Anyone authenticated can read the agent list (internal team tool).
+      // Tighten later if you want admin-only reads.
+      allow read: if request.auth != null;
+
+      // A user can create only their own doc, only with an @exceed-re.ae email,
+      // and only with the required fields.
+      allow create: if request.auth != null
+        && request.auth.uid == userId
+        && request.auth.token.email.matches('.+@exceed-re[.]ae')
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.firstName is string
+        && request.resource.data.lastName is string;
+
+      // A user can update their own doc only (no email/uid/status changes from client).
+      allow update: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.uid == resource.data.uid;
+
+      // No client-side deletes — admin via Firebase Console only.
+      allow delete: if false;
+    }
+  }
+}

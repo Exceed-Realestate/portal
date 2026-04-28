@@ -297,6 +297,19 @@
             近日公開
           </span>
         </div>
+
+        <div class="tool-card" id="adminCard" style="display:none" onclick="openAdmin()">
+          <span class="badge-soon" style="background: rgba(212,184,122,0.15); border-color: rgba(212,184,122,0.4); color: var(--gold);">Admin</span>
+          <div class="tool-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <h3>Registered Agents</h3>
+          <p>登録済みエージェントの一覧を表示・管理します。</p>
+          <span class="tool-cta">
+            開く
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </span>
+        </div>
       </div>
     </div>
   </div>
@@ -324,7 +337,11 @@
     </div>
   </div>
 
-  <script>
+  <script type="module">
+    import { auth, db, isAdmin } from './firebase-init.js';
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
     const TOOLS = {
       irr: {
         title: 'IRR Simulator',
@@ -334,18 +351,30 @@
     };
 
     // Auth gate
-    const session = JSON.parse(localStorage.getItem('exceed_session_v1') || 'null');
-    if (!session) {
-      window.location.href = 'index.html';
-    } else {
-      const agents = JSON.parse(localStorage.getItem('exceed_agents_v1') || '{}');
-      const agent = agents[session.email];
-      const name = agent ? `${agent.firstName} ${agent.lastName}` : session.email;
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = 'index.html';
+        return;
+      }
+      let name = user.displayName || user.email;
+      try {
+        const snap = await getDoc(doc(db, 'agents', user.uid));
+        if (snap.exists()) {
+          const a = snap.data();
+          name = `${a.firstName} ${a.lastName}`;
+        }
+      } catch (e) { /* fall back to displayName/email */ }
       document.getElementById('userName').textContent = name;
       document.getElementById('welcomeName').textContent = name;
-    }
 
-    function openTool(key) {
+      // Show admin tile if applicable
+      if (isAdmin(user.email)) {
+        const adminCard = document.getElementById('adminCard');
+        if (adminCard) adminCard.style.display = '';
+      }
+    });
+
+    window.openTool = function(key) {
       const tool = TOOLS[key];
       if (!tool) return;
       document.getElementById('iframeTitle').textContent = tool.title;
@@ -355,18 +384,22 @@
       document.getElementById('dashboardView').classList.add('hidden');
       document.getElementById('iframeView').classList.add('active');
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    };
 
-    function showDashboard() {
+    window.showDashboard = function() {
       document.getElementById('iframeView').classList.remove('active');
       document.getElementById('dashboardView').classList.remove('hidden');
       document.getElementById('toolFrame').src = 'about:blank';
-    }
+    };
 
-    function logout() {
-      localStorage.removeItem('exceed_session_v1');
+    window.openAdmin = function() {
+      window.location.href = 'admin.html';
+    };
+
+    window.logout = async function() {
+      try { await signOut(auth); } catch (e) {}
       window.location.href = 'index.html';
-    }
+    };
   </script>
 </body>
 </html>

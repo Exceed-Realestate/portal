@@ -876,7 +876,18 @@
     </div>
   </div>
 
-  <script>
+  <script type="module">
+    import { auth, db } from './firebase-init.js';
+    import {
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      onAuthStateChanged,
+      updateProfile
+    } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+    import {
+      doc, setDoc, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
     // ----- i18n -----
     const i18n = {
       ja: {
@@ -912,10 +923,13 @@
         toastLoginInvalid: 'メールアドレスまたはパスワードが正しくありません。',
         toastLoginSuccess: 'ログイン成功。ダッシュボードへ移動中...',
         toastClientSoon: 'クライアントログインは近日公開。',
+        toastEmailInUse: 'このメールアドレスは既に登録されています。',
+        toastWeakPassword: 'パスワードは6文字以上で設定してください。',
+        toastNetwork: 'ネットワークエラーが発生しました。もう一度お試しください。',
         loginTitle: 'エージェントログイン',
         loginSub: '会社の認証情報でサインインしてください。',
         loginBtn: 'ログイン',
-        demoHint: 'デモアカウント: <code>demo@exceed-re.ae</code> / <code>demo1234</code>'
+        demoHint: '会社メールとパスワードでサインインしてください。'
       },
       en: {
         tagline: 'DUBAI · OFF-PLAN & RESALE',
@@ -950,10 +964,13 @@
         toastLoginInvalid: 'Email or password is incorrect.',
         toastLoginSuccess: 'Logged in. Redirecting…',
         toastClientSoon: 'Client login coming soon.',
+        toastEmailInUse: 'This email is already registered.',
+        toastWeakPassword: 'Password must be at least 6 characters.',
+        toastNetwork: 'Network error. Please try again.',
         loginTitle: 'Agent Login',
         loginSub: 'Sign in with your company credentials.',
         loginBtn: 'Sign In',
-        demoHint: 'Demo account: <code>demo@exceed-re.ae</code> / <code>demo1234</code>'
+        demoHint: 'Use your company email and password to sign in.'
       }
     };
 
@@ -1006,60 +1023,61 @@
       btn.addEventListener('click', () => setLang(btn.dataset.lang));
     });
 
-    // ----- Agent storage (localStorage demo backend) -----
-    const AGENTS_KEY = 'exceed_agents_v1';
-    const SESSION_KEY = 'exceed_session_v1';
-
-    function loadAgents() {
-      try { return JSON.parse(localStorage.getItem(AGENTS_KEY) || '{}'); }
-      catch { return {}; }
-    }
-    function saveAgents(agents) {
-      localStorage.setItem(AGENTS_KEY, JSON.stringify(agents));
-    }
-    function seedDemoAgent() {
-      const agents = loadAgents();
-      if (!agents['demo@exceed-re.ae']) {
-        agents['demo@exceed-re.ae'] = {
-          firstName: 'Demo', lastName: 'Agent',
-          email: 'demo@exceed-re.ae', phone: '+971 50 000 0000',
-          password: 'demo1234'
-        };
-        saveAgents(agents);
+    // ----- Auth state: if already logged in, hop to dashboard -----
+    onAuthStateChanged(auth, (user) => {
+      if (user && document.getElementById('loginModal').classList.contains('show')) {
+        // Closing login modal — handled in submitLogin
       }
-    }
+    });
 
     // ----- Login & register handlers -----
-    function handleLogin(role) {
+    window.handleLogin = function(role) {
       const dict = i18n[currentLang];
       if (role === 'agent') openLogin();
       else showToast(dict.toastClientSoon);
-    }
+    };
 
     function openLogin() {
       const m = document.getElementById('loginModal');
       m.classList.add('show');
       setTimeout(() => document.getElementById('loginEmail').focus(), 200);
     }
-    function closeLogin() {
+    window.closeLogin = function() {
       document.getElementById('loginModal').classList.remove('show');
+    };
+
+    function mapAuthError(code, dict) {
+      switch (code) {
+        case 'auth/email-already-in-use': return dict.toastEmailInUse;
+        case 'auth/weak-password': return dict.toastWeakPassword;
+        case 'auth/invalid-email':
+        case 'auth/invalid-credential':
+        case 'auth/wrong-password':
+        case 'auth/user-not-found': return dict.toastLoginInvalid;
+        case 'auth/network-request-failed': return dict.toastNetwork;
+        default: return dict.toastNetwork;
+      }
     }
 
-    function submitLogin(e) {
+    window.submitLogin = async function(e) {
       e.preventDefault();
       const dict = i18n[currentLang];
       const email = document.getElementById('loginEmail').value.trim().toLowerCase();
       const pwd = document.getElementById('loginPassword').value;
-      if (!/^[^@\s]+@exceed-re\.ae$/.test(email)) { showToast(dict.toastDomain); return; }
-      const agents = loadAgents();
-      const agent = agents[email];
-      if (!agent || agent.password !== pwd) { showToast(dict.toastLoginInvalid); return; }
-      localStorage.setItem(SESSION_KEY, JSON.stringify({ email, loggedInAt: Date.now() }));
-      showToast(dict.toastLoginSuccess);
-      setTimeout(() => { window.location.href = 'agent.html'; }, 700);
-    }
+      const btn = e.target.querySelector('button[type=submit]');
+      btn.disabled = true;
+      try {
+        await signInWithEmailAndPassword(auth, email, pwd);
+        showToast(dict.toastLoginSuccess);
+        setTimeout(() => { window.location.href = 'agent.html'; }, 600);
+      } catch (err) {
+        showToast(mapAuthError(err.code, dict));
+      } finally {
+        btn.disabled = false;
+      }
+    };
 
-    function handleRegister(e) {
+    window.handleRegister = async function(e) {
       e.preventDefault();
       const dict = i18n[currentLang];
       const form = e.target;
@@ -1068,24 +1086,37 @@
       const allowed = /^[A-Za-z0-9._%+\-]+$/.test(local) && local.length > 0;
       if (!allowed) { showToast(dict.toastDomain); form.emailLocal.focus(); return; }
       if (!form.checkValidity()) { showToast(dict.toastFields); return; }
-      const agents = loadAgents();
       const code = form.countryCode.value;
-      agents[email] = {
-        firstName: form.firstName.value.trim(),
-        lastName: form.lastName.value.trim(),
-        email,
-        phone: code + ' ' + form.phoneNumber.value.trim(),
-        password: form.password.value
-      };
-      saveAgents(agents);
-      showToast(dict.toastSuccess);
-      fireConfetti();
-      form.reset();
-      // After a moment, collapse the form
-      setTimeout(() => toggleRegister(false), 1500);
-    }
+      const firstName = form.firstName.value.trim();
+      const lastName = form.lastName.value.trim();
+      const phone = code + ' ' + form.phoneNumber.value.trim();
+      const password = form.password.value;
+      const submitBtn = form.querySelector('button[type=submit]');
+      submitBtn.disabled = true;
+      try {
+        const cred = await createUserWithEmailAndPassword(auth, email, password);
+        await updateProfile(cred.user, { displayName: `${firstName} ${lastName}` });
+        await setDoc(doc(db, 'agents', cred.user.uid), {
+          firstName, lastName, email, phone,
+          uid: cred.user.uid,
+          status: 'active',
+          createdAt: serverTimestamp()
+        });
+        showToast(dict.toastSuccess);
+        fireConfetti();
+        form.reset();
+        setTimeout(() => {
+          toggleRegister(false);
+          window.location.href = 'agent.html';
+        }, 1500);
+      } catch (err) {
+        showToast(mapAuthError(err.code, dict));
+      } finally {
+        submitBtn.disabled = false;
+      }
+    };
 
-    function toggleRegister(force) {
+    window.toggleRegister = function(force) {
       const section = document.getElementById('registerSection');
       const btn = document.getElementById('registerToggle');
       const willOpen = (typeof force === 'boolean') ? force : !section.classList.contains('open');
@@ -1096,7 +1127,8 @@
       if (willOpen) {
         setTimeout(() => section.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80);
       }
-    }
+    };
+    const toggleRegister = window.toggleRegister;
 
     // Close modal on ESC
     document.addEventListener('keydown', e => {
@@ -1136,38 +1168,18 @@
     }
 
     // ----- Card hover spotlight -----
-    function cardMove(e, el) {
+    window.cardMove = function(e, el) {
       const r = el.getBoundingClientRect();
       el.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
       el.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100) + '%');
-    }
-    function cardLeave(el) {
+    };
+    window.cardLeave = function(el) {
       el.style.removeProperty('--mx');
       el.style.removeProperty('--my');
-    }
-
-    // ----- Counter animation -----
-    function animateCount(el) {
-      const target = parseInt(el.dataset.count, 10);
-      const suffix = el.dataset.suffix || '';
-      const prefix = el.dataset.prefix || '';
-      const dur = 1400;
-      const start = performance.now();
-      function tick(now) {
-        const p = Math.min((now - start) / dur, 1);
-        const eased = 1 - Math.pow(1 - p, 3);
-        el.textContent = prefix + Math.floor(target * eased).toLocaleString() + suffix;
-        if (p < 1) requestAnimationFrame(tick);
-      }
-      requestAnimationFrame(tick);
-    }
-    function startCounters() {
-      document.querySelectorAll('.stat-num').forEach(animateCount);
-    }
+    };
 
     // ----- Init -----
     window.addEventListener('load', () => {
-      seedDemoAgent();
       setLang('ja');
     });
     window.addEventListener('resize', positionPill);
