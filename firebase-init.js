@@ -16,10 +16,10 @@ export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
-// Edit this list to grant admin access (can view all registered agents).
-// Admin accounts must be created manually via Firebase Console → Authentication → Add user.
+// Edit this list to grant admin access (can view all registered agents,
+// approve/suspend agents, and view/edit customers).
 export const ADMIN_EMAILS = [
-  'balrajsinghkalra@gmail.com',
+  'balraj@exceed-re.ae',
   'admin@exceed-re.ae'
 ];
 
