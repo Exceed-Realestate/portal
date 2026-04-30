@@ -399,6 +399,73 @@ tbody tr:hover { background: rgba(255,255,255,0.04) !important; }
 }
 
 /* =====================================================================
+   THEMED CARD BACKGROUNDS
+   Each tool card gets its own atmospheric layered background — a tinted
+   radial glow + a giant ghosted SVG icon hinting at the card's purpose.
+   Layered as multiple backgrounds on the card itself; specular ::before
+   and lens ::after still work on top.
+   ===================================================================== */
+
+/* 1. CUSTOMER REGISTER — warm amber, pen-on-paper glow */
+.tool-card.theme-customer-register {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.03) 100%),
+    radial-gradient(60% 70% at 75% 30%, rgba(212,184,122,0.32) 0%, transparent 70%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><g fill='none' stroke='%23d4b87a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' opacity='0.18'><path d='M120 170v-16c0-18-14-32-32-32H56c-18 0-32 14-32 32v16'/><circle cx='72' cy='66' r='28'/><line x1='160' y1='80' x2='160' y2='128'/><line x1='184' y1='104' x2='136' y2='104'/></g></svg>") right -28px bottom -28px / 240px no-repeat,
+    linear-gradient(135deg, rgba(10,31,61,0.92), rgba(5,20,40,0.96)) !important;
+}
+
+/* 2. IRR — ascending gold chart */
+.tool-card.theme-irr {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.03) 100%),
+    radial-gradient(70% 80% at 85% 25%, rgba(212,184,122,0.34) 0%, transparent 70%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 110'><polyline points='10,98 45,80 80,62 115,40 150,22 200,8' fill='none' stroke='%23d4b87a' stroke-width='2.5' opacity='0.30' stroke-linecap='round' stroke-linejoin='round'/><circle cx='200' cy='8' r='4' fill='%23f1ead8' opacity='0.55'/></svg>") right 8% bottom 22% / 320px 160px no-repeat,
+    linear-gradient(135deg, rgba(10,31,61,0.92), rgba(5,20,40,0.96)) !important;
+}
+
+/* 3. LISTINGS — architectural blueprint */
+.tool-card.theme-listings {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.03) 100%),
+    radial-gradient(60% 70% at 30% 30%, rgba(23,54,99,0.55) 0%, transparent 70%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><g fill='none' stroke='%23d4b87a' stroke-width='1.5' opacity='0.20'><rect x='30' y='30' width='140' height='140'/><line x1='90' y1='30' x2='90' y2='100'/><line x1='90' y1='100' x2='170' y2='100'/><line x1='30' y1='130' x2='90' y2='130'/><line x1='130' y1='100' x2='130' y2='170'/><circle cx='90' cy='100' r='3' fill='%23d4b87a'/></g></svg>") right -25px bottom -25px / 240px no-repeat,
+    linear-gradient(135deg, rgba(10,31,61,0.92), rgba(5,20,40,0.96)) !important;
+}
+
+/* 4. LEADS — funnel of light */
+.tool-card.theme-leads {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.03) 100%),
+    radial-gradient(45% 60% at 50% 0%, rgba(212,184,122,0.35) 0%, transparent 75%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><g fill='none' stroke='%23d4b87a' stroke-width='1.8' opacity='0.22'><path d='M30 40 L170 40 L120 110 L120 170 L80 170 L80 110 Z'/></g></svg>") right -10px center / 200px no-repeat,
+    linear-gradient(135deg, rgba(10,31,61,0.92), rgba(5,20,40,0.96)) !important;
+}
+
+/* 5. AGENTS — silhouette of person, gold corner glow */
+.tool-card.theme-agents {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.03) 100%),
+    radial-gradient(70% 80% at 80% 30%, rgba(212,184,122,0.30) 0%, transparent 70%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><g fill='none' stroke='%23d4b87a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' opacity='0.22'><path d='M140 175v-13c0-13-11-24-24-24H80c-13 0-24 11-24 24v13'/><circle cx='98' cy='84' r='22'/><path d='M170 175v-13c0-11-7-20-17-23'/><path d='M132 50a22 22 0 0 1 0 43'/></g></svg>") right -20px bottom -20px / 220px no-repeat,
+    linear-gradient(135deg, rgba(10,31,61,0.92), rgba(5,20,40,0.96)) !important;
+}
+
+/* 6. CUSTOMERS — group / handshake silhouettes */
+.tool-card.theme-customers {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.03) 100%),
+    radial-gradient(60% 70% at 25% 35%, rgba(212,184,122,0.30) 0%, transparent 70%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><g fill='none' stroke='%23d4b87a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' opacity='0.22'><path d='M170 175v-13c0-13-11-24-24-24h-32c-13 0-24 11-24 24v13'/><circle cx='130' cy='84' r='22'/><path d='M30 175v-13c0-11 7-20 17-23'/><path d='M68 50a22 22 0 0 0 0 43'/></g></svg>") right -20px bottom -20px / 220px no-repeat,
+    linear-gradient(135deg, rgba(10,31,61,0.92), rgba(5,20,40,0.96)) !important;
+}
+
+/* On hover, slightly intensify the colored glow on themed cards */
+.tool-card[class*="theme-"]:not(.disabled):hover {
+  filter: saturate(1.15) brightness(1.06);
+}
+
+/* =====================================================================
    3D LIQUID GLASS — cursor-tracking lens, tilt, edge highlights.
    Auto-applied via glass-fx.js to .login-btn, .tool-card, .btn,
    .btn-primary, .lang-toggle button, .register-toggle, .modal,
