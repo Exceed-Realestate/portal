@@ -4,6 +4,41 @@
    refractive backdrop blur, and floating glass elements.
    ===================================================================== */
 
+/* Body must be transparent on every page so the skyline shows through.
+   Each page should include .bg-skyline + .bg-overlay divs as the first
+   children of <body>. */
+body { background: transparent !important; }
+html { background: #051428; }
+
+/* Shared backdrop layers (login + every dashboard page) */
+.bg-skyline {
+  position: fixed; inset: 0; z-index: -3;
+  background-image: url('skyline.jpg');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+}
+.bg-overlay {
+  position: fixed; inset: 0; z-index: -2;
+  background:
+    radial-gradient(80% 50% at 50% 40%, transparent 0%, rgba(5,20,40,0.35) 100%),
+    linear-gradient(180deg, rgba(5,20,40,0.30) 0%, rgba(5,20,40,0.10) 35%, rgba(5,20,40,0.55) 100%);
+}
+
+/* On dashboard / admin pages we want the photo to feel like an ambient
+   environment (not the hero). Body class .dashboard-bg makes the skyline
+   heavier-blurred + darker so tables and forms read cleanly. */
+body.dashboard-bg .bg-skyline {
+  filter: blur(28px) brightness(0.55) saturate(0.9);
+  transform: scale(1.1); /* hide blur edge artifacts */
+}
+body.dashboard-bg .bg-overlay {
+  background:
+    radial-gradient(80% 50% at 50% 40%, transparent 0%, rgba(5,20,40,0.55) 100%),
+    linear-gradient(180deg, rgba(5,20,40,0.55) 0%, rgba(5,20,40,0.45) 35%, rgba(5,20,40,0.75) 100%);
+}
+
+
 :root {
   /* ---- Glass tokens ---- */
   --glass-bg-soft:    linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.03) 100%);
