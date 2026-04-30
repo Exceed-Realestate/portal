@@ -364,6 +364,139 @@ tbody tr:hover { background: rgba(255,255,255,0.04) !important; }
 }
 
 /* =====================================================================
+   3D LIQUID GLASS — cursor-tracking lens, tilt, edge highlights.
+   Auto-applied via glass-fx.js to .login-btn, .tool-card, .btn,
+   .btn-primary, .lang-toggle button, .register-toggle, .modal,
+   and anything with .glass-3d class.
+   ===================================================================== */
+.glass-3d,
+.login-btn,
+.tool-card:not(.disabled),
+.btn,
+.btn-primary,
+.register-toggle,
+.icon-btn {
+  position: relative;
+  transform-style: preserve-3d;
+  transform:
+    perspective(1200px)
+    rotateX(var(--rx, 0deg))
+    rotateY(var(--ry, 0deg))
+    translateZ(0);
+  transition: transform .35s cubic-bezier(.2,.8,.2,1),
+              box-shadow .35s cubic-bezier(.2,.8,.2,1),
+              border-color .25s ease,
+              background .25s ease;
+  will-change: transform;
+}
+
+/* Lens highlight that follows the cursor (bright bloom on the glass) */
+.glass-3d::after,
+.login-btn::after,
+.tool-card:not(.disabled)::after,
+.btn::after,
+.btn-primary::after,
+.register-toggle::after,
+.icon-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(
+      circle 220px at var(--mx, 50%) var(--my, 50%),
+      rgba(255,255,255,0.32) 0%,
+      rgba(255,255,255,0.10) 25%,
+      transparent 55%
+    );
+  opacity: 0;
+  transition: opacity .45s ease;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  z-index: 2;
+}
+.glass-3d:hover::after,
+.login-btn:hover::after,
+.tool-card:not(.disabled):hover::after,
+.btn:hover::after,
+.btn-primary:hover::after,
+.register-toggle:hover::after,
+.icon-btn:hover::after {
+  opacity: 1;
+}
+
+/* Stronger top-edge specular when hovering (the rim of light) */
+.login-btn:hover,
+.tool-card:not(.disabled):hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.45),
+    inset 0 0 0 1px rgba(255,255,255,0.10),
+    0 24px 60px -12px rgba(0,0,0,0.55),
+    0 0 60px -10px rgba(241,234,216,0.20);
+}
+
+/* Primary gold buttons get a warm glow on hover */
+.btn-primary:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.55),
+    0 18px 42px -8px rgba(212,184,122,0.55),
+    0 0 50px -10px rgba(241,234,216,0.30);
+}
+
+/* Inner refractive ring — fakes the bend of light at the glass edge */
+.login-btn::before,
+.tool-card:not(.disabled)::before {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.14) 0%, transparent 100%),
+    radial-gradient(
+      ellipse 140% 60% at var(--mx, 50%) -10%,
+      rgba(255,255,255,0.18) 0%,
+      transparent 60%
+    ) !important;
+}
+
+/* Children of glass-3d should sit above the lens layer */
+.glass-3d > *,
+.login-btn > *,
+.tool-card > *,
+.btn > *,
+.btn-primary > *,
+.register-toggle > *,
+.icon-btn > * {
+  position: relative;
+  z-index: 3;
+}
+
+/* Cursor lift micro-interaction (replaces the old hard translateY) */
+.login-btn:hover,
+.tool-card:not(.disabled):hover {
+  transform:
+    perspective(1200px)
+    rotateX(var(--rx, 0deg))
+    rotateY(var(--ry, 0deg))
+    translateZ(8px);
+}
+
+/* When the cursor leaves, glass returns to rest with a smooth ease */
+.glass-3d, .login-btn, .tool-card, .btn, .btn-primary,
+.register-toggle, .icon-btn {
+  transition-property: transform, box-shadow, border-color, background;
+}
+
+/* Reduce motion accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .glass-3d, .login-btn, .tool-card, .btn, .btn-primary,
+  .register-toggle, .icon-btn {
+    transform: none !important;
+    transition: background .2s ease, border-color .2s ease, box-shadow .2s ease !important;
+  }
+  .glass-3d::after, .login-btn::after, .tool-card::after,
+  .btn::after, .btn-primary::after, .register-toggle::after, .icon-btn::after {
+    display: none;
+  }
+}
+
+/* =====================================================================
    Subtle animated noise to add organic texture (optional, very faint)
    ===================================================================== */
 .glass-noise::after {
