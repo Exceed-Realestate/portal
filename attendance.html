@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Attendance — Exceed Real Estate</title>
+  <link rel="icon" type="image/jpeg" href="logo.jpg">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@500;600&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="liquid.css">
+  <style>
+    :root { --navy-0:#051428; --navy-1:#0a1f3d; --navy-2:#102a4f; --line:rgba(255,255,255,0.10); --line-strong:rgba(255,255,255,0.18); --text:#f5f7fb; --muted:#9aa8c2; --gold:#d4b87a; --cream:#f1ead8; --green:#5cc98f; --amber:#ffb84a; --red:#ff7a78; --radius:14px; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    html { background: var(--navy-0); }
+    body { font-family: 'Noto Sans JP', 'Inter', sans-serif; background: radial-gradient(1100px 600px at 80% -10%, rgba(212,184,122,0.08), transparent 60%), radial-gradient(900px 700px at -10% 110%, rgba(23,54,99,0.6), transparent 60%), var(--navy-0); color: var(--text); min-height: 100vh; }
+
+    .topbar { display: flex; align-items: center; justify-content: space-between; padding: 16px 32px; border-bottom: 1px solid var(--line); backdrop-filter: blur(8px); background: rgba(5,20,40,0.7); position: sticky; top: 0; z-index: 10; }
+    .brand { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+    .brand img { width: 40px; height: 40px; border-radius: 8px; }
+    .brand-name { font-family: 'Playfair Display', serif; letter-spacing: 2px; font-weight: 600; }
+    .brand-name span { color: var(--gold); font-weight: 400; }
+    .topbar-right { display: flex; align-items: center; gap: 14px; color: var(--muted); font-size: 13px; }
+    .topbar-right strong { color: var(--cream); font-weight: 600; }
+    .icon-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--line); color: var(--text); padding: 8px 14px; border-radius: 8px; cursor: pointer; font-family: inherit; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; transition: background .2s; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
+    .icon-btn:hover { background: rgba(255,255,255,0.1); }
+    .icon-btn svg { width: 14px; height: 14px; }
+
+    .page-head { max-width: 1200px; margin: 0 auto; padding: 36px 32px 0; }
+    .page-head .eyebrow { color: var(--gold); letter-spacing: 5px; font-size: 11px; text-transform: uppercase; margin-bottom: 10px; }
+    .page-head h1 { font-family: 'Playfair Display', 'Noto Serif JP', serif; font-weight: 600; font-size: clamp(30px, 4.5vw, 44px); margin: 0 0 8px; }
+    .page-head .lede { color: var(--muted); font-size: 14px; max-width: 720px; margin: 0; line-height: 1.6; }
+
+    main { max-width: 1200px; margin: 0 auto; padding: 28px 32px 80px; display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr); gap: 22px; }
+    @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+
+    .panel { background: linear-gradient(180deg, rgba(16,42,79,0.65), rgba(10,31,61,0.65)); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px; backdrop-filter: blur(14px); }
+    .panel h2 { font-family: 'Playfair Display', 'Noto Serif JP', serif; font-size: 20px; font-weight: 600; margin: 0 0 4px; color: var(--cream); }
+    .panel .sub { color: var(--muted); font-size: 13px; margin: 0 0 22px; line-height: 1.55; }
+
+    .controls { display: flex; gap: 12px; align-items: end; margin-bottom: 22px; flex-wrap: wrap; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label { font-size: 11px; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; font-weight: 600; }
+    .field input { background: rgba(5,20,40,0.7); border: 1px solid var(--line); border-radius: 8px; color: var(--text); padding: 11px 14px; font-family: inherit; font-size: 14px; outline: none; }
+    .field input:focus { border-color: var(--gold); }
+    .meeting-pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 9px 14px;
+      background: rgba(212,184,122,0.10);
+      border: 1px solid rgba(212,184,122,0.35);
+      color: var(--gold);
+      border-radius: 999px;
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .meeting-pill.not-monday { background: rgba(255,184,74,0.10); border-color: rgba(255,184,74,0.35); color: var(--amber); }
+
+    /* Member roll list */
+    .roll { display: flex; flex-direction: column; gap: 8px; }
+    .roll-item {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      transition: border-color .15s, background .15s;
+    }
+    .roll-item.set { border-color: rgba(212,184,122,0.35); }
+    .roll-avatar {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold), #8a6a30);
+      display: grid; place-items: center;
+      color: var(--navy-0);
+      font-family: 'Playfair Display', serif;
+      font-size: 14px;
+      font-weight: 700;
+      overflow: hidden;
+      position: relative;
+      flex: none;
+    }
+    .roll-avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .roll-meta { min-width: 0; }
+    .roll-name { font-family: 'Inter', 'Noto Sans JP', sans-serif; font-weight: 700; font-size: 14px; color: var(--cream); line-height: 1.2; }
+    .roll-role { font-size: 11px; color: var(--muted); margin-top: 3px; letter-spacing: 0.3px; }
+    .roll-buttons { display: flex; gap: 6px; }
+    .att-btn {
+      padding: 7px 13px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .12s;
+      min-width: 64px;
+    }
+    .att-btn:hover { background: rgba(255,255,255,0.08); color: var(--cream); }
+    .att-btn.present.on { background: rgba(92,201,143,0.18); border-color: var(--green); color: var(--green); }
+    .att-btn.late.on    { background: rgba(255,184,74,0.18); border-color: var(--amber); color: var(--amber); }
+    .att-btn.absent.on  { background: rgba(255,107,107,0.18); border-color: var(--red); color: var(--red); }
+
+    .save-row { display: flex; gap: 12px; margin-top: 22px; align-items: center; flex-wrap: wrap; }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--cream), var(--gold));
+      color: var(--navy-0);
+      border: none;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      font-family: inherit;
+      transition: transform .15s, box-shadow .2s;
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 12px 28px -10px rgba(212,184,122,.5); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .save-status { font-size: 12px; color: var(--muted); }
+    .save-status.saved { color: var(--green); }
+    .save-status.error { color: var(--red); }
+
+    /* Summary panel */
+    .seg { display: inline-flex; background: rgba(5,20,40,0.7); border: 1px solid var(--line); border-radius: 999px; padding: 4px; gap: 4px; margin-bottom: 18px; }
+    .seg button { padding: 8px 16px; background: transparent; border: none; color: var(--muted); font-family: inherit; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; border-radius: 999px; transition: all .12s; }
+    .seg button.active { background: linear-gradient(135deg, var(--cream), var(--gold)); color: var(--navy-0); }
+    .seg button:not(.active):hover { color: var(--cream); }
+
+    .summary-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .summary-table th { text-align: left; padding: 10px 8px; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); font-weight: 700; border-bottom: 1px solid var(--line); }
+    .summary-table td { padding: 12px 8px; border-bottom: 1px dashed var(--line); }
+    .summary-table tr:last-child td { border-bottom: none; }
+    .summary-table .who { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .summary-table .who-avatar { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), #8a6a30); color: var(--navy-0); font-family: 'Playfair Display', serif; font-size: 11px; font-weight: 700; display: grid; place-items: center; flex: none; overflow: hidden; position: relative; }
+    .summary-table .who-avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .summary-table .num { font-family: ui-monospace, monospace; font-variant-numeric: tabular-nums; font-weight: 700; }
+    .summary-table .num.green  { color: var(--green); }
+    .summary-table .num.amber  { color: var(--amber); }
+    .summary-table .num.red    { color: var(--red); }
+    .rate-bar { display: inline-block; width: 60px; height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; vertical-align: middle; margin-right: 8px; }
+    .rate-bar > span { display: block; height: 100%; background: linear-gradient(90deg, var(--green), var(--amber)); }
+
+    .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(120%); background: rgba(16,42,79,0.95); border: 1px solid var(--gold); color: var(--text); padding: 14px 22px; border-radius: 10px; font-size: 14px; transition: transform .35s cubic-bezier(.34,1.56,.64,1); z-index: 200; backdrop-filter: blur(10px); }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .empty-state { text-align: center; padding: 30px 20px; color: var(--muted); font-size: 13px; line-height: 1.5; border: 1px dashed var(--line); border-radius: 10px; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand" onclick="window.location.href='agent.html'">
+      <img src="logo.jpg" alt="Exceed" />
+      <div class="brand-name">EXCEED <span>REAL ESTATE</span></div>
+    </div>
+    <div class="topbar-right">
+      <a class="icon-btn" href="agent.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        <span>Dashboard</span>
+      </a>
+      <span>Hi, <strong id="userName">—</strong></span>
+    </div>
+  </header>
+
+  <div class="page-head">
+    <div class="eyebrow">Monday Morning Briefing</div>
+    <h1>Attendance</h1>
+    <p class="lede">Track who attended the Monday team briefing. Restricted in production to Balraj, Malik & Shoya — full access during dev. Dubai-based members are listed below; others are filtered out automatically.</p>
+  </div>
+
+  <main>
+    <!-- LEFT: today's roll -->
+    <section class="panel">
+      <h2>Today's roll-call</h2>
+      <p class="sub">Pick the meeting date (defaults to the most recent Monday). Mark each member <strong style="color:var(--green)">Present</strong>, <strong style="color:var(--amber)">Late</strong>, or <strong style="color:var(--red)">Absent</strong>, then save.</p>
+
+      <div class="controls">
+        <div class="field">
+          <label>Meeting date</label>
+          <input type="date" id="meetDate" onchange="onDateChange()" />
+        </div>
+        <div class="meeting-pill" id="meetingPill">📅 Monday</div>
+      </div>
+
+      <div class="roll" id="roll"><div class="empty-state">Loading team…</div></div>
+
+      <div class="save-row">
+        <button class="btn-primary" id="saveBtn" onclick="saveAttendance()">Save attendance</button>
+        <span class="save-status" id="saveStatus"></span>
+        <button class="icon-btn" onclick="markAllPresent()">Mark all present</button>
+        <button class="icon-btn" onclick="clearAll()">Clear</button>
+      </div>
+    </section>
+
+    <!-- RIGHT: summary -->
+    <section class="panel">
+      <h2>Summary</h2>
+      <p class="sub">Attendance totals across the period.</p>
+
+      <div class="seg" id="periodSeg">
+        <button class="active" data-period="month" onclick="setPeriod('month')">This month</button>
+        <button data-period="quarter" onclick="setPeriod('quarter')">This quarter</button>
+        <button data-period="year" onclick="setPeriod('year')">YTD</button>
+      </div>
+
+      <div id="summaryWrap">
+        <table class="summary-table" id="summaryTable">
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th class="num">P</th>
+              <th class="num">L</th>
+              <th class="num">A</th>
+              <th>Rate</th>
+            </tr>
+          </thead>
+          <tbody id="summaryBody"><tr><td colspan="5" style="text-align:center;color:var(--muted);padding:30px">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script type="module">
+    import { auth, db, isAdmin } from './firebase-init.js';
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+    import { doc, getDoc, setDoc, collection, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+    // Sections whose members are considered Dubai-based
+    const DUBAI_SECTIONS = ['ceo', 'dubai-sales', 'dubai-office', 'way-office', 'marketing'];
+
+    let currentUser = null;
+    let TEAM_CFG = null;
+    let DUBAI_MEMBERS = [];   // [{ id, name, photo, role, section }]
+    let RECORDS = {};          // { memberId: 'present' | 'late' | 'absent' }
+    let CURRENT_DATE = '';
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(t._tm);
+      t._tm = setTimeout(() => t.classList.remove('show'), 2800);
+    }
+
+    async function loadTeamConfig() {
+      try {
+        const snap = await getDoc(doc(db, 'teamConfig', 'main'));
+        if (snap.exists()) TEAM_CFG = snap.data();
+      } catch (e) { console.warn('teamConfig load failed', e?.message); }
+    }
+
+    function buildDubaiList() {
+      DUBAI_MEMBERS = [];
+      if (!TEAM_CFG) return;
+      DUBAI_SECTIONS.forEach(sec => {
+        const arr = Array.isArray(TEAM_CFG[sec]) ? TEAM_CFG[sec] : [];
+        arr.forEach(m => {
+          if (!m || !m.name) return;
+          const id = (m.name + '|' + sec).toLowerCase().replace(/\s+/g, '-');
+          DUBAI_MEMBERS.push({
+            id,
+            name: m.name,
+            nameJa: m.nameJa || '',
+            photo: m.photo || '',
+            role: m.role || sec,
+            section: sec
+          });
+        });
+      });
+      // Dedupe by name (someone may appear in multiple sections)
+      const seen = new Set();
+      DUBAI_MEMBERS = DUBAI_MEMBERS.filter(m => {
+        const k = m.name.toLowerCase();
+        if (seen.has(k)) return false;
+        seen.add(k); return true;
+      });
+    }
+
+    function initials(s) { return (s || '').split(/\s+/).slice(0,2).map(x => x[0]).join('').toUpperCase(); }
+
+    function renderRoll() {
+      const wrap = document.getElementById('roll');
+      if (!DUBAI_MEMBERS.length) {
+        wrap.innerHTML = `<div class="empty-state">No Dubai-based members in the org chart yet. Add members to <strong>CEO / Dubai Sales / Dubai Office / Way Office / Marketing</strong> in Team Members → Edit Tree.</div>`;
+        return;
+      }
+      wrap.innerHTML = DUBAI_MEMBERS.map(m => {
+        const status = RECORDS[m.id] || '';
+        return `<div class="roll-item ${status ? 'set' : ''}" data-id="${m.id}">
+          <div class="roll-avatar">
+            ${m.photo ? `<img src="${m.photo}" alt="${m.name}" onerror="this.remove()" />` : ''}
+            <span style="position:relative;z-index:0">${initials(m.name)}</span>
+          </div>
+          <div class="roll-meta">
+            <div class="roll-name">${m.name}</div>
+            <div class="roll-role">${m.role}</div>
+          </div>
+          <div class="roll-buttons">
+            <button class="att-btn present ${status==='present'?'on':''}" onclick="setStatus('${m.id}','present')">Present</button>
+            <button class="att-btn late ${status==='late'?'on':''}" onclick="setStatus('${m.id}','late')">Late</button>
+            <button class="att-btn absent ${status==='absent'?'on':''}" onclick="setStatus('${m.id}','absent')">Absent</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    window.setStatus = function(id, status) {
+      if (RECORDS[id] === status) delete RECORDS[id];
+      else RECORDS[id] = status;
+      renderRoll();
+      document.getElementById('saveStatus').textContent = '';
+      document.getElementById('saveStatus').className = 'save-status';
+    };
+    window.markAllPresent = function() {
+      DUBAI_MEMBERS.forEach(m => RECORDS[m.id] = 'present');
+      renderRoll();
+    };
+    window.clearAll = function() {
+      RECORDS = {};
+      renderRoll();
+    };
+
+    // Find the most recent Monday on or before today
+    function lastMonday() {
+      const d = new Date();
+      const day = d.getDay(); // 0 Sun, 1 Mon, ..., 6 Sat
+      const offset = day === 0 ? 6 : day - 1;
+      d.setDate(d.getDate() - offset);
+      return d.toISOString().slice(0, 10);
+    }
+    function isMonday(dateStr) {
+      const d = new Date(dateStr + 'T00:00:00');
+      return d.getDay() === 1;
+    }
+
+    window.onDateChange = function() {
+      const v = document.getElementById('meetDate').value;
+      CURRENT_DATE = v;
+      const pill = document.getElementById('meetingPill');
+      if (isMonday(v)) {
+        pill.textContent = '📅 Monday meeting';
+        pill.classList.remove('not-monday');
+      } else {
+        const d = new Date(v + 'T00:00:00');
+        const dayName = d.toLocaleDateString('en-GB', { weekday: 'long' });
+        pill.textContent = `⚠ ${dayName} (not a Monday)`;
+        pill.classList.add('not-monday');
+      }
+      loadAttendanceForDate();
+    };
+
+    async function loadAttendanceForDate() {
+      RECORDS = {};
+      try {
+        const snap = await getDoc(doc(db, 'attendance', CURRENT_DATE));
+        if (snap.exists()) {
+          const data = snap.data();
+          RECORDS = data.records || {};
+          document.getElementById('saveStatus').textContent = `Loaded · last saved ${data.recordedAt?.toDate ? data.recordedAt.toDate().toLocaleString() : 'earlier'}`;
+          document.getElementById('saveStatus').className = 'save-status saved';
+        }
+      } catch (e) { console.warn('load attendance failed', e?.message); }
+      renderRoll();
+    }
+
+    window.saveAttendance = async function() {
+      if (!CURRENT_DATE) { showToast('Pick a date first.'); return; }
+      const btn = document.getElementById('saveBtn');
+      btn.disabled = true;
+      const status = document.getElementById('saveStatus');
+      status.textContent = 'Saving…'; status.className = 'save-status';
+      try {
+        await setDoc(doc(db, 'attendance', CURRENT_DATE), {
+          date: CURRENT_DATE,
+          meetingType: 'mon-briefing',
+          records: RECORDS,
+          recordedBy: currentUser?.uid || null,
+          recordedByEmail: currentUser?.email || null,
+          recordedAt: serverTimestamp()
+        });
+        status.textContent = '✓ Saved'; status.className = 'save-status saved';
+        showToast('Attendance saved.');
+        loadSummary();
+      } catch (e) {
+        console.error(e);
+        status.textContent = 'Save failed: ' + (e.message || e.code);
+        status.className = 'save-status error';
+      } finally {
+        btn.disabled = false;
+      }
+    };
+
+    let CURRENT_PERIOD = 'month';
+    window.setPeriod = function(p) {
+      CURRENT_PERIOD = p;
+      document.querySelectorAll('#periodSeg button').forEach(b => b.classList.toggle('active', b.dataset.period === p));
+      loadSummary();
+    };
+
+    function periodRange(p) {
+      const now = new Date();
+      const start = new Date(now);
+      if (p === 'month') start.setDate(1);
+      else if (p === 'quarter') {
+        const qStartMonth = Math.floor(now.getMonth() / 3) * 3;
+        start.setMonth(qStartMonth, 1);
+      } else if (p === 'year') {
+        start.setMonth(0, 1);
+      }
+      start.setHours(0, 0, 0, 0);
+      return { startStr: start.toISOString().slice(0, 10), endStr: now.toISOString().slice(0, 10) };
+    }
+
+    async function loadSummary() {
+      const tbody = document.getElementById('summaryBody');
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:30px">Loading…</td></tr>`;
+      const { startStr, endStr } = periodRange(CURRENT_PERIOD);
+      const totals = {};
+      DUBAI_MEMBERS.forEach(m => totals[m.id] = { p: 0, l: 0, a: 0 });
+      let meetingsCount = 0;
+      try {
+        const q = query(collection(db, 'attendance'), where('date', '>=', startStr), where('date', '<=', endStr));
+        const snap = await getDocs(q);
+        snap.forEach(d => {
+          meetingsCount++;
+          const recs = d.data().records || {};
+          Object.entries(recs).forEach(([id, status]) => {
+            if (!totals[id]) totals[id] = { p: 0, l: 0, a: 0 };
+            if (status === 'present') totals[id].p++;
+            else if (status === 'late')    totals[id].l++;
+            else if (status === 'absent')  totals[id].a++;
+          });
+        });
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--red);padding:30px">Couldn't load summary (${e.code || 'error'})</td></tr>`;
+        return;
+      }
+      if (!meetingsCount) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:30px">No meetings recorded in this period.</td></tr>`;
+        return;
+      }
+      const rows = DUBAI_MEMBERS.map(m => {
+        const t = totals[m.id] || { p:0, l:0, a:0 };
+        const total = t.p + t.l + t.a;
+        const rate = total ? Math.round(((t.p + t.l * 0.5) / total) * 100) : 0;
+        return `<tr>
+          <td>
+            <div class="who">
+              <div class="who-avatar">
+                ${m.photo ? `<img src="${m.photo}" alt="${m.name}" onerror="this.remove()" />` : ''}
+                <span style="position:relative;z-index:0">${initials(m.name)}</span>
+              </div>
+              <div>
+                <div style="color:var(--cream);font-weight:600;font-size:13px;line-height:1.2">${m.name}</div>
+                <div style="font-size:10px;color:var(--muted);margin-top:2px;letter-spacing:0.3px">${m.role}</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="num green">${t.p}</span></td>
+          <td><span class="num amber">${t.l}</span></td>
+          <td><span class="num red">${t.a}</span></td>
+          <td>
+            <span class="rate-bar"><span style="width:${rate}%"></span></span>
+            <span class="num" style="color:var(--cream)">${rate}%</span>
+          </td>
+        </tr>`;
+      }).join('');
+      tbody.innerHTML = rows + `<tr><td colspan="5" style="text-align:center;font-size:11px;color:var(--muted);padding:14px;letter-spacing:1px;text-transform:uppercase">${meetingsCount} meeting${meetingsCount===1?'':'s'} · ${startStr} → ${endStr}</td></tr>`;
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = 'index.html'; return; }
+      currentUser = user;
+      let firstName = (user.displayName || '').trim().split(/\s+/)[0];
+      if (!firstName && user.email) {
+        const local = user.email.split('@')[0].split(/[._-]/)[0];
+        firstName = local.charAt(0).toUpperCase() + local.slice(1);
+      }
+      document.getElementById('userName').textContent = firstName || 'Agent';
+
+      // Default to most recent Monday
+      const dateInput = document.getElementById('meetDate');
+      dateInput.value = lastMonday();
+      CURRENT_DATE = dateInput.value;
+      onDateChange();
+
+      await loadTeamConfig();
+      buildDubaiList();
+      renderRoll();
+      await loadAttendanceForDate();
+      loadSummary();
+    });
+  </script>
+</body>
+</html>

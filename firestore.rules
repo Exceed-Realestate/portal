@@ -42,6 +42,14 @@ service cloud.firestore {
       allow delete: if isAdminEmail();
     }
 
+    // ------- Attendance (Mon-morning briefing roll-call) -------
+    match /attendance/{date} {
+      allow read: if isSignedIn();
+      // For now any signed-in user can record (will tighten to specific
+      // emails — Balraj/Malik/Shoya — when registration lands).
+      allow write: if isSignedIn();
+    }
+
     // ------- Car bookings -------
     match /carBookings/{id} {
       allow read: if isSignedIn();
