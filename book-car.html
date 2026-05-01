@@ -519,8 +519,14 @@
         const ctx = c.getContext('2d');
         ctx.drawImage(img, 0, 0);
         const w = c.width - 1, h = c.height - 1;
-        // Sample 4 corners + 4 edges — if any are transparent, the image has true alpha.
-        const pts = [[0,0],[w,0],[0,h],[w,h],[w/2|0,0],[w,h/2|0],[w/2|0,h],[0,h/2|0]];
+        // Sample 4 corners + 4 edge midpoints + 4 interior 5%/95% corners — catches
+        // both edge-transparent silhouettes and tighter crops.
+        const pts = [
+          [0,0],[w,0],[0,h],[w,h],
+          [w/2|0,0],[w,h/2|0],[w/2|0,h],[0,h/2|0],
+          [(w*0.05)|0,(h*0.05)|0], [(w*0.95)|0,(h*0.05)|0],
+          [(w*0.05)|0,(h*0.95)|0], [(w*0.95)|0,(h*0.95)|0]
+        ];
         return pts.some(([x,y]) => ctx.getImageData(x, y, 1, 1).data[3] < 250);
       } catch { return false; }
     }
@@ -534,8 +540,9 @@
         const tmpl = document.getElementById(car + 'Svg');
         const useSvg = () => { if (tmpl) slot.innerHTML = tmpl.innerHTML; };
 
+        // Same-origin image — no crossOrigin attribute (setting it caused canvas
+        // taint when a cached non-CORS copy was reused, breaking imageHasAlpha()).
         const im = new Image();
-        im.crossOrigin = 'anonymous';
         im.onload = () => {
           if (imageHasAlpha(im)) {
             const tag = document.createElement('img');

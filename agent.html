@@ -639,21 +639,23 @@
       display: block;
       overflow: hidden;
     }
-    /* Themed background illustration per tile (sits behind content at low opacity) */
+    /* Themed background illustration per tile (sits behind content at moderate opacity) */
     .tile::before {
       content: '';
       position: absolute;
-      right: -20%; bottom: -25%;
-      width: 80%; height: 110%;
+      right: -10%; bottom: -15%;
+      width: 70%; height: 95%;
       background-image: var(--tile-bg, none);
       background-repeat: no-repeat;
       background-position: right bottom;
       background-size: contain;
-      opacity: 0.10;
+      opacity: 0.28;
       pointer-events: none;
       transition: opacity .25s, transform .35s ease;
+      z-index: 0;
     }
-    .tile:hover::before { opacity: 0.18; transform: translate(-6px, -4px) scale(1.04); }
+    .tile:hover::before { opacity: 0.45; transform: translate(-6px, -4px) scale(1.04); }
+    .tile > * { position: relative; z-index: 1; }
     /* Per-tool theme — SVG illustrations (URL-encoded inline data URIs) */
     .tile[data-key="customer-register"] { --tile-bg: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><g fill='none' stroke='%23d4b87a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='40' cy='40' r='14'/><path d='M16 84c0-13 11-22 24-22s24 9 24 22'/><circle cx='75' cy='30' r='9'/><path d='M58 60c8 0 17 5 17 14'/></g></svg>"); }
     .tile[data-key="irr"]                { --tile-bg: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><g fill='none' stroke='%23d4b87a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M10 80 L30 60 L50 70 L70 35 L90 20'/><circle cx='10' cy='80' r='3' fill='%23d4b87a'/><circle cx='30' cy='60' r='3' fill='%23d4b87a'/><circle cx='50' cy='70' r='3' fill='%23d4b87a'/><circle cx='70' cy='35' r='3' fill='%23d4b87a'/><circle cx='90' cy='20' r='4' fill='%23d4b87a'/><path d='M10 90 L90 90' opacity='.5'/></g></svg>"); }

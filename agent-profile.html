@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agent Profile — Exceed Real Estate</title>
+  <link rel="icon" type="image/jpeg" href="logo.jpg">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="liquid.css">
+  <style>
+    :root { --navy-0:#051428; --navy-1:#0a1f3d; --navy-2:#102a4f; --line:rgba(255,255,255,0.10); --line-strong:rgba(255,255,255,0.18); --text:#f5f7fb; --muted:#9aa8c2; --gold:#d4b87a; --cream:#f1ead8; --green:#5cc98f; --amber:#ffb84a; --red:#ff7a78; --wa:#25d366; --radius:16px; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    html { background: var(--navy-0); }
+    body { font-family: 'Noto Sans JP', 'Inter', sans-serif; background: radial-gradient(1100px 600px at 80% -10%, rgba(212,184,122,0.10), transparent 60%), radial-gradient(900px 700px at -10% 110%, rgba(23,54,99,0.7), transparent 60%), var(--navy-0); color: var(--text); min-height: 100vh; }
+
+    .topbar { display: flex; align-items: center; justify-content: space-between; padding: 16px 32px; border-bottom: 1px solid var(--line); backdrop-filter: blur(8px); background: rgba(5,20,40,0.7); position: sticky; top: 0; z-index: 10; }
+    .brand { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+    .brand img { width: 40px; height: 40px; border-radius: 8px; }
+    .brand-name { font-family: 'Playfair Display', serif; letter-spacing: 2px; font-weight: 600; }
+    .brand-name span { color: var(--gold); font-weight: 400; }
+    .topbar-right { display: flex; align-items: center; gap: 14px; color: var(--muted); font-size: 13px; }
+    .icon-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--line); color: var(--text); padding: 8px 14px; border-radius: 8px; cursor: pointer; font-family: inherit; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; transition: background .2s; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
+    .icon-btn:hover { background: rgba(255,255,255,0.1); }
+    .icon-btn svg { width: 14px; height: 14px; }
+
+    main { max-width: 1280px; margin: 0 auto; padding: 28px 32px 80px; }
+
+    /* HERO */
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      gap: 24px;
+      margin-bottom: 22px;
+    }
+    @media (max-width: 900px) { .hero { grid-template-columns: 1fr; } }
+
+    .hero-left {
+      position: relative;
+      background:
+        radial-gradient(ellipse 80% 70% at 70% 30%, rgba(212,184,122,0.18), transparent 60%),
+        linear-gradient(135deg, rgba(16,42,79,0.85), rgba(10,31,61,0.85));
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 40px;
+      backdrop-filter: blur(14px);
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 30px;
+      align-items: center;
+    }
+    @media (max-width: 600px) { .hero-left { grid-template-columns: 1fr; padding: 28px; gap: 18px; } }
+
+    .hero-photo {
+      width: clamp(140px, 24vw, 220px);
+      height: clamp(180px, 30vw, 280px);
+      position: relative;
+      filter: drop-shadow(0 18px 36px rgba(0,0,0,.55)) drop-shadow(0 0 36px rgba(212,184,122,0.30));
+    }
+    .hero-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: bottom center; }
+    .hero-photo-fallback {
+      width: 100%; height: 100%;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold), #8a6a30);
+      display: grid; place-items: center;
+      color: var(--navy-0);
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(40px, 5vw, 64px);
+      font-weight: 700;
+    }
+
+    .hero-meta { min-width: 0; }
+    .hero-eyebrow { color: var(--gold); font-size: 11px; letter-spacing: 4px; text-transform: uppercase; font-weight: 700; margin-bottom: 10px; }
+    .hero-name {
+      font-family: 'Playfair Display', 'Noto Serif JP', serif;
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 600;
+      letter-spacing: -0.5px;
+      line-height: 1.05;
+      color: var(--cream);
+      margin: 0 0 6px;
+    }
+    .hero-name-ja { font-family: 'Noto Sans JP', sans-serif; color: var(--muted); font-size: 14px; margin-bottom: 14px; }
+    .hero-role {
+      font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--gold); font-weight: 700; margin-bottom: 18px;
+    }
+    .hero-contact { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+    .hero-contact-row { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--cream); }
+    .hero-contact-row svg { width: 14px; height: 14px; color: var(--muted); flex: none; }
+    .hero-contact-row a { color: inherit; text-decoration: none; }
+    .hero-contact-row a:hover { color: var(--gold); }
+    .hero-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .pill-btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 9px 14px;
+      border-radius: 999px;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      text-decoration: none;
+      border: 1px solid;
+      transition: all .15s;
+      cursor: pointer;
+    }
+    .pill-btn svg { width: 13px; height: 13px; }
+    .pill-btn.wa   { background: rgba(37,211,102,0.14); border-color: rgba(37,211,102,0.4); color: #5ee896; }
+    .pill-btn.wa:hover   { background: var(--wa); color: #fff; }
+    .pill-btn.tel  { background: rgba(122,167,255,0.12); border-color: rgba(122,167,255,0.35); color: #a8c8ff; }
+    .pill-btn.tel:hover  { background: rgba(122,167,255,0.3); color: #fff; }
+    .pill-btn.mail { background: rgba(212,184,122,0.12); border-color: rgba(212,184,122,0.35); color: var(--gold); }
+    .pill-btn.mail:hover { background: var(--gold); color: var(--navy-0); }
+
+    /* HERO RIGHT: Achievement card */
+    .hero-right {
+      display: grid;
+      grid-template-rows: auto auto auto;
+      gap: 12px;
+    }
+    .stat-card {
+      background: linear-gradient(180deg, rgba(16,42,79,0.85), rgba(10,31,61,0.85));
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 22px;
+      backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card.gold {
+      background: linear-gradient(135deg, rgba(212,184,122,0.18), rgba(255,209,102,0.05));
+      border-color: rgba(212,184,122,0.4);
+    }
+    .stat-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+    .stat-label svg { width: 14px; height: 14px; color: var(--gold); }
+    .stat-value { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 700; color: var(--cream); line-height: 1; letter-spacing: -0.5px; }
+    .stat-value .unit { font-size: 14px; color: var(--gold); margin-left: 6px; font-family: 'Inter', sans-serif; font-weight: 600; }
+    .stat-trend { font-size: 11px; color: var(--green); margin-top: 6px; letter-spacing: 0.5px; }
+    .stat-trend.down { color: var(--red); }
+
+    /* SECTION GRID */
+    .section-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      gap: 22px;
+      margin-bottom: 22px;
+    }
+    @media (max-width: 900px) { .section-grid { grid-template-columns: 1fr; } }
+    .section {
+      background: linear-gradient(180deg, rgba(16,42,79,0.65), rgba(10,31,61,0.65));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 26px;
+      backdrop-filter: blur(14px);
+    }
+    .section h2 { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 600; margin: 0 0 4px; color: var(--cream); }
+    .section .sub { color: var(--muted); font-size: 12px; margin: 0 0 18px; line-height: 1.5; }
+
+    /* Revenue bar chart */
+    .rev-chart { width: 100%; height: 200px; display: block; }
+    .rev-bar { fill: url(#barGradient); transition: fill .15s; }
+    .rev-bar:hover { fill: var(--gold); }
+    .rev-axis { stroke: rgba(255,255,255,0.08); stroke-width: 1; }
+    .rev-label { font-family: 'Inter', sans-serif; font-size: 9px; fill: var(--muted); letter-spacing: 0.5px; text-transform: uppercase; }
+    .rev-value { font-family: ui-monospace, monospace; font-size: 9px; fill: var(--gold); font-weight: 700; }
+
+    /* Skills radar */
+    .skills-wrap { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+    @media (max-width: 600px) { .skills-wrap { flex-direction: column; align-items: stretch; } }
+    .radar { width: 240px; height: 240px; flex: none; }
+    .radar-grid { stroke: rgba(255,255,255,0.08); stroke-width: 1; fill: none; }
+    .radar-axis { stroke: rgba(255,255,255,0.06); stroke-width: 1; }
+    .radar-shape { fill: rgba(212,184,122,0.25); stroke: var(--gold); stroke-width: 2; stroke-linejoin: round; }
+    .radar-point { fill: var(--gold); }
+    .radar-label { font-family: 'Inter', sans-serif; font-size: 10px; fill: var(--cream); font-weight: 600; }
+    .skills-list { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+    .skill-row { display: flex; flex-direction: column; gap: 4px; }
+    .skill-head { display: flex; justify-content: space-between; align-items: baseline; }
+    .skill-name { font-size: 12px; color: var(--cream); font-weight: 600; }
+    .skill-pct { font-family: ui-monospace, monospace; font-size: 11px; color: var(--gold); font-weight: 700; font-variant-numeric: tabular-nums; }
+    .skill-bar { height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; }
+    .skill-bar > span { display: block; height: 100%; background: linear-gradient(90deg, #8a6a30, var(--gold), #ffd166); border-radius: 3px; transition: width .8s cubic-bezier(.34,1.56,.64,1); }
+
+    /* Achievements / Languages */
+    .chip-list { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 13px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-size: 12px;
+      color: var(--cream);
+      font-weight: 500;
+    }
+    .chip.gold { background: rgba(212,184,122,0.12); border-color: rgba(212,184,122,0.4); color: var(--gold); }
+    .chip svg { width: 12px; height: 12px; }
+
+    .deals-list { display: flex; flex-direction: column; gap: 8px; }
+    .deal-row {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 14px;
+      padding: 12px 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      align-items: center;
+    }
+    .deal-row .amt { font-family: ui-monospace, monospace; color: var(--gold); font-weight: 700; font-size: 13px; }
+    .deal-row .meta { color: var(--cream); font-size: 13px; line-height: 1.3; min-width: 0; }
+    .deal-row .meta small { display: block; color: var(--muted); font-size: 11px; margin-top: 2px; }
+    .deal-row .when { font-size: 11px; color: var(--muted); }
+
+    .empty { text-align: center; padding: 30px 20px; color: var(--muted); font-size: 12px; line-height: 1.5; border: 1px dashed var(--line); border-radius: 10px; }
+
+    .data-note {
+      margin-top: 14px;
+      padding: 12px 14px;
+      background: rgba(212,184,122,0.06);
+      border: 1px dashed rgba(212,184,122,0.3);
+      border-radius: 10px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.5;
+    }
+    .data-note strong { color: var(--gold); }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand" onclick="window.location.href='agent.html'">
+      <img src="logo.jpg" alt="Exceed" />
+      <div class="brand-name">EXCEED <span>REAL ESTATE</span></div>
+    </div>
+    <div class="topbar-right">
+      <a class="icon-btn" href="team.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        <span>Org chart</span>
+      </a>
+      <a class="icon-btn" href="agent.html">
+        <span>Dashboard</span>
+      </a>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="empty" id="loading" style="margin-top:40px">Loading agent profile…</div>
+  </main>
+
+  <script type="module">
+    import { auth, db } from './firebase-init.js';
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+    // Default skill axes when an agent doesn't have explicit skill data yet
+    const DEFAULT_SKILLS = ['Luxury Apartments', 'Off-Plan / Primary', 'Resale / Secondary', 'Distressed Deals', 'Rentals', 'Penthouses'];
+
+    function flattenMembers(cfg) {
+      if (!cfg) return [];
+      const all = [];
+      Object.entries(cfg).forEach(([section, arr]) => {
+        if (Array.isArray(arr)) arr.forEach(m => { if (m && m.name) all.push({ ...m, _section: section }); });
+      });
+      return all;
+    }
+
+    function findMember(cfg, q) {
+      if (!q) return null;
+      const all = flattenMembers(cfg);
+      const norm = (s) => (s || '').trim().toLowerCase();
+      // Try exact match by name first, then partial
+      return all.find(m => norm(m.name) === norm(q))
+          || all.find(m => norm(m.name).includes(norm(q)))
+          || null;
+    }
+
+    function initials(s) { return (s || '').split(/\s+/).slice(0,2).map(x => x[0]).join('').toUpperCase() || '?'; }
+    function fmtAED(n) {
+      const v = Number(n) || 0;
+      if (v >= 1_000_000) return (v / 1_000_000).toFixed(v % 1_000_000 ? 2 : 0).replace(/\.?0+$/, '') + 'M';
+      if (v >= 1_000) return (v / 1_000).toFixed(0) + 'K';
+      return v.toLocaleString();
+    }
+
+    function renderHero(m, profile) {
+      const el = document.querySelector('main');
+      const role = m.role || m._section;
+      const phoneClean = (m.phone || '').replace(/[^\d+]/g, '').replace(/^\+/, '');
+      const wa = phoneClean ? `https://wa.me/${phoneClean}` : '';
+      const tel = m.phone ? `tel:${m.phone}` : '';
+      const mail = m.email ? `mailto:${m.email}` : '';
+
+      const totalRev = (profile.revenue || []).reduce((a, b) => a + (b.amount || 0), 0);
+      const dealCount = (profile.deals || []).length;
+      const achievement = profile.achievements?.[0] || 'New Member';
+
+      el.innerHTML = `
+        <section class="hero">
+          <div class="hero-left">
+            <div class="hero-photo">
+              ${m.photo
+                ? `<img src="${m.photo}" alt="${m.name}" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'hero-photo-fallback',textContent:'${initials(m.name)}'}))" />`
+                : `<div class="hero-photo-fallback">${initials(m.name)}</div>`}
+            </div>
+            <div class="hero-meta">
+              <div class="hero-eyebrow">Agent Profile</div>
+              <h1 class="hero-name">${m.name}</h1>
+              ${m.nameJa ? `<div class="hero-name-ja">${m.nameJa}</div>` : ''}
+              ${role ? `<div class="hero-role">${role}</div>` : ''}
+              <div class="hero-contact">
+                ${m.phoneDisplay || m.phone ? `<div class="hero-contact-row">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                  <a href="${tel}">${m.phoneDisplay || m.phone}</a>
+                </div>` : ''}
+                ${m.email ? `<div class="hero-contact-row">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                  <a href="${mail}">${m.email}</a>
+                </div>` : ''}
+              </div>
+              <div class="hero-actions">
+                ${wa ? `<a class="pill-btn wa" href="${wa}" target="_blank" rel="noopener">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.1-.2.3-.8.9-1 1.1-.2.2-.4.2-.6.1-.7-.4-1.5-.7-2.4-1.6-.7-.6-1.1-1.4-1.3-1.6-.1-.2 0-.3.1-.4.1-.1.2-.3.4-.4.1-.1.2-.2.2-.4.1-.2 0-.3 0-.4 0-.1-.6-1.5-.9-2-.2-.5-.5-.4-.7-.4h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4 0 1.4 1 2.8 1.2 3 .1.2 2 3.1 4.9 4.4.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.6-.1 1.7-.7 1.9-1.3.2-.7.2-1.2.2-1.3-.1-.1-.3-.2-.6-.3M12 2C6.5 2 2 6.5 2 12c0 1.9.5 3.7 1.5 5.3L2 22l4.8-1.3c1.5.8 3.3 1.3 5.2 1.3 5.5 0 10-4.5 10-10S17.5 2 12 2z"/></svg>
+                  WhatsApp
+                </a>` : ''}
+                ${tel ? `<a class="pill-btn tel" href="${tel}">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                  Call
+                </a>` : ''}
+                ${mail ? `<a class="pill-btn mail" href="${mail}">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                  Email
+                </a>` : ''}
+              </div>
+            </div>
+          </div>
+
+          <div class="hero-right">
+            <div class="stat-card gold">
+              <div class="stat-label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L15 8l7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z"/></svg>
+                Total revenue closed
+              </div>
+              <div class="stat-value">${totalRev ? fmtAED(totalRev) : '—'}<span class="unit">AED</span></div>
+              <div class="stat-trend">${totalRev ? '+ from ' + (profile.revenue || []).length + ' deals' : 'No deals recorded yet'}</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V21H3z"/><path d="M9 21V12h6v9"/></svg>
+                Properties closed
+              </div>
+              <div class="stat-value">${dealCount || '—'}</div>
+              <div class="stat-trend">${profile.dealsTrend || 'Lifetime'}</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M9 14l-1 7 4-3 4 3-1-7"/></svg>
+                Achievement
+              </div>
+              <div class="stat-value" style="font-size:22px">${achievement}</div>
+              <div class="stat-trend">${profile.achievements?.length ? profile.achievements.length + ' total' : 'Earn more by closing deals'}</div>
+            </div>
+          </div>
+        </section>
+
+        <div class="section-grid">
+          <section class="section" id="revSection">
+            <h2>📈 Revenue closed (monthly)</h2>
+            <p class="sub">Last 12 months. Hover any bar for the exact amount.</p>
+            <div id="revChart"></div>
+          </section>
+          <section class="section">
+            <h2>🌐 Languages</h2>
+            <p class="sub">Spoken at fluent / business level.</p>
+            <div class="chip-list">
+              ${(profile.languages || []).length
+                ? profile.languages.map(l => `<span class="chip">🗣 ${l}</span>`).join('')
+                : '<div class="empty" style="width:100%">Languages not yet recorded.</div>'}
+            </div>
+
+            <h2 style="margin-top:22px">🏆 Achievements</h2>
+            <p class="sub">Awards, milestones, certifications.</p>
+            <div class="chip-list">
+              ${(profile.achievements || []).length
+                ? profile.achievements.map(a => `<span class="chip gold">⭐ ${a}</span>`).join('')
+                : '<div class="empty" style="width:100%">No achievements logged yet.</div>'}
+            </div>
+          </section>
+        </div>
+
+        <div class="section-grid">
+          <section class="section">
+            <h2>📊 Skills profile</h2>
+            <p class="sub">Strength across specialisations. Higher = more closings in this category.</p>
+            <div class="skills-wrap" id="skillsWrap"></div>
+          </section>
+          <section class="section">
+            <h2>💼 Recent closings</h2>
+            <p class="sub">Most recent deals — click for details (coming soon).</p>
+            <div class="deals-list" id="dealsList"></div>
+          </section>
+        </div>
+
+        <div class="data-note">
+          <strong>Data source:</strong> profile fields below the contact info come from
+          <code>teamConfig/main.[section].[name].profile</code> in Firestore. To populate:
+          add <code>{ skills, languages, achievements, revenue, deals }</code> to this
+          member's record via the Team Members → Edit Tree screen (admin only). Once
+          populated, this page renders the real numbers automatically.
+        </div>
+      `;
+
+      drawRevenueChart(profile.revenue || []);
+      drawSkillsBlock(profile.skills || []);
+      drawDeals(profile.deals || []);
+    }
+
+    function drawRevenueChart(monthly) {
+      // Pad to 12 months (last 12 ending current month)
+      const now = new Date();
+      const months = [];
+      for (let i = 11; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const key = d.toISOString().slice(0, 7);
+        const label = d.toLocaleDateString('en-GB', { month: 'short' });
+        const found = monthly.find(x => x.month === key);
+        months.push({ key, label, amount: found?.amount || 0 });
+      }
+      const maxV = Math.max(1, ...months.map(m => m.amount));
+      const W = 600, H = 200, P = 24;
+      const innerW = W - P * 2, innerH = H - P * 2;
+      const barW = innerW / months.length * 0.7;
+      const gap  = innerW / months.length * 0.3;
+      const bars = months.map((m, i) => {
+        const x = P + i * (innerW / months.length) + gap / 2;
+        const h = m.amount ? Math.max(2, (m.amount / maxV) * innerH) : 2;
+        const y = H - P - h;
+        return `<g>
+          <rect class="rev-bar" x="${x}" y="${y}" width="${barW}" height="${h}" rx="3">
+            <title>${m.label} · ${m.amount.toLocaleString()} AED</title>
+          </rect>
+          <text class="rev-label" x="${x + barW / 2}" y="${H - 6}" text-anchor="middle">${m.label}</text>
+          ${m.amount ? `<text class="rev-value" x="${x + barW / 2}" y="${y - 4}" text-anchor="middle">${fmtAED(m.amount)}</text>` : ''}
+        </g>`;
+      }).join('');
+
+      document.getElementById('revChart').innerHTML = `
+        <svg class="rev-chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#ffd166"/>
+              <stop offset="1" stop-color="#8a6a30"/>
+            </linearGradient>
+          </defs>
+          <line class="rev-axis" x1="${P}" y1="${H - P}" x2="${W - P}" y2="${H - P}"/>
+          ${bars}
+        </svg>`;
+    }
+
+    function drawSkillsBlock(skills) {
+      const list = (skills && skills.length ? skills : DEFAULT_SKILLS.map(name => ({ name, value: 0 })));
+      // Radar
+      const W = 240, cx = W/2, cy = W/2, R = 95;
+      const N = list.length;
+      const angle = (i) => -Math.PI/2 + (i / N) * 2 * Math.PI;
+      const ringPaths = [0.25, 0.5, 0.75, 1].map(r => {
+        const pts = list.map((_, i) => {
+          const x = cx + Math.cos(angle(i)) * R * r;
+          const y = cy + Math.sin(angle(i)) * R * r;
+          return `${x.toFixed(1)},${y.toFixed(1)}`;
+        }).join(' ');
+        return `<polygon class="radar-grid" points="${pts}"/>`;
+      }).join('');
+      const axes = list.map((_, i) => {
+        const x = cx + Math.cos(angle(i)) * R;
+        const y = cy + Math.sin(angle(i)) * R;
+        return `<line class="radar-axis" x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}"/>`;
+      }).join('');
+      const shape = list.map((s, i) => {
+        const v = Math.max(0, Math.min(100, Number(s.value) || 0)) / 100;
+        const x = cx + Math.cos(angle(i)) * R * v;
+        const y = cy + Math.sin(angle(i)) * R * v;
+        return `${x.toFixed(1)},${y.toFixed(1)}`;
+      }).join(' ');
+      const points = list.map((s, i) => {
+        const v = Math.max(0, Math.min(100, Number(s.value) || 0)) / 100;
+        const x = cx + Math.cos(angle(i)) * R * v;
+        const y = cy + Math.sin(angle(i)) * R * v;
+        return `<circle class="radar-point" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3"/>`;
+      }).join('');
+      const labels = list.map((s, i) => {
+        const x = cx + Math.cos(angle(i)) * (R + 18);
+        const y = cy + Math.sin(angle(i)) * (R + 18);
+        const anchor = Math.cos(angle(i)) > 0.3 ? 'start' : Math.cos(angle(i)) < -0.3 ? 'end' : 'middle';
+        return `<text class="radar-label" x="${x.toFixed(1)}" y="${(y + 3).toFixed(1)}" text-anchor="${anchor}">${s.name}</text>`;
+      }).join('');
+
+      const radarSvg = `<svg class="radar" viewBox="0 0 ${W} ${W}">
+        ${ringPaths}${axes}<polygon class="radar-shape" points="${shape}"/>${points}${labels}
+      </svg>`;
+
+      const barsHtml = list.map(s => {
+        const v = Math.max(0, Math.min(100, Number(s.value) || 0));
+        return `<div class="skill-row">
+          <div class="skill-head"><span class="skill-name">${s.name}</span><span class="skill-pct">${v}%</span></div>
+          <div class="skill-bar"><span style="width:${v}%"></span></div>
+        </div>`;
+      }).join('');
+
+      document.getElementById('skillsWrap').innerHTML = `${radarSvg}<div class="skills-list">${barsHtml}</div>`;
+    }
+
+    function drawDeals(deals) {
+      const wrap = document.getElementById('dealsList');
+      if (!deals.length) {
+        wrap.innerHTML = `<div class="empty">No deals recorded yet. Add deals via the Deal Alert page — they'll show up here automatically.</div>`;
+        return;
+      }
+      wrap.innerHTML = deals.slice(0, 10).map(d => `
+        <div class="deal-row">
+          <span class="amt">${fmtAED(d.amount || 0)} ${d.currency || 'AED'}</span>
+          <div class="meta">${d.property || 'Property'}<small>${d.propertyType || ''} ${d.area ? '· ' + d.area : ''}</small></div>
+          <span class="when">${d.date || ''}</span>
+        </div>
+      `).join('');
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = 'index.html'; return; }
+      const params = new URLSearchParams(location.search);
+      const nameQuery = params.get('name') || '';
+      try {
+        const snap = await getDoc(doc(db, 'teamConfig', 'main'));
+        const cfg = snap.exists() ? snap.data() : null;
+        const member = findMember(cfg, nameQuery);
+        if (!member) {
+          document.querySelector('main').innerHTML = `<div class="empty" style="margin-top:60px">
+            Couldn't find a team member matching "<strong style="color:var(--cream)">${nameQuery}</strong>".
+            <br/><br/><a class="icon-btn" href="team.html">← Back to org chart</a></div>`;
+          return;
+        }
+        const profile = member.profile || {};
+        renderHero(member, profile);
+      } catch (e) {
+        console.error(e);
+        document.querySelector('main').innerHTML = `<div class="empty" style="margin-top:60px;color:var(--red)">Failed to load profile (${e.code || 'error'})</div>`;
+      }
+    });
+  </script>
+</body>
+</html>
