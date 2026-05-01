@@ -135,6 +135,24 @@
     .search input::placeholder { color: var(--muted); }
 
     .topbar-meta { display: flex; align-items: center; gap: 14px; }
+    .theme-btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 6px 12px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+      color: var(--cream);
+      border-radius: 999px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      transition: all .15s;
+    }
+    .theme-btn:hover { background: rgba(212,184,122,0.12); border-color: rgba(212,184,122,0.4); color: var(--gold); }
+    .theme-btn svg { width: 13px; height: 13px; }
+
     .lang-toggle { display: inline-flex; align-items: center; background: rgba(255,255,255,0.04); border: 1px solid var(--line); border-radius: 999px; padding: 3px; position: relative; }
     .lang-toggle button { background: transparent; border: none; color: var(--muted); font-family: inherit; font-size: 11px; font-weight: 600; letter-spacing: 1px; padding: 5px 10px; border-radius: 999px; cursor: pointer; transition: color .25s; position: relative; z-index: 1; }
     .lang-toggle button.active { color: var(--navy-0); }
@@ -456,6 +474,87 @@
     }
     .tool-badge.soon { background: rgba(255,255,255,0.04); color: var(--muted); border-color: var(--line-strong); }
     .tool-badge.admin { background: rgba(212,184,122,0.15); color: var(--gold); border-color: rgba(212,184,122,0.4); }
+
+    /* ---- Onboarding banner (first-time setup) ---- */
+    .onboard-banner {
+      position: relative;
+      padding: 28px 30px;
+      margin-bottom: 22px;
+      background:
+        linear-gradient(135deg, rgba(255,209,102,0.18), rgba(255,122,89,0.10) 50%, rgba(212,184,122,0.10));
+      border: 1px solid rgba(255,209,102,0.45);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 16px 36px -16px rgba(255,209,102,.4), inset 0 1px 0 rgba(255,255,255,0.18);
+    }
+    .onboard-glow {
+      position: absolute; inset: -2px;
+      background: linear-gradient(90deg, transparent, rgba(255,209,102,0.55), transparent);
+      filter: blur(20px);
+      animation: onboard-shimmer 4s ease-in-out infinite;
+      z-index: 0;
+      pointer-events: none;
+    }
+    @keyframes onboard-shimmer {
+      0%, 100% { transform: translateX(-30%); opacity: .35; }
+      50%      { transform: translateX(30%);  opacity: .65; }
+    }
+    .onboard-content { position: relative; z-index: 1; }
+    .onboard-eyebrow { font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 800; letter-spacing: 4px; color: #ffd166; margin-bottom: 8px; }
+    .onboard-banner h2 { font-family: 'Playfair Display', 'Noto Serif JP', serif; font-size: clamp(22px, 2.5vw, 30px); font-weight: 600; margin: 0 0 8px; color: var(--cream); letter-spacing: -0.3px; }
+    .onboard-banner p { color: rgba(241,234,216,0.85); font-size: 14px; line-height: 1.55; margin: 0 0 18px; max-width: 520px; }
+    .onboard-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 13px 24px;
+      background: linear-gradient(135deg, #ffd166, #ff7a59);
+      border: none;
+      color: var(--navy-0);
+      border-radius: 999px;
+      font-family: inherit;
+      font-weight: 800;
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 14px 28px -8px rgba(255,209,102,.55);
+      transition: transform .15s, box-shadow .2s;
+    }
+    .onboard-btn:hover { transform: translateY(-2px); box-shadow: 0 18px 36px -8px rgba(255,209,102,.7); }
+    .onboard-btn svg { width: 14px; height: 14px; }
+
+    /* When onboarding is incomplete, dim the rest of the dashboard until done */
+    body[data-onboarding="pending"] .tile { pointer-events: none; opacity: 0.45; filter: grayscale(0.5); }
+    body[data-onboarding="pending"] .tile:hover { transform: none; box-shadow: none; }
+    body[data-onboarding="pending"] .schedule-card,
+    body[data-onboarding="pending"] .birthday-card,
+    body[data-onboarding="pending"] .recent-deals-card,
+    body[data-onboarding="pending"] .right-col { opacity: 0.55; pointer-events: none; }
+
+    /* Onboarding wizard modal */
+    .ob-bd { position: fixed; inset: 0; background: rgba(5,12,24,0.85); backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; z-index: 250; padding: 20px; }
+    .ob-bd.show { display: flex; }
+    .ob-modal { background: linear-gradient(180deg, var(--navy-2), var(--navy-1)); border: 1px solid var(--line-strong); border-radius: 18px; width: min(540px, 100%); max-height: 90vh; overflow-y: auto; padding: 32px; box-shadow: 0 30px 80px -20px rgba(0,0,0,.7); }
+    .ob-step { display: none; }
+    .ob-step.active { display: block; }
+    .ob-progress { display: flex; gap: 6px; margin-bottom: 24px; }
+    .ob-progress span { flex: 1; height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; }
+    .ob-progress span.done { background: linear-gradient(90deg, var(--cream), var(--gold)); }
+    .ob-modal h3 { font-family: 'Playfair Display','Noto Serif JP',serif; font-size: 22px; font-weight: 600; margin: 0 0 6px; color: var(--cream); }
+    .ob-modal .sub { color: var(--muted); font-size: 13px; margin: 0 0 22px; line-height: 1.55; }
+    .ob-modal label { font-size: 11px; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 6px; }
+    .ob-modal input, .ob-modal select { width: 100%; background: rgba(5,20,40,0.7); border: 1px solid var(--line); border-radius: 10px; color: var(--text); padding: 13px 16px; font-family: inherit; font-size: 14px; outline: none; transition: border-color .15s; }
+    .ob-modal input:focus, .ob-modal select:focus { border-color: var(--gold); }
+    .ob-photo-drop { border: 2px dashed rgba(212,184,122,0.4); border-radius: 12px; padding: 28px; text-align: center; color: var(--muted); cursor: pointer; transition: all .15s; }
+    .ob-photo-drop:hover { background: rgba(212,184,122,0.06); border-color: var(--gold); color: var(--cream); }
+    .ob-photo-preview { display: none; max-width: 200px; max-height: 240px; border-radius: 10px; margin: 0 auto; }
+    .ob-photo-preview.show { display: block; }
+    .ob-actions { display: flex; gap: 10px; margin-top: 26px; }
+    .ob-actions button { flex: 1; padding: 13px; border: none; border-radius: 10px; cursor: pointer; font-family: inherit; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; transition: all .15s; }
+    .ob-actions .ob-back { background: rgba(255,255,255,0.05); border: 1px solid var(--line); color: var(--cream); }
+    .ob-actions .ob-back:hover { background: rgba(255,255,255,0.1); }
+    .ob-actions .ob-next { background: linear-gradient(135deg, var(--cream), var(--gold)); color: var(--navy-0); }
+    .ob-actions .ob-next:hover { transform: translateY(-1px); box-shadow: 0 12px 28px -8px rgba(212,184,122,.5); }
+    .ob-actions .ob-next:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
     /* ---- CENTER column: highlighted tools as tiles ---- */
     .center-col-head {
@@ -942,6 +1041,10 @@
           <input type="text" placeholder="検索..." id="searchInput" />
         </div>
         <div class="topbar-meta">
+          <button class="theme-btn" id="themeBtn" onclick="cycleTheme()" title="Switch theme">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+            <span id="themeLabel">Manor</span>
+          </button>
           <div class="lang-toggle" id="langToggle">
             <span class="pill" id="langPill"></span>
             <button data-lang="ja" class="active">日本語</button>
@@ -1023,6 +1126,20 @@
 
           <!-- CENTER column -->
           <section class="center-col">
+            <!-- First-time onboarding banner (only shows if user hasn't finished onboarding) -->
+            <div class="onboard-banner" id="onboardBanner" style="display:none">
+              <div class="onboard-glow"></div>
+              <div class="onboard-content">
+                <div class="onboard-eyebrow">FIRST-TIME SETUP</div>
+                <h2>Complete your profile to unlock the portal</h2>
+                <p>Add your WhatsApp, home country, and photo so the team can reach you and your card looks right across the family tree, Deal Alerts, and Travel.</p>
+                <button class="onboard-btn" onclick="openOnboardingWizard()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  Start setup
+                </button>
+              </div>
+            </div>
+
             <div class="center-col-head">
               <h2 data-i18n="quickAccess">QUICK ACCESS</h2>
               <div class="right">
@@ -1738,6 +1855,139 @@
     }
     document.querySelectorAll('.lang-toggle button').forEach(b => b.addEventListener('click', () => setLang(b.dataset.lang)));
 
+    // Theme switcher — saved in localStorage. Two themes:
+    // "manor"  = current dark navy + gold luxury (default)
+    // "atrium" = light Tabela-inspired modern dashboard (coming soon — toast for now)
+    const THEMES = ['manor', 'atrium'];
+    const THEME_LABELS = { manor: 'Manor', atrium: 'Atrium' };
+    let CURRENT_THEME = 'manor';
+    function applyTheme(name) {
+      CURRENT_THEME = name;
+      document.body.setAttribute('data-theme', name);
+      const lbl = document.getElementById('themeLabel');
+      if (lbl) lbl.textContent = THEME_LABELS[name] || 'Manor';
+      try { localStorage.setItem('theme', name); } catch {}
+    }
+    window.cycleTheme = function() {
+      const idx = THEMES.indexOf(CURRENT_THEME);
+      const next = THEMES[(idx + 1) % THEMES.length];
+      if (next === 'atrium') {
+        // Atrium light theme is queued — show a teaser toast and stay on Manor.
+        const t = document.createElement('div');
+        t.textContent = '✦ Atrium (light) theme — coming soon. Manor stays active.';
+        t.style.cssText = 'position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:rgba(16,42,79,.95);border:1px solid var(--gold);color:var(--cream);padding:14px 22px;border-radius:10px;font-size:13px;backdrop-filter:blur(10px);z-index:300;font-family:Inter,sans-serif;letter-spacing:0.3px;';
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 2800);
+        return;
+      }
+      applyTheme(next);
+    };
+    try {
+      const saved = localStorage.getItem('theme');
+      if (saved && THEMES.includes(saved)) applyTheme(saved);
+    } catch {}
+
+    // ----- Onboarding wizard -----
+    const ONBOARDING_KEY = 'onboarding_v1';
+    function loadOnboarding() { try { return JSON.parse(localStorage.getItem(ONBOARDING_KEY) || 'null'); } catch { return null; } }
+    function saveOnboarding(data) { try { localStorage.setItem(ONBOARDING_KEY, JSON.stringify(data)); } catch {} }
+    function onboardingComplete() {
+      const d = loadOnboarding();
+      return !!(d && d.phone && d.country && d.photoData);
+    }
+    function applyOnboardingState() {
+      const done = onboardingComplete();
+      document.body.dataset.onboarding = done ? 'done' : 'pending';
+      const banner = document.getElementById('onboardBanner');
+      if (banner) banner.style.display = done ? 'none' : 'block';
+    }
+
+    let obStepIdx = 1;
+    window.openOnboardingWizard = function() {
+      obStepIdx = 1;
+      const d = loadOnboarding() || {};
+      document.getElementById('obPhone').value = d.phone || '';
+      document.getElementById('obCountry').value = d.country || '';
+      if (d.photoData) {
+        const img = document.getElementById('obPhotoPreview');
+        img.src = d.photoData;
+        img.classList.add('show');
+      } else {
+        document.getElementById('obPhotoPreview').classList.remove('show');
+      }
+      renderObStep();
+      document.getElementById('obBd').classList.add('show');
+    };
+    window.closeOnboarding = function() {
+      document.getElementById('obBd').classList.remove('show');
+    };
+    function renderObStep() {
+      document.querySelectorAll('.ob-step').forEach(s => s.classList.toggle('active', Number(s.dataset.step) === obStepIdx));
+      const progress = document.getElementById('obProgress').children;
+      for (let i = 0; i < progress.length; i++) progress[i].classList.toggle('done', i < obStepIdx);
+      document.getElementById('obBack').style.display = obStepIdx > 1 ? '' : 'none';
+      document.getElementById('obNext').textContent = obStepIdx === 4 ? 'Finish' : 'Next';
+    }
+    window.obStep = function(delta) {
+      const target = obStepIdx + delta;
+      if (target < 1) return;
+      if (target > 4) {
+        // Finish — collect, save, refresh state
+        const data = loadOnboarding() || {};
+        const photoEl = document.getElementById('obPhotoPreview');
+        const finalData = {
+          phone: document.getElementById('obPhone').value.trim(),
+          country: document.getElementById('obCountry').value,
+          photoData: data.photoData || (photoEl.classList.contains('show') ? photoEl.src : '')
+        };
+        saveOnboarding(finalData);
+        closeOnboarding();
+        applyOnboardingState();
+        return;
+      }
+      // Validation per step
+      if (delta > 0) {
+        if (obStepIdx === 1) {
+          const v = document.getElementById('obPhone').value.trim();
+          if (!v || v.length < 7) { alert('Enter a valid WhatsApp number with country code.'); return; }
+        }
+        if (obStepIdx === 2) {
+          const v = document.getElementById('obCountry').value;
+          if (!v) { alert('Pick your home country / base time zone.'); return; }
+        }
+        if (obStepIdx === 3) {
+          if (!document.getElementById('obPhotoPreview').classList.contains('show')) {
+            if (!confirm('No photo uploaded — continue without one? You can add it later.')) return;
+          }
+        }
+      }
+      // Persist intermediate values so they survive Back / Cancel
+      const data = loadOnboarding() || {};
+      data.phone = document.getElementById('obPhone').value.trim();
+      data.country = document.getElementById('obCountry').value;
+      const photoEl = document.getElementById('obPhotoPreview');
+      if (photoEl.classList.contains('show')) data.photoData = photoEl.src;
+      saveOnboarding(data);
+      obStepIdx = target;
+      renderObStep();
+    };
+    window.onPhotoPicked = function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const img = document.getElementById('obPhotoPreview');
+        img.src = ev.target.result;
+        img.classList.add('show');
+        const data = loadOnboarding() || {};
+        data.photoData = ev.target.result;
+        saveOnboarding(data);
+      };
+      reader.readAsDataURL(file);
+    };
+
+    applyOnboardingState();
+
     async function updateStats() {
       // Tools count comes from the in-memory catalogue
       document.getElementById('statTools').textContent = visibleTools().filter(t => t.action !== 'soon').length;
@@ -1795,6 +2045,67 @@
     window.addEventListener('resize', positionPill);
     setInterval(renderTzList, 60000);  // refresh times every minute
   </script>
+  <!-- Onboarding wizard -->
+  <div class="ob-bd" id="obBd" onclick="if(event.target===this)closeOnboarding()">
+    <div class="ob-modal">
+      <div class="ob-progress" id="obProgress">
+        <span class="done"></span><span></span><span></span><span></span>
+      </div>
+
+      <div class="ob-step active" data-step="1">
+        <h3>📱 WhatsApp number</h3>
+        <p class="sub">Used by the team to reach you and to power Deal Alert tags. International format with country code.</p>
+        <label>WhatsApp (international format)</label>
+        <input type="tel" id="obPhone" placeholder="+971 50 123 4567" />
+      </div>
+
+      <div class="ob-step" data-step="2">
+        <h3>🌍 Home country</h3>
+        <p class="sub">We'll use this to show your local time across the team and detect when you're traveling.</p>
+        <label>Home country / base time zone</label>
+        <select id="obCountry">
+          <option value="">—</option>
+          <option value="Asia/Dubai">🇦🇪 UAE (Dubai · GST)</option>
+          <option value="Asia/Tokyo">🇯🇵 Japan (Tokyo · JST)</option>
+          <option value="Asia/Makassar">🇮🇩 Indonesia, central (Lombok · WITA)</option>
+          <option value="Asia/Jakarta">🇮🇩 Indonesia, west (Jakarta · WIB)</option>
+          <option value="Asia/Hong_Kong">🇭🇰 Hong Kong (HKT)</option>
+          <option value="Asia/Singapore">🇸🇬 Singapore (SGT)</option>
+          <option value="Asia/Kolkata">🇮🇳 India (IST)</option>
+          <option value="Europe/London">🇬🇧 UK (London · GMT/BST)</option>
+          <option value="America/New_York">🇺🇸 USA East (NY · ET)</option>
+          <option value="Asia/Riyadh">🇸🇦 Saudi Arabia (Riyadh · AST)</option>
+        </select>
+      </div>
+
+      <div class="ob-step" data-step="3">
+        <h3>📷 Profile photo</h3>
+        <p class="sub">Shows up across the family tree, Deal Alerts, and the Travel widget. Transparent PNG looks best.</p>
+        <input type="file" id="obPhoto" accept="image/*" style="display:none" onchange="onPhotoPicked(event)" />
+        <div class="ob-photo-drop" id="obPhotoDrop" onclick="document.getElementById('obPhoto').click()">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:12px;display:block;margin-left:auto;margin-right:auto;color:var(--gold)"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <div style="font-size:13px;line-height:1.5">Click to upload your photo<br><span style="font-size:11px;opacity:0.7">PNG / JPG · ideally a head-and-shoulders shot</span></div>
+        </div>
+        <img class="ob-photo-preview" id="obPhotoPreview" alt="Preview" />
+      </div>
+
+      <div class="ob-step" data-step="4">
+        <h3>✓ All set</h3>
+        <p class="sub">Your profile is ready. Once an admin assigns your access level (CEO / MD / Board / Agent / Team / Back Office), you'll see the matching tools light up on the dashboard.</p>
+        <div style="background:rgba(212,184,122,0.10);border:1px solid rgba(212,184,122,0.35);border-radius:12px;padding:18px;margin-top:8px">
+          <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:8px">Access level</div>
+          <div style="font-family:'Playfair Display',serif;font-size:18px;color:var(--cream);font-weight:600;margin-bottom:4px">Pending admin assignment</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.5">Your access tier will appear here once Balraj approves your role. All buttons stay unlocked once that's done.</div>
+        </div>
+      </div>
+
+      <div class="ob-actions">
+        <button class="ob-back" id="obBack" onclick="obStep(-1)" style="display:none">Back</button>
+        <button class="ob-next" id="obNext" onclick="obStep(1)">Next</button>
+      </div>
+    </div>
+  </div>
+
   <script src="celebration.js"></script>
 </body>
 </html>
