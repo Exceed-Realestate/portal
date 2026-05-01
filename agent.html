@@ -522,13 +522,7 @@
     .onboard-btn:hover { transform: translateY(-2px); box-shadow: 0 18px 36px -8px rgba(255,209,102,.7); }
     .onboard-btn svg { width: 14px; height: 14px; }
 
-    /* When onboarding is incomplete, dim the rest of the dashboard until done */
-    body[data-onboarding="pending"] .tile { pointer-events: none; opacity: 0.45; filter: grayscale(0.5); }
-    body[data-onboarding="pending"] .tile:hover { transform: none; box-shadow: none; }
-    body[data-onboarding="pending"] .schedule-card,
-    body[data-onboarding="pending"] .birthday-card,
-    body[data-onboarding="pending"] .recent-deals-card,
-    body[data-onboarding="pending"] .right-col { opacity: 0.55; pointer-events: none; }
+    /* (Onboarding gate removed — full dashboard access for everyone.) */
 
     /* Onboarding wizard modal */
     .ob-bd { position: fixed; inset: 0; background: rgba(5,12,24,0.85); backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; z-index: 250; padding: 20px; }
@@ -1127,20 +1121,6 @@
 
           <!-- CENTER column -->
           <section class="center-col">
-            <!-- First-time onboarding banner (only shows if user hasn't finished onboarding) -->
-            <div class="onboard-banner" id="onboardBanner" style="display:none">
-              <div class="onboard-glow"></div>
-              <div class="onboard-content">
-                <div class="onboard-eyebrow">FIRST-TIME SETUP</div>
-                <h2>Complete your profile to unlock the portal</h2>
-                <p>Add your WhatsApp, home country, and photo so the team can reach you and your card looks right across the family tree, Deal Alerts, and Travel.</p>
-                <button class="onboard-btn" onclick="openOnboardingWizard()">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                  Start setup
-                </button>
-              </div>
-            </div>
-
             <div class="center-col-head">
               <h2 data-i18n="quickAccess">QUICK ACCESS</h2>
               <div class="right">
@@ -1905,17 +1885,9 @@
       return !!(d && d.phone && d.country && d.photoData);
     }
     function applyOnboardingState() {
-      // Admins always have full access — no onboarding gate.
-      if (isAdminUser) {
-        document.body.dataset.onboarding = 'done';
-        const banner = document.getElementById('onboardBanner');
-        if (banner) banner.style.display = 'none';
-        return;
-      }
-      const done = onboardingComplete();
-      document.body.dataset.onboarding = done ? 'done' : 'pending';
-      const banner = document.getElementById('onboardBanner');
-      if (banner) banner.style.display = done ? 'none' : 'block';
+      // Onboarding gate removed — every user has full dashboard access by default.
+      // Wizard remains available if openOnboardingWizard() is called from elsewhere.
+      document.body.dataset.onboarding = 'done';
     }
 
     let obStepIdx = 1;
