@@ -72,6 +72,16 @@
       transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
       will-change: transform;
     }
+    /* Phantom source photo fills its frame more aggressively than the Escalade,
+       so it looked oversized. Inset it so both cars read the same visual size. */
+    .car-card[data-car="phantom"] .car-image img {
+      width: 82%;
+      height: 82%;
+      margin: auto;
+      position: absolute;
+      inset: 0;
+    }
+    .car-card[data-car="phantom"] .car-image { display: flex; align-items: center; justify-content: center; }
     /* CSS-fakes "transparent background" for non-alpha PNGs (Phantom JPG-sourced)
        by multiplying against the dark card backdrop. */
     .car-card .car-image img.no-alpha {
