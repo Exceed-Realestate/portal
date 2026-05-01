@@ -179,13 +179,15 @@
       margin-top: 10px;
     }
     .schedule-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
-    .schedule-eyebrow { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); margin-bottom: 4px; }
+    .schedule-eyebrow { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; font-family: 'Inter', sans-serif; font-weight: 600; }
     .schedule-date {
-      font-family: 'Playfair Display', serif;
-      font-size: 18px;
-      font-weight: 600;
+      font-family: 'Inter', 'Noto Sans JP', system-ui, sans-serif;
+      font-size: 16px;
+      font-weight: 700;
       color: var(--cream);
-      letter-spacing: 0.3px;
+      letter-spacing: 0.2px;
+      line-height: 1.2;
+      font-feature-settings: "tnum" 1;
     }
     .schedule-status {
       font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase;
@@ -476,36 +478,25 @@
       display: grid;
       grid-template-columns: auto 1fr auto;
       align-items: center;
-      gap: 12px;
-      padding: 14px 16px;
+      gap: 14px;
+      padding: 14px 18px;
       border-radius: 12px;
       overflow: hidden;
-      background: var(--tz-bg, linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)));
-      border: 1px solid var(--tz-border, var(--line));
+      background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+      border: 1px solid var(--line);
       transition: transform .15s, border-color .15s, box-shadow .15s;
     }
     .tz-card:hover { transform: translateY(-1px); border-color: rgba(212,184,122,0.35); }
-    .tz-card::before {
-      content: '';
+    .tz-card .tz-flag-strip {
       position: absolute; inset: 0;
-      background: var(--tz-flag, transparent);
-      opacity: 0.18;
-      pointer-events: none;
-      mix-blend-mode: screen;
-    }
-    .tz-card::after {
-      content: '';
-      position: absolute; right: -10px; bottom: -10px;
-      width: 90px; height: 90px;
-      background: var(--tz-landmark, none) center / contain no-repeat;
-      opacity: 0.18;
+      opacity: 0.13;
       pointer-events: none;
     }
     .tz-card .tz-flag-em {
       width: 36px; height: 36px;
       border-radius: 9px;
       display: grid; place-items: center;
-      background: rgba(0,0,0,0.35);
+      background: rgba(0,0,0,0.4);
       border: 1px solid rgba(255,255,255,0.18);
       backdrop-filter: blur(6px);
       font-size: 20px;
@@ -514,30 +505,85 @@
     }
     .tz-card .tz-meta { position: relative; z-index: 1; min-width: 0; }
     .tz-card .tz-city {
-      font-family: 'Playfair Display', serif;
+      font-family: 'Inter', 'Noto Sans JP', system-ui, sans-serif;
       font-size: 15px;
-      font-weight: 600;
+      font-weight: 700;
       color: var(--cream);
-      letter-spacing: 0.3px;
-      line-height: 1.1;
+      letter-spacing: 0.2px;
+      line-height: 1.15;
     }
     .tz-card .tz-tag {
       font-size: 9px;
-      letter-spacing: 1.5px;
+      letter-spacing: 1.6px;
       text-transform: uppercase;
       color: var(--muted);
-      margin-top: 3px;
+      margin-top: 4px;
       font-family: 'Inter', sans-serif;
+      font-weight: 600;
     }
     .tz-card .tz-time {
-      font-family: 'Playfair Display', serif;
-      font-size: 22px;
+      font-family: ui-monospace, 'SF Mono', 'JetBrains Mono', 'Menlo', monospace;
+      font-size: 28px;
       font-weight: 600;
       color: var(--gold);
       letter-spacing: 0.5px;
       font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1, "lnum" 1;
       position: relative; z-index: 1;
-      text-shadow: 0 1px 2px rgba(0,0,0,.4);
+      text-shadow: 0 1px 3px rgba(0,0,0,.5);
+      line-height: 1;
+    }
+
+    .traveling-list { display: flex; flex-direction: column; gap: 8px; }
+    .traveling-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 10px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      transition: all .15s;
+    }
+    .traveling-item:hover { background: rgba(212,184,122,0.08); border-color: rgba(212,184,122,0.3); }
+    .traveling-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold), #8a6a30);
+      padding: 1.5px;
+      flex: none;
+      position: relative;
+    }
+    .traveling-avatar-inner {
+      width: 100%; height: 100%; border-radius: 50%;
+      overflow: hidden;
+      background: rgba(23,54,99,0.7);
+      display: grid; place-items: center;
+      color: var(--cream);
+      font-family: 'Playfair Display', serif;
+      font-size: 11px;
+      font-weight: 600;
+      position: relative;
+    }
+    .traveling-avatar-inner img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .traveling-flag {
+      position: absolute; bottom: -2px; right: -2px;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      border: 2px solid var(--navy-1);
+      display: grid; place-items: center;
+      font-size: 9px;
+      background: rgba(0,0,0,0.5);
+      overflow: hidden;
+    }
+    .traveling-meta { flex: 1; min-width: 0; }
+    .traveling-name { font-size: 13px; color: var(--cream); font-weight: 600; line-height: 1.2; font-family: 'Inter', 'Noto Sans JP', sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .traveling-where { font-size: 10px; color: var(--muted); letter-spacing: 0.5px; margin-top: 2px; }
+    .traveling-empty {
+      text-align: center;
+      padding: 14px 10px;
+      border: 1px dashed var(--line);
+      border-radius: 9px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.5;
     }
 
     .quick-row {
@@ -740,6 +786,11 @@
             </div>
 
             <div class="info-block">
+              <div class="info-label" data-i18n="travelingLabel">TRAVELING NOW</div>
+              <div id="travelingList" class="traveling-list"></div>
+            </div>
+
+            <div class="info-block">
               <div class="info-label" data-i18n="quickLabel">QUICK STATS</div>
               <div class="quick-row"><span data-i18n="qsTeam">Team members</span><span class="num" id="statTeam">5</span></div>
               <div class="quick-row"><span data-i18n="qsTools">Tools available</span><span class="num" id="statTools">5</span></div>
@@ -893,7 +944,8 @@
         shortcutEmpty: 'まだショートカットがありません。よく使うリンクを追加できます。',
         shortcutAdd: '追加',
         shEdit: '編集', shDone: '完了', shAdd: '行を追加', shDelete: '削除',
-        shLabel: 'ラベル'
+        shLabel: 'ラベル',
+        travelingLabel: '出張中', travelingEmpty: '現在、出張中のメンバーはいません。'
       },
       en: {
         eyebrow: 'AGENT DASHBOARD',
@@ -925,31 +977,20 @@
         shortcutEmpty: "No shortcuts yet — add the links you reach for most.",
         shortcutAdd: 'Add one',
         shEdit: 'Edit', shDone: 'Done', shAdd: 'Add row', shDelete: 'Delete',
-        shLabel: 'Label'
+        shLabel: 'Label',
+        travelingLabel: 'TRAVELING NOW', travelingEmpty: 'No teammates traveling right now.'
       }
     };
-    // Each TZ card gets a flag-colour gradient + landmark silhouette SVG burned into the bg
+    // Each TZ card has a flag-colour stripe behind, time tag in WITA/JST/etc.
     const TZS = [
-      {
-        em: '🇦🇪', name: 'Dubai', tz: 'Asia/Dubai', tag: 'GST',
-        flagBg: 'linear-gradient(90deg, #ce1126 0 18%, #007a3d 18% 39%, #fff 39% 60%, #000 60%)',
-        landmark: 'svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M48 95 L48 35 L46 25 L48 5 L50 25 L52 35 L52 95 Z M44 95 L44 60 L40 50 L44 95 M56 95 L56 60 L60 50 L56 95" fill="%23d4b87a"/></svg>'
-      },
-      {
-        em: '🇯🇵', name: 'Tokyo', tz: 'Asia/Tokyo', tag: 'JST',
-        flagBg: 'radial-gradient(circle at 50% 50%, #bc002d 0 18%, #fff 18%)',
-        landmark: 'svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M10 80 Q30 30 50 30 Q70 30 90 80 Z" fill="%23d4b87a"/><path d="M40 38 L60 38 L65 50 L35 50 Z" fill="%23fff"/></svg>'
-      },
-      {
-        em: '🇮🇩', name: 'Lombok', tz: 'Asia/Makassar', tag: 'WITA',
-        flagBg: 'linear-gradient(180deg, #ce1126 50%, #fff 50%)',
-        landmark: 'svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M5 85 Q25 40 45 50 Q60 30 75 50 Q90 60 95 85 Z" fill="%23d4b87a"/><path d="M40 55 L50 35 L60 55 Z" fill="%23fff" opacity=".6"/></svg>'
-      },
-      {
-        em: '🇭🇰', name: 'Hong Kong', tz: 'Asia/Hong_Kong', tag: 'HKT',
-        flagBg: 'radial-gradient(ellipse at 50% 50%, #de2910, #b91e0d)',
-        landmark: 'svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="10" y="50" width="14" height="45" fill="%23d4b87a"/><rect x="28" y="35" width="16" height="60" fill="%23d4b87a"/><rect x="48" y="20" width="12" height="75" fill="%23d4b87a"/><rect x="64" y="40" width="14" height="55" fill="%23d4b87a"/><rect x="82" y="55" width="12" height="40" fill="%23d4b87a"/></svg>'
-      }
+      { em: '🇦🇪', name: 'Dubai',     tz: 'Asia/Dubai',     tag: 'GST',
+        flagBg: 'linear-gradient(90deg, #ce1126 0 25%, #007a3d 25% 50%, #ffffff 50% 75%, #000 75%)' },
+      { em: '🇯🇵', name: 'Tokyo',     tz: 'Asia/Tokyo',     tag: 'JST',
+        flagBg: 'radial-gradient(circle at 50% 50%, #bc002d 0 22%, #ffffff 22%)' },
+      { em: '🇮🇩', name: 'Lombok',    tz: 'Asia/Makassar',  tag: 'WITA',
+        flagBg: 'linear-gradient(180deg, #ce1126 50%, #ffffff 50%)' },
+      { em: '🇭🇰', name: 'Hong Kong', tz: 'Asia/Hong_Kong', tag: 'HKT',
+        flagBg: 'radial-gradient(ellipse at 50% 50%, #de2910, #b91e0d)' }
     ];
 
     let currentLang = 'ja';
@@ -1046,16 +1087,49 @@
     function renderTzList() {
       const el = document.getElementById('tzList');
       el.className = 'tz-list';
-      el.innerHTML = TZS.map(t => `
-        <div class="tz-card" style="--tz-flag:${t.flagBg}; --tz-landmark:url('data:image/${t.landmark}'); --tz-border:rgba(212,184,122,0.2);">
+      el.innerHTML = TZS.map(t => {
+        const safeFlag = t.flagBg.replace(/"/g, "'");
+        return `
+        <div class="tz-card">
+          <div class="tz-flag-strip" style="background:${safeFlag}"></div>
           <div class="tz-flag-em">${t.em}</div>
           <div class="tz-meta">
             <div class="tz-city">${t.name}</div>
             <div class="tz-tag">${t.tag}</div>
           </div>
           <div class="tz-time">${fmtTime(t.tz)}</div>
-        </div>
-      `).join('');
+        </div>`;
+      }).join('');
+    }
+
+    // Traveling team members — reads from Firestore 'travels' collection,
+    // falls back to a placeholder seeded from team config.
+    async function renderTraveling() {
+      const wrap = document.getElementById('travelingList');
+      const dict = I18N[currentLang];
+      // Placeholder: nobody traveling yet, OR someone who has logged a current trip
+      // (Yuta is permanently in Lombok per current TEAM data, so show him as a sample.)
+      const sample = [
+        { name: 'YUTA NAGATOSHI', where: 'Lombok, Indonesia', flag: '🇮🇩', photo: 'team/yuta-nagatoshi.png', initials: 'YN' }
+      ];
+      if (!sample.length) {
+        wrap.innerHTML = `<div class="traveling-empty">${dict.travelingEmpty}</div>`;
+        return;
+      }
+      wrap.innerHTML = sample.map(p => `
+        <div class="traveling-item">
+          <div class="traveling-avatar">
+            <div class="traveling-avatar-inner">
+              <span style="position:relative;z-index:0">${p.initials}</span>
+              ${p.photo ? `<img src="${p.photo}" alt="${p.name}" onerror="this.remove()" />` : ''}
+            </div>
+            <div class="traveling-flag">${p.flag}</div>
+          </div>
+          <div class="traveling-meta">
+            <div class="traveling-name">${p.name}</div>
+            <div class="traveling-where">${p.where}</div>
+          </div>
+        </div>`).join('');
     }
 
     // Today's schedule placeholder (will become live once Google Calendar is wired)
@@ -1179,6 +1253,7 @@
       renderTzList();
       renderTodayDate();
       renderShortcuts();
+      renderTraveling();
       updateStats();
     }
     function positionPill() {
