@@ -359,6 +359,133 @@
       .node.division { width: 150px; }
       .member-node .node { width: 160px; }
     }
+
+    /* ============ ADMIN EDIT MODE ============ */
+    .admin-toolbar {
+      display: none;
+      max-width: 1400px;
+      margin: 14px auto 0;
+      padding: 0 32px;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .admin-toolbar.visible { display: flex; }
+    .admin-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 9px 18px;
+      background: rgba(212,184,122,0.10);
+      border: 1px solid rgba(212,184,122,0.4);
+      color: var(--gold);
+      border-radius: 999px;
+      font-family: inherit;
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .admin-btn:hover { background: rgba(212,184,122,0.18); color: var(--cream); }
+    .admin-btn.editing { background: linear-gradient(135deg, var(--cream), var(--gold)); color: var(--navy-0); border-color: var(--gold); }
+    .admin-btn svg { width: 13px; height: 13px; }
+
+    body[data-editing="1"] .node:not(.division) { box-shadow: 0 0 0 1px rgba(212,184,122,0.4); }
+    .edit-controls { display: none; gap: 4px; justify-content: center; margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(212,184,122,0.25); }
+    body[data-editing="1"] .edit-controls { display: flex; }
+    .edit-mini {
+      width: 26px; height: 26px;
+      display: grid; place-items: center;
+      border-radius: 7px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--line);
+      color: var(--cream);
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .edit-mini svg { width: 12px; height: 12px; }
+    .edit-mini.edit:hover { background: rgba(212,184,122,0.18); color: var(--gold); border-color: rgba(212,184,122,0.4); }
+    .edit-mini.del:hover { background: rgba(255,107,107,0.18); color: #ff8a8a; border-color: rgba(255,107,107,0.4); }
+    .add-member-btn {
+      display: none;
+      margin-top: 12px;
+      padding: 8px 12px;
+      background: rgba(212,184,122,0.10);
+      border: 1px dashed rgba(212,184,122,0.4);
+      color: var(--gold);
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 11px;
+      letter-spacing: 1px;
+      font-weight: 600;
+      transition: all .15s;
+    }
+    body[data-editing="1"] .add-member-btn { display: inline-flex; align-items: center; gap: 5px; }
+    .add-member-btn:hover { background: rgba(212,184,122,0.2); color: var(--cream); }
+
+    /* Modal */
+    .modal-bd {
+      position: fixed; inset: 0;
+      background: rgba(5,12,24,0.75);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center; justify-content: center;
+      z-index: 100;
+      padding: 20px;
+    }
+    .modal-bd.show { display: flex; }
+    .modal {
+      background: linear-gradient(180deg, var(--navy-2), var(--navy-1));
+      border: 1px solid var(--line-strong);
+      border-radius: 16px;
+      width: min(520px, 100%);
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 28px;
+      box-shadow: 0 30px 80px -20px rgba(0,0,0,.7);
+    }
+    .modal h3 { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 600; margin: 0 0 6px; color: var(--cream); }
+    .modal .modal-sub { color: var(--muted); font-size: 13px; margin: 0 0 22px; }
+    .modal .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+    .modal label { font-size: 11px; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; font-weight: 500; }
+    .modal input, .modal select {
+      background: rgba(5,20,40,0.7);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 12px 14px;
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      transition: border-color .15s, background .15s;
+    }
+    .modal input:focus, .modal select:focus { border-color: var(--gold); background: rgba(5,20,40,0.95); }
+    .modal-actions { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+    .modal-actions button { font-family: inherit; padding: 11px 20px; border-radius: 8px; cursor: pointer; font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; border: none; transition: transform .15s, box-shadow .2s; }
+    .modal-actions .save { flex: 1; background: linear-gradient(135deg, var(--cream), var(--gold)); color: var(--navy-0); }
+    .modal-actions .save:hover { transform: translateY(-1px); box-shadow: 0 10px 24px -10px rgba(212,184,122,.5); }
+    .modal-actions .cancel { background: rgba(255,255,255,0.05); color: var(--text); border: 1px solid var(--line); }
+    .modal-actions .delete { background: rgba(255,107,107,0.12); color: #ff8a8a; border: 1px solid rgba(255,107,107,0.35); margin-left: auto; }
+    .modal-actions .delete:hover { background: rgba(255,107,107,0.22); }
+    .modal .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 500px) { .modal .field-row { grid-template-columns: 1fr; } }
+
+    .toast {
+      position: fixed; bottom: 30px; left: 50%;
+      transform: translateX(-50%) translateY(120%);
+      background: rgba(16,42,79,0.95);
+      border: 1px solid rgba(212,184,122,0.4);
+      color: var(--text);
+      padding: 14px 22px;
+      border-radius: 10px;
+      box-shadow: 0 30px 80px -20px rgba(0,0,0,.7);
+      font-size: 14px;
+      transition: transform .35s cubic-bezier(.34,1.56,.64,1);
+      z-index: 200;
+      backdrop-filter: blur(10px);
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
   </style>
 </head>
 <body>
@@ -387,6 +514,14 @@
     <p class="lede" data-i18n="lede">Exceed グループの全メンバー。CEO を頂点に、部門ごとにツリー構造で確認できます。WhatsAppアイコンをクリックで直接連絡。</p>
   </div>
 
+  <!-- Admin-only edit toolbar (hidden unless logged in as admin) -->
+  <div class="admin-toolbar" id="adminToolbar">
+    <button class="admin-btn" id="editTreeBtn" onclick="toggleEdit()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      <span id="editBtnLabel" data-i18n="editTree">ツリーを編集</span>
+    </button>
+  </div>
+
   <div class="chart-scroll">
     <div id="orgChart"></div>
   </div>
@@ -409,12 +544,60 @@
     <div class="aside-grid" id="partnersGrid"></div>
   </section>
 
-  <div class="add-hint" data-i18n-html="addHint"><strong>メンバー追加方法:</strong> <code>team.html</code> の <code>TEAM</code> オブジェクトにエントリを追加し、写真を <code>team/&lt;ファイル名&gt;.png</code> に配置してください。</div>
+  <div class="add-hint" data-i18n-html="addHint"><strong>メンバー追加方法:</strong> 管理者でログインすると右上に「ツリーを編集」ボタンが表示されます。写真は <code>team/&lt;ファイル名&gt;.png</code> にアップロード後、編集画面でファイル名を指定してください。</div>
+
+  <!-- Edit modal (admin only) -->
+  <div class="modal-bd" id="modalBd" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <h3 id="modalTitle">メンバー編集</h3>
+      <p class="modal-sub" id="modalSub">情報を入力してください。</p>
+      <form id="memberForm" onsubmit="event.preventDefault(); saveMember();">
+        <div class="field-row">
+          <div class="field"><label data-i18n="fName">名前 (English)</label><input id="m-name" type="text" required placeholder="YUTA NAGATOSHI" /></div>
+          <div class="field"><label data-i18n="fNameJa">名前 (現地語)</label><input id="m-nameJa" type="text" placeholder="長利 ユウタ / مالك" /></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label data-i18n="fRole">役職 (English)</label><input id="m-role" type="text" placeholder="Lombok Project Lead" /></div>
+          <div class="field"><label data-i18n="fRoleJa">役職 (日本語)</label><input id="m-roleJa" type="text" placeholder="ロンボクプロジェクト" /></div>
+        </div>
+        <div class="field"><label data-i18n="fSection">所属部門</label>
+          <select id="m-section">
+            <option value="ceo">CEO</option>
+            <option value="md">Managing Director</option>
+            <option value="coo">COO</option>
+            <option value="board">Board Members</option>
+            <option value="dubai-sales">Dubai Sales</option>
+            <option value="japan-sales">Japan Sales</option>
+            <option value="lombok">Lombok Project</option>
+            <option value="japan-office">Japan Office</option>
+            <option value="way-office">Way Office</option>
+            <option value="marketing">Marketing</option>
+            <option value="ayuva">AYUVA Project</option>
+            <option value="takumi-renovation">Takumi Renovation</option>
+            <option value="partners">Partners (Developers)</option>
+          </select>
+        </div>
+        <div class="field-row">
+          <div class="field"><label data-i18n="fPhone">電話番号 (国際形式)</label><input id="m-phone" type="text" placeholder="+817084548230" /></div>
+          <div class="field"><label data-i18n="fPhoneDisp">電話表示用</label><input id="m-phoneDisp" type="text" placeholder="+81 70 8454 8230" /></div>
+        </div>
+        <div class="field"><label data-i18n="fEmail">メール</label><input id="m-email" type="email" placeholder="name@exceed-re.ae" /></div>
+        <div class="field"><label data-i18n="fPhoto">写真パス</label><input id="m-photo" type="text" placeholder="team/yuta-nagatoshi.png または https://..." /></div>
+        <div class="modal-actions">
+          <button type="submit" class="save" data-i18n="save">保存</button>
+          <button type="button" class="cancel" onclick="closeModal()" data-i18n="cancel">キャンセル</button>
+          <button type="button" class="delete" id="deleteBtn" style="display:none" onclick="deleteMember()" data-i18n="delete">削除</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
 
   <script type="module">
-    import { auth, db } from './firebase-init.js';
+    import { auth, db, isAdmin } from './firebase-init.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    import { doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
     // ============ TEAM DATA ============
     // To add a member: drop their photo at team/<filename>.png and append a record to the matching array.
@@ -529,8 +712,17 @@
       html += '</div>';
       return html;
     }
-    function personCard(m, tierClass = '') {
+    function personCard(m, tierClass = '', section = null, index = null) {
       const role = currentLang === 'ja' ? (m.roleJa || m.role) : (m.role || m.roleJa);
+      const editControls = (section !== null && index !== null) ? `
+        <div class="edit-controls">
+          <button class="edit-mini edit" onclick="event.stopPropagation(); openMemberEditor('${section}', ${index})" title="Edit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="edit-mini del" onclick="event.stopPropagation(); openMemberEditor('${section}', ${index}); document.getElementById('deleteBtn').click();" title="Delete">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+          </button>
+        </div>` : '';
       return `
         <div class="node ${tierClass}">
           <div class="avatar">
@@ -543,6 +735,7 @@
           ${m.nameJa ? `<div class="name-ja">${m.nameJa}</div>` : ''}
           ${role ? `<div class="role">${role}</div>` : ''}
           ${actionBtns(m)}
+          ${editControls}
         </div>`;
     }
     function vacantCard(label, tierClass) {
@@ -569,12 +762,14 @@
       return (DIVISIONS_BY_PARENT[parentKey] || []).map(d => {
         const list = TEAM[d.id] || [];
         const stack = list.length
-          ? `<div class="member-stack">${list.map(m => `<div class="member-node">${personCard(m)}</div>`).join('')}</div>`
+          ? `<div class="member-stack">${list.map((m, i) => `<div class="member-node">${personCard(m, '', d.id, i)}</div>`).join('')}</div>`
           : `<div class="empty-pill">${dict.empty}</div>`;
+        const addBtn = `<button class="add-member-btn" onclick="openMemberAdd('${d.id}')">+ ${currentLang === 'ja' ? 'メンバー追加' : 'Add member'}</button>`;
         return `
           <li>
             <div class="node-wrap">
               ${divisionHeader(d)}
+              ${addBtn}
               ${stack}
             </div>
           </li>`;
@@ -587,9 +782,9 @@
       const md  = TEAM.md[0];
       const coo = TEAM.coo[0];
 
-      const ceoCard = ceo ? personCard(ceo, 'tier-ceo') : vacantCard('CEO', 'tier-ceo');
-      const mdCard  = md  ? personCard(md, 'tier-md')   : vacantCard('MD — open', 'tier-md');
-      const cooCard = coo ? personCard(coo, 'tier-coo') : vacantCard(dict.cooEmpty, 'tier-coo');
+      const ceoCard = ceo ? personCard(ceo, 'tier-ceo', 'ceo', 0) : vacantCard('CEO', 'tier-ceo');
+      const mdCard  = md  ? personCard(md, 'tier-md', 'md', 0)    : vacantCard('MD — open', 'tier-md');
+      const cooCard = coo ? personCard(coo, 'tier-coo', 'coo', 0) : vacantCard(dict.cooEmpty, 'tier-coo');
 
       const html = `
         <ul class="tree">
@@ -662,6 +857,113 @@
     }
     document.querySelectorAll('.lang-toggle button').forEach(b => b.addEventListener('click', () => setLang(b.dataset.lang)));
 
+    // ============ FIRESTORE TEAM CONFIG (admin-edited) ============
+    async function loadTeamConfig() {
+      try {
+        const snap = await getDoc(doc(db, 'teamConfig', 'main'));
+        if (snap.exists()) {
+          const data = snap.data();
+          Object.keys(TEAM).forEach(k => { if (Array.isArray(data[k])) TEAM[k] = data[k]; });
+        }
+      } catch (e) { console.warn('teamConfig load failed', e); }
+    }
+    async function saveTeamConfig() {
+      try {
+        const payload = { ...TEAM, updatedAt: serverTimestamp() };
+        await setDoc(doc(db, 'teamConfig', 'main'), payload, { merge: false });
+        showToast(currentLang === 'ja' ? '✓ 保存しました' : '✓ Saved');
+      } catch (e) {
+        console.error(e);
+        showToast((currentLang === 'ja' ? '保存に失敗: ' : 'Save failed: ') + (e.message || e.code || 'unknown'));
+      }
+    }
+
+    // ============ ADMIN EDIT MODAL ============
+    let editingState = null; // { section, index } | { section, index: -1 (new) }
+
+    window.toggleEdit = function() {
+      const editing = document.body.dataset.editing === '1';
+      const next = !editing;
+      document.body.dataset.editing = next ? '1' : '0';
+      const btn = document.getElementById('editTreeBtn');
+      btn.classList.toggle('editing', next);
+      const lbl = document.getElementById('editBtnLabel');
+      lbl.textContent = next
+        ? (currentLang === 'ja' ? '編集を終了' : 'Done editing')
+        : (currentLang === 'ja' ? 'ツリーを編集' : 'Edit Tree');
+      renderChart();
+      renderAside();
+    };
+
+    window.openMemberEditor = function(section, index) {
+      const m = (TEAM[section] || [])[index];
+      if (!m) return;
+      editingState = { section, index };
+      document.getElementById('m-name').value = m.name || '';
+      document.getElementById('m-nameJa').value = m.nameJa || '';
+      document.getElementById('m-role').value = m.role || '';
+      document.getElementById('m-roleJa').value = m.roleJa || '';
+      document.getElementById('m-section').value = section;
+      document.getElementById('m-phone').value = m.phone || '';
+      document.getElementById('m-phoneDisp').value = m.phoneDisplay || '';
+      document.getElementById('m-email').value = m.email || '';
+      document.getElementById('m-photo').value = m.photo || '';
+      document.getElementById('deleteBtn').style.display = '';
+      document.getElementById('modalTitle').textContent = currentLang === 'ja' ? 'メンバー編集' : 'Edit member';
+      document.getElementById('modalBd').classList.add('show');
+    };
+    window.openMemberAdd = function(section) {
+      editingState = { section, index: -1 };
+      ['m-name','m-nameJa','m-role','m-roleJa','m-phone','m-phoneDisp','m-email','m-photo'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('m-section').value = section;
+      document.getElementById('deleteBtn').style.display = 'none';
+      document.getElementById('modalTitle').textContent = currentLang === 'ja' ? 'メンバー追加' : 'Add member';
+      document.getElementById('modalBd').classList.add('show');
+    };
+    window.closeModal = function() {
+      document.getElementById('modalBd').classList.remove('show');
+      editingState = null;
+    };
+    window.saveMember = async function() {
+      if (!editingState) return;
+      const m = {
+        name: document.getElementById('m-name').value.trim(),
+        nameJa: document.getElementById('m-nameJa').value.trim(),
+        role: document.getElementById('m-role').value.trim(),
+        roleJa: document.getElementById('m-roleJa').value.trim(),
+        phone: document.getElementById('m-phone').value.trim(),
+        phoneDisplay: document.getElementById('m-phoneDisp').value.trim(),
+        email: document.getElementById('m-email').value.trim(),
+        photo: document.getElementById('m-photo').value.trim()
+      };
+      if (!m.name) { showToast(currentLang === 'ja' ? '名前は必須です' : 'Name is required'); return; }
+      const newSection = document.getElementById('m-section').value;
+      if (editingState.index >= 0) {
+        TEAM[editingState.section].splice(editingState.index, 1);
+      }
+      if (!TEAM[newSection]) TEAM[newSection] = [];
+      TEAM[newSection].push(m);
+      await saveTeamConfig();
+      closeModal();
+      renderChart(); renderAside();
+    };
+    window.deleteMember = async function() {
+      if (!editingState || editingState.index < 0) return;
+      if (!confirm(currentLang === 'ja' ? 'このメンバーを削除しますか？' : 'Delete this member?')) return;
+      TEAM[editingState.section].splice(editingState.index, 1);
+      await saveTeamConfig();
+      closeModal();
+      renderChart(); renderAside();
+    };
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      if (!t) return;
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(t._tm);
+      t._tm = setTimeout(() => t.classList.remove('show'), 2400);
+    }
+
     // ============ AUTH GATE ============
     onAuthStateChanged(auth, async (user) => {
       if (!user) { window.location.href = 'index.html'; return; }
@@ -675,6 +977,13 @@
         firstName = local.charAt(0).toUpperCase() + local.slice(1);
       }
       document.getElementById('userName').textContent = firstName || 'Agent';
+      // Show admin toolbar only to admins
+      if (isAdmin(user.email)) {
+        document.getElementById('adminToolbar').classList.add('visible');
+      }
+      // Load latest team config from Firestore (overrides hardcoded defaults)
+      await loadTeamConfig();
+      renderChart(); renderAside();
     });
 
     window.addEventListener('load', () => { setLang('ja'); });

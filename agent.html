@@ -13,10 +13,10 @@
       --navy-1: #0a1f3d;
       --navy-2: #102a4f;
       --navy-3: #173663;
-      --line: rgba(255,255,255,0.08);
-      --line-strong: rgba(255,255,255,0.16);
+      --line: rgba(255,255,255,0.10);
+      --line-strong: rgba(255,255,255,0.18);
       --text: #f5f7fb;
-      --muted: #8a99b6;
+      --muted: #9aa8c2;
       --gold: #d4b87a;
       --gold-soft: rgba(212,184,122,0.45);
       --cream: #f1ead8;
@@ -30,12 +30,25 @@
     body {
       font-family: 'Noto Sans JP', 'Inter', sans-serif;
       color: var(--text);
-      background:
-        radial-gradient(1100px 600px at 100% 0%, rgba(212,184,122,0.06), transparent 60%),
-        radial-gradient(900px 700px at 0% 100%, rgba(23,54,99,0.6), transparent 60%),
-        var(--navy-0);
       min-height: 100vh;
       overflow-x: hidden;
+    }
+
+    /* Floating ambient orbs for premium feel */
+    .ambient { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+    .ambient .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.45;
+      animation: drift 22s ease-in-out infinite;
+    }
+    .ambient .o1 { width: 380px; height: 380px; top: -10%; left: 60%; background: radial-gradient(circle, rgba(212,184,122,0.55), transparent 70%); }
+    .ambient .o2 { width: 480px; height: 480px; bottom: -15%; left: -10%; background: radial-gradient(circle, rgba(23,54,99,0.7), transparent 70%); animation-delay: -7s; }
+    .ambient .o3 { width: 280px; height: 280px; top: 40%; right: -8%; background: radial-gradient(circle, rgba(122,167,255,0.35), transparent 70%); animation-delay: -14s; }
+    @keyframes drift {
+      0%, 100% { transform: translate(0,0) scale(1); }
+      50% { transform: translate(30px, -40px) scale(1.08); }
     }
 
     /* ============ APP SHELL ============ */
@@ -154,7 +167,69 @@
       align-items: start;
     }
 
-    /* ---- LEFT column: page head + tool list ---- */
+    /* ---- LEFT column: today's schedule card ---- */
+    .schedule-card {
+      background: linear-gradient(180deg, rgba(16,42,79,0.65), rgba(10,31,61,0.65));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 22px;
+      backdrop-filter: blur(14px) saturate(160%);
+      -webkit-backdrop-filter: blur(14px) saturate(160%);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 16px 36px -16px rgba(0,0,0,.5);
+      margin-top: 10px;
+    }
+    .schedule-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+    .schedule-eyebrow { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); margin-bottom: 4px; }
+    .schedule-date {
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--cream);
+      letter-spacing: 0.3px;
+    }
+    .schedule-status {
+      font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase;
+      padding: 4px 10px; border-radius: 999px;
+      background: rgba(255,209,102,0.10); color: #ffd166;
+      border: 1px dashed rgba(255,209,102,0.35);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .schedule-status.live { background: rgba(92,201,143,0.12); color: var(--green); border-color: rgba(92,201,143,0.4); border-style: solid; }
+    .schedule-empty { text-align: center; padding: 18px 4px 6px; }
+    .schedule-empty-icon {
+      width: 56px; height: 56px;
+      border-radius: 14px;
+      background: rgba(212,184,122,0.10);
+      border: 1px solid rgba(212,184,122,0.3);
+      display: grid; place-items: center;
+      color: var(--gold);
+      margin: 0 auto 14px;
+    }
+    .schedule-empty-icon svg { width: 24px; height: 24px; }
+    .schedule-empty-title { font-family: 'Playfair Display', serif; color: var(--cream); font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+    .schedule-empty p { color: var(--muted); font-size: 12px; line-height: 1.55; margin: 0 0 16px; }
+    .schedule-cta {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 16px;
+      background: rgba(212,184,122,0.10);
+      border: 1px solid rgba(212,184,122,0.35);
+      color: var(--gold);
+      border-radius: 999px;
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all .15s;
+    }
+    .schedule-cta:hover { background: rgba(212,184,122,0.2); color: var(--cream); }
+    .schedule-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+    .schedule-item { display: flex; gap: 14px; padding: 12px; background: rgba(255,255,255,0.04); border: 1px solid var(--line); border-radius: 10px; }
+    .schedule-item .time { font-family: 'Playfair Display', serif; color: var(--gold); font-size: 14px; font-weight: 600; min-width: 56px; }
+    .schedule-item .what { color: var(--cream); font-size: 13px; flex: 1; }
+
+    /* ---- LEFT column: page head ---- */
     .left-col h1 {
       font-family: 'Playfair Display', serif;
       font-weight: 600;
@@ -395,22 +470,75 @@
       border-bottom: 1px solid var(--line);
     }
 
-    .tz-row {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 10px 0;
-      font-size: 13px;
+    .tz-list { display: flex; flex-direction: column; gap: 10px; }
+    .tz-card {
+      position: relative;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--tz-bg, linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)));
+      border: 1px solid var(--tz-border, var(--line));
+      transition: transform .15s, border-color .15s, box-shadow .15s;
     }
-    .tz-row + .tz-row { border-top: 1px dashed var(--line); }
-    .tz-flag { display: inline-flex; align-items: center; gap: 9px; color: var(--cream); }
-    .tz-flag .em { font-size: 16px; }
-    .tz-time {
-      font-family: ui-monospace, 'SF Mono', monospace;
-      font-size: 14px;
-      color: var(--gold);
+    .tz-card:hover { transform: translateY(-1px); border-color: rgba(212,184,122,0.35); }
+    .tz-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: var(--tz-flag, transparent);
+      opacity: 0.18;
+      pointer-events: none;
+      mix-blend-mode: screen;
+    }
+    .tz-card::after {
+      content: '';
+      position: absolute; right: -10px; bottom: -10px;
+      width: 90px; height: 90px;
+      background: var(--tz-landmark, none) center / contain no-repeat;
+      opacity: 0.18;
+      pointer-events: none;
+    }
+    .tz-card .tz-flag-em {
+      width: 36px; height: 36px;
+      border-radius: 9px;
+      display: grid; place-items: center;
+      background: rgba(0,0,0,0.35);
+      border: 1px solid rgba(255,255,255,0.18);
+      backdrop-filter: blur(6px);
+      font-size: 20px;
+      position: relative; z-index: 1;
+      box-shadow: 0 4px 12px -4px rgba(0,0,0,.5);
+    }
+    .tz-card .tz-meta { position: relative; z-index: 1; min-width: 0; }
+    .tz-card .tz-city {
+      font-family: 'Playfair Display', serif;
+      font-size: 15px;
       font-weight: 600;
-      letter-spacing: 0.5px;
+      color: var(--cream);
+      letter-spacing: 0.3px;
+      line-height: 1.1;
     }
-    .tz-tag { font-size: 9px; color: var(--muted); letter-spacing: 1px; }
+    .tz-card .tz-tag {
+      font-size: 9px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 3px;
+      font-family: 'Inter', sans-serif;
+    }
+    .tz-card .tz-time {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--gold);
+      letter-spacing: 0.5px;
+      font-variant-numeric: tabular-nums;
+      position: relative; z-index: 1;
+      text-shadow: 0 1px 2px rgba(0,0,0,.4);
+    }
 
     .quick-row {
       display: flex; align-items: center; justify-content: space-between;
@@ -433,10 +561,35 @@
       cursor: pointer;
       text-decoration: none;
       transition: all .15s;
+      gap: 8px;
     }
     .shortcut:hover { background: rgba(212,184,122,0.08); border-color: rgba(212,184,122,0.3); color: #fff; }
-    .shortcut svg { width: 13px; height: 13px; color: var(--muted); transition: color .15s, transform .15s; }
+    .shortcut svg { width: 13px; height: 13px; color: var(--muted); transition: color .15s, transform .15s; flex: none; }
     .shortcut:hover svg { color: var(--gold); transform: translateX(2px); }
+    .shortcut.editing { padding: 6px; gap: 6px; cursor: default; }
+    .shortcut.editing input { flex: 1; min-width: 0; background: rgba(5,20,40,0.7); border: 1px solid var(--line); color: var(--text); border-radius: 6px; padding: 7px 9px; font-size: 11px; font-family: inherit; outline: none; }
+    .shortcut.editing input:focus { border-color: var(--gold); }
+    .shortcut.editing input:first-of-type { max-width: 110px; }
+    .shortcut-del { width: 24px; height: 24px; border-radius: 6px; background: rgba(255,107,107,0.12); border: 1px solid rgba(255,107,107,0.35); color: #ff8a8a; cursor: pointer; font-size: 14px; line-height: 1; padding: 0; display: grid; place-items: center; flex: none; }
+    .shortcut-del:hover { background: rgba(255,107,107,0.25); }
+    .shortcut-empty { text-align: center; padding: 18px 8px; color: var(--muted); font-size: 11px; line-height: 1.55; border: 1px dashed var(--line-strong); border-radius: 9px; }
+    .shortcut-empty p { margin: 0 0 12px; }
+    .shortcut-edit-btn, .shortcut-add-btn, .shortcut-done-btn {
+      width: 100%; padding: 8px 12px;
+      border-radius: 8px; cursor: pointer;
+      font-family: inherit; font-size: 11px;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      font-weight: 600;
+      border: 1px solid rgba(212,184,122,0.35);
+      background: rgba(212,184,122,0.10);
+      color: var(--gold);
+      transition: all .15s;
+    }
+    .shortcut-edit-btn:hover, .shortcut-add-btn:hover { background: rgba(212,184,122,0.2); color: var(--cream); }
+    .shortcut-done-btn { background: linear-gradient(135deg, var(--cream), var(--gold)); color: var(--navy-0); border-color: var(--gold); }
+    .shortcut-edit-actions { display: flex; gap: 6px; margin-top: 8px; }
+    .shortcut-edit-actions .shortcut-add-btn { flex: 1; }
+    .shortcut-edit-actions .shortcut-done-btn { flex: 1; }
 
     /* ---- Iframe view (kept from before) ---- */
     .iframe-view { display: none; flex-direction: column; flex: 1; min-height: 0; }
@@ -471,7 +624,16 @@
     }
   </style>
 </head>
-<body>
+<body class="dashboard-bg">
+  <!-- Skyline backdrop (Dubai) -->
+  <div class="bg-skyline"></div>
+  <div class="bg-overlay"></div>
+  <div class="ambient">
+    <div class="orb o1"></div>
+    <div class="orb o2"></div>
+    <div class="orb o3"></div>
+  </div>
+
   <div class="shell">
 
     <!-- ===== Left Rail ===== -->
@@ -521,18 +683,33 @@
       <div class="dashboard-view" id="dashboardView">
         <div class="body-grid">
 
-          <!-- LEFT column -->
+          <!-- LEFT column: today's schedule -->
           <section class="left-col">
             <p class="page-sub" data-i18n="eyebrow">AGENT DASHBOARD</p>
             <h1 data-i18n="welcome">ようこそ、<span id="welcomeName">エージェント</span>さん</h1>
 
-            <button class="add-btn" onclick="window.location.href='customer-register.html'">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              <span data-i18n="addCustomer">お客さん登録</span>
-            </button>
+            <div class="schedule-card">
+              <div class="schedule-head">
+                <div>
+                  <div class="schedule-eyebrow" data-i18n="todayLabel">本日</div>
+                  <div class="schedule-date" id="scheduleDate">—</div>
+                </div>
+                <div class="schedule-status" id="scheduleStatus" data-i18n="notConnected">未連携</div>
+              </div>
 
-            <div class="tool-list-label" data-i18n="toolsLabel">TOOLS</div>
-            <ul class="tool-list" id="toolList"></ul>
+              <div class="schedule-empty" id="scheduleEmpty">
+                <div class="schedule-empty-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="10" y2="14"/><line x1="14" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="10" y2="18"/><line x1="14" y1="18" x2="16" y2="18"/></svg>
+                </div>
+                <div class="schedule-empty-title" data-i18n="scTitle">今日の予定はここに表示されます</div>
+                <p data-i18n="scBody">「Availability Sharing」でGoogleカレンダーと連携すると、本日のミーティングや予定がここに自動表示されます。</p>
+                <a class="schedule-cta" href="availability.html" data-i18n="scCta">
+                  カレンダーを連携 →
+                </a>
+              </div>
+
+              <ul class="schedule-list" id="scheduleList" style="display:none"></ul>
+            </div>
           </section>
 
           <!-- CENTER column -->
@@ -571,20 +748,7 @@
 
             <div class="info-block">
               <div class="info-label" data-i18n="shortLabel">SHORTCUTS</div>
-              <div class="shortcut-list">
-                <a class="shortcut" href="https://exceed-realestate.github.io/IRR-simulator-v2/" target="_blank" rel="noopener">
-                  <span data-i18n="scIRR2">EXIT IRR Simulator V2</span>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                </a>
-                <a class="shortcut" href="https://exceed-realestate.github.io/inventory-sheet-viewer/" target="_blank" rel="noopener">
-                  <span data-i18n="scInv">Tiger Inventory Viewer</span>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                </a>
-                <a class="shortcut" href="team.html">
-                  <span data-i18n="scTeam">Team org chart</span>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                </a>
-              </div>
+              <div class="shortcut-list" id="shortcutList"></div>
             </div>
           </aside>
 
@@ -721,7 +885,15 @@
         active: 'ACTIVE', soon: '近日公開', new: 'NEW', admin: 'ADMIN',
         searchPh: 'ツールを検索...',
         editBtn: '並び替え', editDone: '完了',
-        editHint: 'タイルをドラッグして並び替え。完了したら「完了」を押してください。'
+        editHint: 'タイルをドラッグして並び替え。完了したら「完了」を押してください。',
+        todayLabel: '本日', notConnected: '未連携',
+        scTitle: '今日の予定はここに表示されます',
+        scBody: '「Availability Sharing」でGoogleカレンダーと連携すると、本日のミーティングや予定がここに自動表示されます。',
+        scCta: 'カレンダーを連携 →',
+        shortcutEmpty: 'まだショートカットがありません。よく使うリンクを追加できます。',
+        shortcutAdd: '追加',
+        shEdit: '編集', shDone: '完了', shAdd: '行を追加', shDelete: '削除',
+        shLabel: 'ラベル'
       },
       en: {
         eyebrow: 'AGENT DASHBOARD',
@@ -745,14 +917,39 @@
         active: 'ACTIVE', soon: 'SOON', new: 'NEW', admin: 'ADMIN',
         searchPh: 'Search tools...',
         editBtn: 'Reorder', editDone: 'Done',
-        editHint: 'Drag tiles to reorder. Tap "Done" when finished.'
+        editHint: 'Drag tiles to reorder. Tap "Done" when finished.',
+        todayLabel: 'Today', notConnected: 'Not connected',
+        scTitle: 'Your meetings will show here',
+        scBody: "Connect your Google Calendar from Availability Sharing and today's events appear here automatically.",
+        scCta: 'Connect calendar →',
+        shortcutEmpty: "No shortcuts yet — add the links you reach for most.",
+        shortcutAdd: 'Add one',
+        shEdit: 'Edit', shDone: 'Done', shAdd: 'Add row', shDelete: 'Delete',
+        shLabel: 'Label'
       }
     };
+    // Each TZ card gets a flag-colour gradient + landmark silhouette SVG burned into the bg
     const TZS = [
-      { em: '🇦🇪', name: 'Dubai',     tz: 'Asia/Dubai',   tag: 'GST' },
-      { em: '🇯🇵', name: 'Tokyo',     tz: 'Asia/Tokyo',   tag: 'JST' },
-      { em: '🇮🇩', name: 'Jakarta',   tz: 'Asia/Jakarta', tag: 'WIB' },
-      { em: '🇭🇰', name: 'Hong Kong', tz: 'Asia/Hong_Kong', tag: 'HKT' }
+      {
+        em: '🇦🇪', name: 'Dubai', tz: 'Asia/Dubai', tag: 'GST',
+        flagBg: 'linear-gradient(90deg, #ce1126 0 18%, #007a3d 18% 39%, #fff 39% 60%, #000 60%)',
+        landmark: 'svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M48 95 L48 35 L46 25 L48 5 L50 25 L52 35 L52 95 Z M44 95 L44 60 L40 50 L44 95 M56 95 L56 60 L60 50 L56 95" fill="%23d4b87a"/></svg>'
+      },
+      {
+        em: '🇯🇵', name: 'Tokyo', tz: 'Asia/Tokyo', tag: 'JST',
+        flagBg: 'radial-gradient(circle at 50% 50%, #bc002d 0 18%, #fff 18%)',
+        landmark: 'svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M10 80 Q30 30 50 30 Q70 30 90 80 Z" fill="%23d4b87a"/><path d="M40 38 L60 38 L65 50 L35 50 Z" fill="%23fff"/></svg>'
+      },
+      {
+        em: '🇮🇩', name: 'Lombok', tz: 'Asia/Makassar', tag: 'WITA',
+        flagBg: 'linear-gradient(180deg, #ce1126 50%, #fff 50%)',
+        landmark: 'svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M5 85 Q25 40 45 50 Q60 30 75 50 Q90 60 95 85 Z" fill="%23d4b87a"/><path d="M40 55 L50 35 L60 55 Z" fill="%23fff" opacity=".6"/></svg>'
+      },
+      {
+        em: '🇭🇰', name: 'Hong Kong', tz: 'Asia/Hong_Kong', tag: 'HKT',
+        flagBg: 'radial-gradient(ellipse at 50% 50%, #de2910, #b91e0d)',
+        landmark: 'svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="10" y="50" width="14" height="45" fill="%23d4b87a"/><rect x="28" y="35" width="16" height="60" fill="%23d4b87a"/><rect x="48" y="20" width="12" height="75" fill="%23d4b87a"/><rect x="64" y="40" width="14" height="55" fill="%23d4b87a"/><rect x="82" y="55" width="12" height="40" fill="%23d4b87a"/></svg>'
+      }
     ];
 
     let currentLang = 'ja';
@@ -809,35 +1006,7 @@
       });
     }
 
-    function renderToolList() {
-      const ul = document.getElementById('toolList');
-      const lang = I18N[currentLang];
-      ul.innerHTML = visibleTools().map((t, i) => {
-        const label = currentLang === 'ja' ? t.label : (t.labelEn || t.label);
-        const desc  = currentLang === 'ja' ? t.desc  : (t.descEn  || t.desc);
-        const dis   = t.action === 'soon' ? 'disabled' : '';
-        const badgeKey = t.badge || '';
-        const badgeText = lang[badgeKey] || badgeKey.toUpperCase();
-        return `<li><a class="tool-item ${dis} ${i === 0 ? 'active' : ''}" data-key="${t.key}" href="#">
-          <span class="tool-icon">${t.icon}</span>
-          <span class="tool-meta">
-            <span class="label">${label}</span>
-            <span class="desc">${desc}</span>
-          </span>
-          ${badgeKey ? `<span class="tool-badge ${badgeKey}">${badgeText}</span>` : ''}
-        </a></li>`;
-      }).join('');
-
-      ul.querySelectorAll('.tool-item').forEach(a => {
-        a.addEventListener('click', e => {
-          e.preventDefault();
-          if (a.classList.contains('disabled')) return;
-          ul.querySelectorAll('.tool-item').forEach(x => x.classList.toggle('active', x === a));
-          document.querySelectorAll('.tile').forEach(x => x.classList.toggle('active', x.dataset.key === a.dataset.key));
-          openTool(a.dataset.key);
-        });
-      });
-    }
+    function renderToolList() { /* TOOLS list removed from left column — kept stub for compatibility. */ }
 
     function renderTileGrid() {
       const grid = document.getElementById('tileGrid');
@@ -876,13 +1045,92 @@
     }
     function renderTzList() {
       const el = document.getElementById('tzList');
+      el.className = 'tz-list';
       el.innerHTML = TZS.map(t => `
-        <div class="tz-row">
-          <span class="tz-flag"><span class="em">${t.em}</span><span>${t.name}</span></span>
-          <span><span class="tz-time">${fmtTime(t.tz)}</span> <span class="tz-tag">${t.tag}</span></span>
+        <div class="tz-card" style="--tz-flag:${t.flagBg}; --tz-landmark:url('data:image/${t.landmark}'); --tz-border:rgba(212,184,122,0.2);">
+          <div class="tz-flag-em">${t.em}</div>
+          <div class="tz-meta">
+            <div class="tz-city">${t.name}</div>
+            <div class="tz-tag">${t.tag}</div>
+          </div>
+          <div class="tz-time">${fmtTime(t.tz)}</div>
         </div>
       `).join('');
     }
+
+    // Today's schedule placeholder (will become live once Google Calendar is wired)
+    function renderTodayDate() {
+      const fmt = new Intl.DateTimeFormat(currentLang === 'ja' ? 'ja-JP' : 'en-GB', { weekday: 'long', month: 'long', day: 'numeric' });
+      document.getElementById('scheduleDate').textContent = fmt.format(new Date());
+    }
+
+    // ----- Editable shortcuts (per-user, localStorage) -----
+    function loadShortcuts() {
+      try { return JSON.parse(localStorage.getItem('shortcuts') || '[]'); }
+      catch { return []; }
+    }
+    function saveShortcuts(list) {
+      try { localStorage.setItem('shortcuts', JSON.stringify(list)); } catch {}
+    }
+    function renderShortcuts() {
+      const list = loadShortcuts();
+      const wrap = document.getElementById('shortcutList');
+      const dict = I18N[currentLang];
+      const editing = wrap.dataset.editing === '1';
+      if (!list.length && !editing) {
+        wrap.innerHTML = `<div class="shortcut-empty">
+          <p>${dict.shortcutEmpty}</p>
+          <button class="shortcut-add-btn" onclick="toggleShortcutEdit()">${dict.shortcutAdd}</button>
+        </div>`;
+        return;
+      }
+      const items = list.map((s, i) => editing
+        ? `<div class="shortcut editing">
+            <input type="text" placeholder="${dict.shLabel}" value="${(s.label || '').replace(/"/g,'&quot;')}" oninput="updateShortcut(${i}, 'label', this.value)" />
+            <input type="url" placeholder="https://..." value="${(s.url || '').replace(/"/g,'&quot;')}" oninput="updateShortcut(${i}, 'url', this.value)" />
+            <button class="shortcut-del" onclick="removeShortcut(${i})" title="${dict.shDelete}">×</button>
+          </div>`
+        : `<a class="shortcut" href="${s.url}" target="_blank" rel="noopener">
+            <span>${s.label || s.url}</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>`).join('');
+      const footer = editing
+        ? `<div class="shortcut-edit-actions">
+            <button class="shortcut-add-btn" onclick="addShortcut()">+ ${dict.shAdd}</button>
+            <button class="shortcut-done-btn" onclick="toggleShortcutEdit()">${dict.shDone}</button>
+          </div>`
+        : `<button class="shortcut-edit-btn" onclick="toggleShortcutEdit()">${dict.shEdit}</button>`;
+      wrap.innerHTML = items + footer;
+    }
+    window.toggleShortcutEdit = function() {
+      const wrap = document.getElementById('shortcutList');
+      const editing = wrap.dataset.editing === '1';
+      wrap.dataset.editing = editing ? '0' : '1';
+      if (editing) saveShortcuts(loadShortcuts());  // already saved on input
+      // If turning ON edit and there are no shortcuts yet, seed one empty row
+      if (!editing && loadShortcuts().length === 0) {
+        saveShortcuts([{ label: '', url: '' }]);
+      }
+      renderShortcuts();
+    };
+    window.addShortcut = function() {
+      const list = loadShortcuts();
+      list.push({ label: '', url: '' });
+      saveShortcuts(list);
+      renderShortcuts();
+    };
+    window.updateShortcut = function(i, field, val) {
+      const list = loadShortcuts();
+      if (!list[i]) return;
+      list[i][field] = val;
+      saveShortcuts(list);
+    };
+    window.removeShortcut = function(i) {
+      const list = loadShortcuts();
+      list.splice(i, 1);
+      saveShortcuts(list);
+      renderShortcuts();
+    };
 
     function openTool(key) {
       const t = TOOLS.find(x => x.key === key);
@@ -927,9 +1175,10 @@
       document.getElementById('searchInput').placeholder = dict.searchPh;
       document.querySelectorAll('.lang-toggle button').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
       positionPill();
-      renderToolList();
       renderTileGrid();
       renderTzList();
+      renderTodayDate();
+      renderShortcuts();
       updateStats();
     }
     function positionPill() {

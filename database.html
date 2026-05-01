@@ -83,6 +83,16 @@
       font-size: 11px;
       letter-spacing: 0.5px;
       flex: none;
+      overflow: hidden;
+      position: relative;
+    }
+    .dev-tab .logo img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: contain;
+      padding: 4px;
+      background: rgba(255,255,255,0.95);
+      border-radius: inherit;
     }
     .dev-tab:hover { color: var(--cream); }
     .dev-tab.active { color: var(--gold); }
@@ -118,19 +128,26 @@
       pointer-events: none;
     }
     .dev-hero .logo-big {
-      width: 80px; height: 80px;
-      border-radius: 14px;
-      background: var(--dev-accent, var(--gold));
+      width: 96px; height: 96px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.95);
       display: grid; place-items: center;
       font-family: 'Playfair Display', serif;
       font-weight: 700;
-      font-size: 28px;
+      font-size: 32px;
       color: var(--dev-fg, #000);
       letter-spacing: 1.5px;
       flex: none;
-      box-shadow: 0 12px 30px -10px rgba(0,0,0,.5);
+      box-shadow: 0 14px 36px -10px rgba(0,0,0,.6);
       position: relative;
       z-index: 1;
+      overflow: hidden;
+    }
+    .dev-hero .logo-big img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: contain;
+      padding: 12px;
     }
     .dev-hero h2 {
       font-family: 'Playfair Display', serif;
@@ -268,7 +285,7 @@
 
   <div class="page-head">
     <div class="eyebrow" data-i18n="eyebrow">Database</div>
-    <h1 data-i18n="title">ブローシャー・データベース</h1>
+    <h1 data-i18n="title">データベース</h1>
     <p class="lede" data-i18n="lede">主要ドバイデベロッパーのブローシャー・PDF・ファクトシートを一括管理。検索バーで全デベロッパー横断検索、または下のタブから個別に閲覧。</p>
   </div>
 
@@ -298,22 +315,25 @@
     // ============ DEVELOPERS ============
     // bg / accent / fg = brand colors. Drop a real logo PNG at developers/<id>/logo.png
     // and it will replace the monogram automatically.
+    // domain = used to fetch logo from logo.clearbit.com (free, no key needed).
+    // If clearbit doesn't have it, the monogram fallback shows.
     const DEVELOPERS = [
-      { id: 'emaar',     name: 'Emaar',            taglineJa: 'ダウンタウン・ドバイヒルズの代表的開発',  taglineEn: 'Downtown, Dubai Hills, iconic landmarks',  initials: 'EM', bg: 'linear-gradient(135deg, #1a2540, #050d1f)', accent: '#d4b87a', fg: '#000' },
-      { id: 'damac',     name: 'DAMAC',            taglineJa: '高級・ブランデッドレジデンス',           taglineEn: 'Luxury & branded residences',              initials: 'DM', bg: 'linear-gradient(135deg, #2a0a0a, #1a0505)', accent: '#e32726', fg: '#fff' },
-      { id: 'sobha',     name: 'Sobha Realty',     taglineJa: 'ハートランド、プレミアムビラ',           taglineEn: 'Hartland and premium villas',              initials: 'SO', bg: 'linear-gradient(135deg, #1b2d5b, #0a1224)', accent: '#a88b5a', fg: '#fff' },
-      { id: 'nakheel',   name: 'Nakheel',          taglineJa: 'パームジュメイラ、ザ・ワールド',         taglineEn: 'Palm Jumeirah, The World',                 initials: 'NK', bg: 'linear-gradient(135deg, #0a2618, #04140d)', accent: '#0e914f', fg: '#fff' },
-      { id: 'meraas',    name: 'Meraas',           taglineJa: 'シティウォーク、ブルーウォーターズ',     taglineEn: 'City Walk, Bluewaters',                    initials: 'MR', bg: 'linear-gradient(135deg, #0d2a2a, #051515)', accent: '#00897b', fg: '#fff' },
-      { id: 'omniyat',   name: 'Omniyat',          taglineJa: 'ウルトララグジュアリー',                 taglineEn: 'Ultra-luxury, ONE Palm, AVA',              initials: 'OM', bg: 'linear-gradient(135deg, #1a0f1a, #0a0410)', accent: '#9a7bff', fg: '#fff' },
-      { id: 'mag',       name: 'MAG',              taglineJa: 'MAGシティ、Keturah',                    taglineEn: 'MAG City, Keturah Reserve',                initials: 'MG', bg: 'linear-gradient(135deg, #1a0f05, #0a0502)', accent: '#f26522', fg: '#fff' },
-      { id: 'binghatti', name: 'Binghatti',        taglineJa: '象徴的な曲線ファサード',                 taglineEn: 'Iconic curved-facade towers',              initials: 'BH', bg: 'linear-gradient(135deg, #1a1500, #0a0800)', accent: '#f4c61c', fg: '#000' },
-      { id: 'azizi',     name: 'Azizi',            taglineJa: 'リビエラ、MBR City',                    taglineEn: 'Riviera, MBR City',                        initials: 'AZ', bg: 'linear-gradient(135deg, #1a0a12, #0a0408)', accent: '#a8233e', fg: '#fff' },
-      { id: 'tiger',     name: 'Tiger Properties', taglineJa: 'JVC、JVT、新興エリア',                  taglineEn: 'JVC, JVT, emerging districts',             initials: 'TG', bg: 'linear-gradient(135deg, #1a0f00, #0a0500)', accent: '#f8a92b', fg: '#000' },
-      { id: 'ellington', name: 'Ellington',        taglineJa: 'デザイン重視、現代建築',                 taglineEn: 'Design-led contemporary',                  initials: 'EL', bg: 'linear-gradient(135deg, #0f1f1f, #050d0d)', accent: '#5ba8a0', fg: '#000' },
-      { id: 'danube',    name: 'Danube',           taglineJa: 'アフォーダブル・ラグジュアリー',         taglineEn: 'Affordable luxury',                        initials: 'DN', bg: 'linear-gradient(135deg, #0a1a2a, #050d18)', accent: '#1a6fb8', fg: '#fff' },
-      { id: 'select',    name: 'Select Group',     taglineJa: 'Marina、Studio One',                    taglineEn: 'Marina, Studio One',                       initials: 'SG', bg: 'linear-gradient(135deg, #122230, #060c14)', accent: '#5d8fb5', fg: '#000' },
-      { id: 'aldar',     name: 'Aldar',            taglineJa: 'アブダビ、Saadiyat',                    taglineEn: 'Abu Dhabi, Saadiyat, Yas',                 initials: 'AL', bg: 'linear-gradient(135deg, #0a1a14, #050d0a)', accent: '#71a87a', fg: '#000' }
+      { id: 'emaar',     name: 'Emaar',            domain: 'emaar.com',                  taglineJa: 'ダウンタウン・ドバイヒルズ',  taglineEn: 'Downtown, Dubai Hills, iconic landmarks',  initials: 'EM', bg: 'linear-gradient(135deg, #1a2540, #050d1f)', accent: '#d4b87a', fg: '#000' },
+      { id: 'damac',     name: 'DAMAC',            domain: 'damacproperties.com',        taglineJa: '高級ブランデッドレジデンス',  taglineEn: 'Luxury & branded residences',              initials: 'DM', bg: 'linear-gradient(135deg, #2a0a0a, #1a0505)', accent: '#e32726', fg: '#fff' },
+      { id: 'sobha',     name: 'Sobha Realty',     domain: 'sobharealty.com',            taglineJa: 'ハートランド、プレミアムビラ', taglineEn: 'Hartland & premium villas',                initials: 'SO', bg: 'linear-gradient(135deg, #1b2d5b, #0a1224)', accent: '#a88b5a', fg: '#fff' },
+      { id: 'nakheel',   name: 'Nakheel',          domain: 'nakheel.com',                taglineJa: 'パームジュメイラ',           taglineEn: 'Palm Jumeirah, The World',                 initials: 'NK', bg: 'linear-gradient(135deg, #0a2618, #04140d)', accent: '#0e914f', fg: '#fff' },
+      { id: 'meraas',    name: 'Meraas',           domain: 'meraas.com',                 taglineJa: 'シティウォーク、ブルーウォーターズ', taglineEn: 'City Walk, Bluewaters',           initials: 'MR', bg: 'linear-gradient(135deg, #0d2a2a, #051515)', accent: '#00897b', fg: '#fff' },
+      { id: 'omniyat',   name: 'Omniyat',          domain: 'omniyat.com',                taglineJa: 'ウルトララグジュアリー',       taglineEn: 'ONE Palm, AVA, ultra-luxury',              initials: 'OM', bg: 'linear-gradient(135deg, #1a0f1a, #0a0410)', accent: '#9a7bff', fg: '#fff' },
+      { id: 'mag',       name: 'MAG',              domain: 'magpd.com',                  taglineJa: 'MAGシティ、Keturah',         taglineEn: 'MAG City, Keturah Reserve',                initials: 'MG', bg: 'linear-gradient(135deg, #1a0f05, #0a0502)', accent: '#f26522', fg: '#fff' },
+      { id: 'binghatti', name: 'Binghatti',        domain: 'binghatti.com',              taglineJa: '象徴的な曲線ファサード',     taglineEn: 'Iconic curved-facade towers',              initials: 'BH', bg: 'linear-gradient(135deg, #1a1500, #0a0800)', accent: '#f4c61c', fg: '#000' },
+      { id: 'azizi',     name: 'Azizi',            domain: 'azizidevelopments.com',      taglineJa: 'リビエラ、MBR City',         taglineEn: 'Riviera, MBR City',                        initials: 'AZ', bg: 'linear-gradient(135deg, #1a0a12, #0a0408)', accent: '#a8233e', fg: '#fff' },
+      { id: 'tiger',     name: 'Tiger Properties', domain: 'tigerproperties.com',        taglineJa: 'JVC、JVT、新興エリア',       taglineEn: 'JVC, JVT, emerging districts',             initials: 'TG', bg: 'linear-gradient(135deg, #1a0f00, #0a0500)', accent: '#f8a92b', fg: '#000' },
+      { id: 'ellington', name: 'Ellington',        domain: 'ellingtonproperties.ae',     taglineJa: 'デザイン重視、現代建築',     taglineEn: 'Design-led contemporary',                  initials: 'EL', bg: 'linear-gradient(135deg, #0f1f1f, #050d0d)', accent: '#5ba8a0', fg: '#000' },
+      { id: 'danube',    name: 'Danube',           domain: 'danubeproperties.com',       taglineJa: 'アフォーダブル・ラグジュアリー', taglineEn: 'Affordable luxury',                       initials: 'DN', bg: 'linear-gradient(135deg, #0a1a2a, #050d18)', accent: '#1a6fb8', fg: '#fff' },
+      { id: 'select',    name: 'Select Group',     domain: 'select-group.ae',            taglineJa: 'Marina、Studio One',         taglineEn: 'Marina, Studio One',                       initials: 'SG', bg: 'linear-gradient(135deg, #122230, #060c14)', accent: '#5d8fb5', fg: '#000' },
+      { id: 'aldar',     name: 'Aldar',            domain: 'aldar.com',                  taglineJa: 'アブダビ、Saadiyat',         taglineEn: 'Abu Dhabi, Saadiyat, Yas',                 initials: 'AL', bg: 'linear-gradient(135deg, #0a1a14, #050d0a)', accent: '#71a87a', fg: '#000' }
     ];
+    function logoUrl(d) { return d.domain ? `https://logo.clearbit.com/${d.domain}?size=128` : ''; }
 
     // ============ DOCS ============
     // Paths are relative to the repo root. To add a brochure:
@@ -329,7 +349,7 @@
       ja: {
         back: 'ダッシュボード', hello: 'こんにちは、',
         eyebrow: 'Database',
-        title: 'ブローシャー・データベース',
+        title: 'データベース',
         lede: '主要ドバイデベロッパーのブローシャー・PDF・ファクトシートを一括管理。検索バーで全デベロッパー横断検索、または下のタブから個別に閲覧。',
         searchPh: 'ブローシャー・物件名で検索…',
         emptyTitle: 'まだブローシャーがありません',
@@ -341,7 +361,7 @@
       en: {
         back: 'Dashboard', hello: 'Hi, ',
         eyebrow: 'Database',
-        title: 'Brochure Database',
+        title: 'Database',
         lede: 'All major Dubai developer brochures, PDFs, and fact-sheets in one place. Use the global search bar to find anything across developers, or browse by tab.',
         searchPh: 'Search brochures or property names…',
         emptyTitle: 'No brochures yet',
@@ -364,8 +384,12 @@
       const tabsEl = document.getElementById('subtabs');
       tabsEl.innerHTML = DEVELOPERS.map((d, i) => {
         const count = docsForDev(d.id).length;
+        const lu = logoUrl(d);
         return `<button class="dev-tab ${i === 0 ? 'active' : ''}" data-tab="${d.id}">
-          <span class="logo" style="background:${d.accent}; color:${d.fg};">${d.initials}</span>
+          <span class="logo" style="background:${d.accent}; color:${d.fg};">
+            <span style="position:relative;z-index:0">${d.initials}</span>
+            ${lu ? `<img src="${lu}" alt="${d.name}" onerror="this.remove()" />` : ''}
+          </span>
           <span>${d.name}</span>
           <span class="count">${count}</span>
         </button>`;
@@ -396,9 +420,13 @@
               <h3>${dict.emptyTitle}</h3>
               <p>${dict.emptyBody.replace('{ID}', d.id)}</p>
             </div>`;
+        const lu = logoUrl(d);
         return `<section class="panel ${i === 0 ? 'active' : ''}" data-panel="${d.id}" style="--dev-bg:${d.bg}; --dev-accent:${d.accent}; --dev-fg:${d.fg}; --dev-glow:${d.accent}33;">
           <div class="dev-hero">
-            <div class="logo-big">${d.initials}</div>
+            <div class="logo-big">
+              <span style="position:relative;z-index:0">${d.initials}</span>
+              ${lu ? `<img src="${lu}" alt="${d.name}" onerror="this.remove()" />` : ''}
+            </div>
             <div>
               <h2>${d.name}</h2>
               <p class="tagline">${tagline}</p>

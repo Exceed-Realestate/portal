@@ -42,6 +42,14 @@ service cloud.firestore {
       allow delete: if isAdminEmail();
     }
 
+    // ------- Team config (org chart) -------
+    // Single doc at teamConfig/main holds the full team tree.
+    // Anyone signed-in can read it; only admins can write.
+    match /teamConfig/{configId} {
+      allow read: if isSignedIn();
+      allow write: if isAdminEmail();
+    }
+
     // ------- Customers -------
     // Doc ID = registration number (e.g. EXC-AB12CD)
     match /customers/{regNumber} {
