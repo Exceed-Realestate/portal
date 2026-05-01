@@ -251,56 +251,59 @@
       letter-spacing: 1px;
     }
 
-    /* Hexagonal avatar — pointy-top, ratio ~1:1.155 (sqrt(3)/2 inverted) */
+    /* Modern transparent-PNG portraits — no frame, no border, just the cutout */
     .avatar {
-      --hex-w: 80px;
-      --hex-h: 92px;
-      width: var(--hex-w); height: var(--hex-h);
-      margin: 16px auto 14px;
+      --av-w: 96px;
+      --av-h: 116px;
+      width: var(--av-w);
+      height: var(--av-h);
+      margin: 0 auto 10px;
       position: relative;
-      filter: drop-shadow(0 8px 16px rgba(0,0,0,.35));
+      filter: drop-shadow(0 8px 14px rgba(0,0,0,.45)) drop-shadow(0 2px 4px rgba(0,0,0,.3));
       transition: transform .25s;
     }
-    .node:hover .avatar { transform: translateY(-2px) scale(1.04); }
-    .avatar::before {
-      content: '';
-      position: absolute; inset: 0;
-      background: linear-gradient(135deg, var(--gold), #8a6a30);
-      clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
-      z-index: 0;
-    }
+    .node:hover .avatar { transform: translateY(-3px) scale(1.04); }
     .avatar-inner {
-      position: absolute; inset: 3px;
-      clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
-      background: linear-gradient(135deg, rgba(212,184,122,0.22), rgba(23,54,99,0.85));
+      position: absolute; inset: 0;
+      display: grid; place-items: end center;
+    }
+    .avatar-inner img {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: 100%;
+      object-fit: contain;
+      object-position: bottom center;
+      display: block;
+    }
+    /* Initials fallback when no photo — small clean circle */
+    .avatar-inner > span {
       display: grid; place-items: center;
-      color: var(--cream);
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold), #8a6a30);
+      color: var(--navy-0);
       font-family: 'Playfair Display', serif;
-      font-size: 22px;
-      font-weight: 600;
+      font-size: 22px; font-weight: 600;
       letter-spacing: 1px;
-      overflow: hidden;
+      box-shadow: 0 6px 14px -4px rgba(0,0,0,.5);
+      align-self: center;
     }
-    .avatar-inner img { width: 100%; height: 100%; object-fit: cover; display: block; position: absolute; inset: 0; }
-    .avatar-inner > span { position: relative; z-index: 0; }
+    /* When a photo IS present, hide the initials underneath */
+    .avatar-inner img + span,
+    .avatar-inner > span:has(+ img) { display: none; }
+    /* Better: explicit class managed in render */
+    .avatar.has-photo .avatar-inner > span { display: none; }
 
-    /* Tier-specific hex tints */
-    .node.tier-ceo .avatar {
-      --hex-w: 100px; --hex-h: 116px;
-    }
-    .node.tier-ceo .avatar::before {
-      background: linear-gradient(135deg, var(--cream), var(--gold), #ad8a4a);
-      filter: drop-shadow(0 0 16px rgba(212,184,122,0.5));
-    }
-    .node.tier-ceo .avatar-inner { font-size: 28px; }
-    .node.tier-md .avatar { --hex-w: 90px; --hex-h: 104px; }
-    .node.tier-md .avatar::before { background: linear-gradient(135deg, #e8c889, var(--gold), #8a6a30); }
-    .node.tier-coo .avatar { --hex-w: 90px; --hex-h: 104px; }
-    .node.tier-coo .avatar::before { background: linear-gradient(135deg, #c5a978, #a08858, #6a5028); }
-
-    /* Member-level hexagons get a subtle navy-edged variant for visual hierarchy */
-    .member-node .avatar { --hex-w: 72px; --hex-h: 84px; }
-    .member-node .avatar::before { background: linear-gradient(135deg, var(--gold), #6a5028); }
+    /* Tier-specific sizing only — no rings, no frames */
+    .node.tier-ceo .avatar { --av-w: 130px; --av-h: 150px; }
+    .node.tier-md  .avatar { --av-w: 110px; --av-h: 130px; }
+    .node.tier-coo .avatar { --av-w: 110px; --av-h: 130px; }
+    .member-node   .avatar { --av-w: 88px;  --av-h: 108px; }
+    .node.tier-ceo .avatar-inner > span { width: 92px; height: 92px; font-size: 28px; }
+    .node.tier-md  .avatar-inner > span,
+    .node.tier-coo .avatar-inner > span { width: 80px; height: 80px; font-size: 24px; }
+    .member-node   .avatar-inner > span { width: 64px; height: 64px; font-size: 18px; }
 
     /* Name + role — uniform sizing */
     .node h3 {
@@ -692,6 +695,18 @@
           <div class="field"><label data-i18n="fPhoneDisp">電話表示用</label><input id="m-phoneDisp" type="text" placeholder="+81 70 8454 8230" /></div>
         </div>
         <div class="field"><label data-i18n="fEmail">メール</label><input id="m-email" type="email" placeholder="name@exceed-re.ae" /></div>
+        <div class="field-row">
+          <div class="field"><label data-i18n="fBdayMonth">誕生月</label>
+            <select id="m-bdayMonth">
+              <option value="">—</option>
+              <option value="1">1月 / Jan</option><option value="2">2月 / Feb</option><option value="3">3月 / Mar</option>
+              <option value="4">4月 / Apr</option><option value="5">5月 / May</option><option value="6">6月 / Jun</option>
+              <option value="7">7月 / Jul</option><option value="8">8月 / Aug</option><option value="9">9月 / Sep</option>
+              <option value="10">10月 / Oct</option><option value="11">11月 / Nov</option><option value="12">12月 / Dec</option>
+            </select>
+          </div>
+          <div class="field"><label data-i18n="fBdayDay">日</label><input id="m-bdayDay" type="number" min="1" max="31" placeholder="15" /></div>
+        </div>
         <div class="field"><label data-i18n="fPhoto">写真パス</label><input id="m-photo" type="text" placeholder="team/yuta-nagatoshi.png または https://..." /></div>
         <div class="modal-actions">
           <button type="submit" class="save" data-i18n="save">保存</button>
@@ -881,12 +896,14 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
           </button>
         </div>` : '';
+      const hasPhoto = !!m.photo;
       return `
         <div class="node ${tierClass}">
-          <div class="avatar">
+          <div class="avatar ${hasPhoto ? 'has-photo' : ''}">
             <div class="avatar-inner">
-              <span style="position:relative;z-index:0">${initials(m.name)}</span>
-              ${m.photo ? `<img src="${m.photo}" alt="${m.name}" onerror="this.remove()" />` : ''}
+              ${hasPhoto
+                ? `<img src="${m.photo}" alt="${m.name}" onerror="this.parentElement.parentElement.classList.remove('has-photo'); this.remove();" />`
+                : `<span>${initials(m.name)}</span>`}
             </div>
           </div>
           <h3>${m.name}</h3>
@@ -1074,6 +1091,8 @@
       document.getElementById('m-phone').value = m.phone || '';
       document.getElementById('m-phoneDisp').value = m.phoneDisplay || '';
       document.getElementById('m-email').value = m.email || '';
+      document.getElementById('m-bdayMonth').value = m.bdayMonth || '';
+      document.getElementById('m-bdayDay').value = m.bdayDay || '';
       document.getElementById('m-photo').value = m.photo || '';
       document.getElementById('deleteBtn').style.display = '';
       document.getElementById('modalTitle').textContent = currentLang === 'ja' ? 'メンバー編集' : 'Edit member';
@@ -1093,6 +1112,8 @@
     };
     window.saveMember = async function() {
       if (!editingState) return;
+      const bm = parseInt(document.getElementById('m-bdayMonth').value, 10);
+      const bd = parseInt(document.getElementById('m-bdayDay').value, 10);
       const m = {
         name: document.getElementById('m-name').value.trim(),
         nameJa: document.getElementById('m-nameJa').value.trim(),
@@ -1101,6 +1122,8 @@
         phone: document.getElementById('m-phone').value.trim(),
         phoneDisplay: document.getElementById('m-phoneDisp').value.trim(),
         email: document.getElementById('m-email').value.trim(),
+        bdayMonth: Number.isInteger(bm) && bm >= 1 && bm <= 12 ? bm : null,
+        bdayDay:   Number.isInteger(bd) && bd >= 1 && bd <= 31 ? bd : null,
         photo: document.getElementById('m-photo').value.trim()
       };
       if (!m.name) { showToast(currentLang === 'ja' ? '名前は必須です' : 'Name is required'); return; }

@@ -231,6 +231,78 @@
     .schedule-item .time { font-family: 'Playfair Display', serif; color: var(--gold); font-size: 14px; font-weight: 600; min-width: 56px; }
     .schedule-item .what { color: var(--cream); font-size: 13px; flex: 1; }
 
+    /* Birthdays card — sits below the schedule card */
+    .birthday-card {
+      margin-top: 16px;
+      background: linear-gradient(180deg, rgba(212,184,122,0.08), rgba(212,184,122,0.02));
+      border: 1px solid rgba(212,184,122,0.3);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+      backdrop-filter: blur(14px) saturate(160%);
+      -webkit-backdrop-filter: blur(14px) saturate(160%);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 16px 36px -16px rgba(0,0,0,.4);
+      position: relative;
+      overflow: hidden;
+    }
+    .birthday-card::before {
+      content: '';
+      position: absolute;
+      top: -1px; left: 24px; right: 24px; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      opacity: 0.55;
+    }
+    .bday-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+    .bday-eyebrow { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); margin-bottom: 4px; font-family: 'Inter', sans-serif; font-weight: 600; }
+    .bday-month {
+      font-family: 'Inter', 'Noto Sans JP', system-ui, sans-serif;
+      font-size: 16px; font-weight: 700; color: var(--cream); letter-spacing: 0.2px;
+    }
+    .bday-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: rgba(212,184,122,0.12);
+      border: 1px solid rgba(212,184,122,0.35);
+      display: grid; place-items: center;
+      color: var(--gold);
+    }
+    .bday-icon svg { width: 17px; height: 17px; }
+    .bday-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+    .bday-item {
+      display: flex; align-items: center; gap: 11px;
+      padding: 8px 10px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      transition: all .15s;
+    }
+    .bday-item:hover { background: rgba(212,184,122,0.10); border-color: rgba(212,184,122,0.35); }
+    .bday-item.today { border-color: rgba(212,184,122,0.6); background: rgba(212,184,122,0.14); box-shadow: 0 0 0 3px rgba(212,184,122,0.08); }
+    .bday-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      overflow: hidden;
+      background: linear-gradient(135deg, var(--gold), #8a6a30);
+      display: grid; place-items: center;
+      flex: none;
+      color: var(--navy-0);
+      font-family: 'Playfair Display', serif;
+      font-size: 11px; font-weight: 600;
+      position: relative;
+    }
+    .bday-avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .bday-info { flex: 1; min-width: 0; }
+    .bday-name { font-size: 12px; color: var(--cream); font-weight: 600; line-height: 1.2; font-family: 'Inter','Noto Sans JP',sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bday-date {
+      font-family: ui-monospace, 'SF Mono', monospace;
+      font-size: 11px;
+      color: var(--gold);
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      flex: none;
+      padding: 3px 8px;
+      background: rgba(0,0,0,0.25);
+      border-radius: 999px;
+    }
+    .bday-empty { text-align: center; padding: 18px 8px; color: var(--muted); font-size: 12px; line-height: 1.5; border: 1px dashed var(--line); border-radius: 9px; }
+
     /* ---- LEFT column: page head ---- */
     .left-col h1 {
       font-family: 'Playfair Display', serif;
@@ -756,6 +828,20 @@
 
               <ul class="schedule-list" id="scheduleList" style="display:none"></ul>
             </div>
+
+            <!-- This Month's Birthdays -->
+            <div class="birthday-card" id="birthdayCard">
+              <div class="bday-head">
+                <div>
+                  <div class="bday-eyebrow" data-i18n="bdayLabel">今月の誕生日</div>
+                  <div class="bday-month" id="bdayMonthName">—</div>
+                </div>
+                <div class="bday-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/><path d="M4 16h16"/><path d="M2 21h20"/><path d="M9 7c0-1.5-1.5-2-1.5-3.5C7.5 2.5 9 2 9 2s1.5.5 1.5 1.5C10.5 5 9 5.5 9 7"/><path d="M15 7c0-1.5-1.5-2-1.5-3.5C13.5 2.5 15 2 15 2s1.5.5 1.5 1.5C16.5 5 15 5.5 15 7"/></svg>
+                </div>
+              </div>
+              <ul class="bday-list" id="bdayList"></ul>
+            </div>
           </section>
 
           <!-- CENTER column -->
@@ -945,7 +1031,8 @@
         shortcutAdd: '追加',
         shEdit: '編集', shDone: '完了', shAdd: '行を追加', shDelete: '削除',
         shLabel: 'ラベル',
-        travelingLabel: '出張中', travelingEmpty: '現在、出張中のメンバーはいません。'
+        travelingLabel: '出張中', travelingEmpty: '現在、出張中のメンバーはいません。',
+        bdayLabel: '今月の誕生日', bdayEmpty: '今月のチームメンバーの誕生日はありません。管理者がチームメンバー編集画面から日付を入力できます。'
       },
       en: {
         eyebrow: 'AGENT DASHBOARD',
@@ -978,7 +1065,8 @@
         shortcutAdd: 'Add one',
         shEdit: 'Edit', shDone: 'Done', shAdd: 'Add row', shDelete: 'Delete',
         shLabel: 'Label',
-        travelingLabel: 'TRAVELING NOW', travelingEmpty: 'No teammates traveling right now.'
+        travelingLabel: 'TRAVELING NOW', travelingEmpty: 'No teammates traveling right now.',
+        bdayLabel: 'THIS MONTH\'S BIRTHDAYS', bdayEmpty: 'No team birthdays this month yet. Admin can add dates from the Team Members → Edit Tree screen.'
       }
     };
     // Each TZ card has a flag-colour stripe behind, time tag in WITA/JST/etc.
@@ -1099,6 +1187,62 @@
           </div>
           <div class="tz-time">${fmtTime(t.tz)}</div>
         </div>`;
+      }).join('');
+    }
+
+    // ----- Birthdays this month -----
+    let TEAM_CONFIG = null; // cached read of teamConfig/main from Firestore
+    async function loadTeamConfig() {
+      if (TEAM_CONFIG) return TEAM_CONFIG;
+      try {
+        const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js");
+        const snap = await getDoc(doc(db, 'teamConfig', 'main'));
+        if (snap.exists()) TEAM_CONFIG = snap.data();
+      } catch (e) { console.warn('teamConfig load skipped:', e?.message); }
+      return TEAM_CONFIG;
+    }
+    function flattenMembers(cfg) {
+      if (!cfg) return [];
+      const all = [];
+      Object.keys(cfg).forEach(k => {
+        if (Array.isArray(cfg[k])) cfg[k].forEach(m => { if (m && m.name) all.push(m); });
+      });
+      return all;
+    }
+    async function renderBirthdays() {
+      const cfg = await loadTeamConfig();
+      const all = flattenMembers(cfg);
+      const today = new Date();
+      const month = today.getMonth() + 1;
+      const day   = today.getDate();
+      const monthFmt = new Intl.DateTimeFormat(currentLang === 'ja' ? 'ja-JP' : 'en-GB', { month: 'long', year: 'numeric' });
+      document.getElementById('bdayMonthName').textContent = monthFmt.format(today);
+
+      const list = all
+        .filter(m => Number.isInteger(m.bdayMonth) && m.bdayMonth === month && Number.isInteger(m.bdayDay))
+        .sort((a, b) => a.bdayDay - b.bdayDay);
+
+      const dict = I18N[currentLang];
+      const wrap = document.getElementById('bdayList');
+      if (!list.length) {
+        wrap.innerHTML = `<div class="bday-empty">${dict.bdayEmpty}</div>`;
+        return;
+      }
+      const dayFmt = (d) => currentLang === 'ja' ? `${d}日` : new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short' }).format(new Date(today.getFullYear(), month - 1, d));
+      wrap.innerHTML = list.map(m => {
+        const isToday = m.bdayDay === day;
+        const init = (m.name || '').split(/\s+/).slice(0,2).map(s => s[0]).join('').toUpperCase();
+        return `
+          <div class="bday-item ${isToday ? 'today' : ''}">
+            <div class="bday-avatar">
+              ${m.photo ? `<img src="${m.photo}" alt="${m.name}" onerror="this.remove()" />` : ''}
+              <span style="position:relative;z-index:0">${init}</span>
+            </div>
+            <div class="bday-info">
+              <div class="bday-name">${m.name}${isToday ? ' 🎉' : ''}</div>
+            </div>
+            <span class="bday-date">${dayFmt(m.bdayDay)}</span>
+          </div>`;
       }).join('');
     }
 
@@ -1254,6 +1398,7 @@
       renderTodayDate();
       renderShortcuts();
       renderTraveling();
+      renderBirthdays();
       updateStats();
     }
     function positionPill() {
