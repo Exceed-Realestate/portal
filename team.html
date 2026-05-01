@@ -151,6 +151,70 @@
     .node.tier-md::after  { content: 'MD';  background: rgba(212,184,122,0.20); border: 1px solid rgba(212,184,122,0.55); color: var(--gold); font-size: 9px; backdrop-filter: blur(6px); }
     .node.tier-coo::after { content: 'COO'; background: rgba(212,184,122,0.20); border: 1px solid rgba(212,184,122,0.55); color: var(--gold); font-size: 9px; backdrop-filter: blur(6px); }
 
+    /* Company headers — bigger than divisions, accented with brand colour */
+    .node.company {
+      width: 200px;
+      padding: 14px 16px;
+      background: linear-gradient(180deg, color-mix(in oklab, var(--co-accent, var(--gold)) 16%, transparent), color-mix(in oklab, var(--co-accent, var(--gold)) 4%, transparent));
+      border: 1px solid color-mix(in oklab, var(--co-accent, var(--gold)) 50%, transparent);
+      border-radius: 14px;
+      backdrop-filter: blur(8px);
+      transition: transform .2s, border-color .2s;
+    }
+    .node.company:hover { transform: translateY(-2px); border-color: var(--co-accent, var(--gold)); }
+    .node.company .company-icon {
+      width: 34px; height: 34px;
+      border-radius: 10px;
+      background: color-mix(in oklab, var(--co-accent, var(--gold)) 25%, rgba(0,0,0,0.4));
+      border: 1px solid color-mix(in oklab, var(--co-accent, var(--gold)) 60%, transparent);
+      color: var(--co-accent, var(--gold));
+      display: grid; place-items: center;
+      margin: 0 auto 8px;
+    }
+    .node.company .company-icon svg { width: 16px; height: 16px; }
+    .node.company h4 {
+      font-family: 'Inter', 'Noto Sans JP', sans-serif;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--cream);
+      margin: 0;
+      line-height: 1.3;
+    }
+
+    /* Board governance band */
+    .node.board-band {
+      width: auto;
+      min-width: 180px;
+      padding: 8px 22px;
+      background: linear-gradient(135deg, rgba(212,184,122,0.14), rgba(212,184,122,0.05));
+      border: 1px solid rgba(212,184,122,0.4);
+      border-radius: 999px;
+      backdrop-filter: blur(8px);
+    }
+    .node.board-band h4 {
+      font-family: 'Inter', sans-serif;
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 3px; text-transform: uppercase;
+      color: var(--gold); margin: 0;
+    }
+    .board-add-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 14px;
+      background: rgba(212,184,122,0.10);
+      border: 1px dashed rgba(212,184,122,0.4);
+      color: var(--gold);
+      border-radius: 999px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 11px;
+      letter-spacing: 1px;
+      font-weight: 600;
+      transition: all .15s;
+    }
+    .board-add-btn:hover { background: rgba(212,184,122,0.2); color: var(--cream); }
+
     /* Division headers — text-only label with small icon, no box */
     .node.division {
       width: 140px;
@@ -572,6 +636,16 @@
     <div class="aside-grid" id="partnersGrid"></div>
   </section>
 
+  <!-- Roster (unassigned members) -->
+  <section class="aside" id="roster-section">
+    <div class="aside-head">
+      <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="4"/><circle cx="17" cy="7" r="3"/><path d="M2 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"/><path d="M22 21v-1a3 3 0 0 0-2.5-2.96"/></svg><span data-i18n="rosterTitle">登録メンバー（配属待ち）</span></h2>
+      <div class="count" id="rosterCount">0</div>
+    </div>
+    <p class="aside-sub" data-i18n="rosterSub" style="color:var(--muted);font-size:12px;margin:-12px 0 16px;line-height:1.5;">これらのメンバーはまだ部門に配属されていません。管理者として「ツリーを編集」ボタンから各メンバーをドラッグ／編集して、適切なチームに配属してください。</p>
+    <div class="aside-grid" id="rosterGrid"></div>
+  </section>
+
   <div class="add-hint" data-i18n-html="addHint"><strong>メンバー追加方法:</strong> 管理者でログインすると右上に「ツリーを編集」ボタンが表示されます。写真は <code>team/&lt;ファイル名&gt;.png</code> にアップロード後、編集画面でファイル名を指定してください。</div>
 
   <!-- Edit modal (admin only) -->
@@ -590,19 +664,27 @@
         </div>
         <div class="field"><label data-i18n="fSection">所属部門</label>
           <select id="m-section">
-            <option value="ceo">CEO</option>
-            <option value="md">Managing Director</option>
-            <option value="coo">COO</option>
-            <option value="board">Board Members</option>
-            <option value="dubai-sales">Dubai Sales</option>
-            <option value="japan-sales">Japan Sales</option>
-            <option value="lombok">Lombok Project</option>
-            <option value="japan-office">Japan Office</option>
-            <option value="way-office">Way Office</option>
-            <option value="marketing">Marketing</option>
-            <option value="ayuva">AYUVA Project</option>
-            <option value="takumi-renovation">Takumi Renovation</option>
-            <option value="partners">Partners (Developers)</option>
+            <optgroup label="Leadership">
+              <option value="ceo">CEO</option>
+              <option value="board">Board Member</option>
+            </optgroup>
+            <optgroup label="Exceed Real Estate">
+              <option value="japan-sales">Japan Sales</option>
+              <option value="dubai-sales">Dubai Sales</option>
+              <option value="dubai-office">Dubai Office</option>
+              <option value="japan-office">Japan Office</option>
+              <option value="lombok">Lombok</option>
+            </optgroup>
+            <optgroup label="AYUVA">
+              <option value="ayuva">AYUVA Team</option>
+            </optgroup>
+            <optgroup label="Takumi Renovation">
+              <option value="takumi-renovation">Takumi Team</option>
+            </optgroup>
+            <optgroup label="Other">
+              <option value="partners">Developer Partners</option>
+              <option value="roster">Roster (unassigned)</option>
+            </optgroup>
           </select>
         </div>
         <div class="field-row">
@@ -635,53 +717,97 @@
         { name: 'TERUO SHIMADA',   nameJa: '島田 輝雄',   role: 'Chief Executive Officer', roleJa: '代表取締役 CEO',
           phone: '', phoneDisplay: '', email: '', photo: 'team/teruo-shimada.png' }
       ],
-      md: [
-        { name: 'SHOYA HOSOYAMA',  nameJa: '細山 翔也',   role: 'Managing Director', roleJa: 'マネージング・ディレクター',
+      board: [],
+      // Exceed Real Estate teams
+      'japan-sales': [
+        { name: 'SHOYA HOSOYAMA',  nameJa: '細山 翔也',   role: 'MD · Head of Japan Sales', roleJa: 'MD・日本営業部長',
           phone: '', phoneDisplay: '', email: '', photo: 'team/shoya-hosoyama.png' }
       ],
-      coo: [
+      'dubai-sales': [
         { name: 'MALIK BOUESSAH', nameJa: 'مالك بو عيسى', role: 'COO · Head of Dubai Sales', roleJa: 'COO・ドバイ営業部長',
           phone: '', phoneDisplay: '', email: '', photo: 'team/malik-bouessah.png' }
       ],
-      board: [],
-      'dubai-sales': [
-        { name: 'MALIK BOUESSAH', nameJa: 'مالك بو عيسى', role: 'Head of Dubai Sales · COO', roleJa: 'ドバイ営業部長 / COO',
-          phone: '', phoneDisplay: '', email: '', photo: 'team/malik-bouessah.png' }
-      ],
-      'japan-sales': [
-        { name: 'SHOYA HOSOYAMA',  nameJa: '細山 翔也',   role: 'Head of Japan Sales', roleJa: '日本営業部長',
-          phone: '', phoneDisplay: '', email: '', photo: 'team/shoya-hosoyama.png' }
-      ],
+      'dubai-office': [],
+      'japan-office': [],
       lombok: [
         { name: 'YUTA NAGATOSHI',  nameJa: '長利 ユウタ', role: 'Lombok Project', roleJa: 'ロンボクプロジェクト',
           phone: '+817084548230', phoneDisplay: '+81 70 8454 8230', email: '', photo: 'team/yuta-nagatoshi.png' }
       ],
-      'japan-office': [],
-      'way-office': [],
-      marketing: [],
-      ayuva: [],
+      // AYUVA
+      ayuva: [
+        { name: 'BALRAJ',       nameJa: 'バルラージ', role: 'AYUVA',       roleJa: 'AYUVA', phone: '', phoneDisplay: '', email: 'balraj@exceed-re.ae', photo: '' },
+        { name: 'NAO TAKAMOTO', nameJa: '高本 ナオ',   role: 'AYUVA · Admin', roleJa: 'AYUVA・管理者', phone: '', phoneDisplay: '', email: '', photo: '' }
+      ],
+      // Takumi Renovation
       'takumi-renovation': [
         { name: 'TAKUMI SHOJI',    nameJa: '庄司 拓海',   role: 'CEO · Takumi Renovation', roleJa: 'CEO・Takumi リノベーション',
-          phone: '', phoneDisplay: '', email: '', photo: 'team/takumi-shoji.png' }
+          phone: '', phoneDisplay: '', email: '', photo: 'team/takumi-shoji.png' },
+        { name: 'RINA',            nameJa: '',           role: 'Takumi Renovation', roleJa: 'Takumi リノベーション',
+          phone: '', phoneDisplay: '', email: '', photo: '' }
       ],
-      partners: []
-    };
-
-    // Divisions split between MD (Japan / Projects) and COO (Dubai / Operations)
-    const DIVISIONS_BY_PARENT = {
-      md: [
-        { id: 'japan-sales',       ja: '日本営業',             en: 'Japan Sales',       icon: 'pin' },
-        { id: 'lombok',            ja: 'ロンボクプロジェクト',     en: 'Lombok Project',    icon: 'island' },
-        { id: 'japan-office',      ja: '日本オフィス',           en: 'Japan Office',      icon: 'building' },
-        { id: 'ayuva',             ja: 'AYUVAプロジェクト',     en: 'AYUVA Project',     icon: 'leaf' },
-        { id: 'takumi-renovation', ja: 'Takumi リノベーション', en: 'Takumi Renovation', icon: 'tools' }
-      ],
-      coo: [
-        { id: 'dubai-sales',       ja: 'ドバイ営業',           en: 'Dubai Sales',       icon: 'pin' },
-        { id: 'way-office',        ja: 'Way オフィス',          en: 'Way Office',        icon: 'building' },
-        { id: 'marketing',         ja: 'マーケティング',          en: 'Marketing',         icon: 'megaphone' }
+      // External
+      partners: [],
+      // Retained for compatibility
+      'way-office': [],
+      marketing: [],
+      // Roster — names registered for the portal but not yet assigned to a team.
+      // Admin moves them into the proper division using the Edit Tree button.
+      roster: [
+        { name: 'ALINA',            nameJa: '',          role: 'Pending assignment', roleJa: '配属待ち', phone: '+971568880055',  phoneDisplay: '+971 56 888 0055', email: '', photo: '' },
+        { name: 'ASUKA ITO',        nameJa: '伊藤 明日香', role: 'Pending assignment', roleJa: '配属待ち', phone: '',               phoneDisplay: '',                  email: '', photo: '' },
+        { name: 'HAMZA',            nameJa: '',          role: 'Admin · Exceed',     roleJa: 'Admin · Exceed', phone: '',          phoneDisplay: '',                  email: '', photo: '' },
+        { name: 'HAYA',             nameJa: '',          role: 'Pending assignment', roleJa: '配属待ち', phone: '',               phoneDisplay: '',                  email: '', photo: '' },
+        { name: 'HIRA',             nameJa: '',          role: 'Exceed',             roleJa: 'Exceed',   phone: '',               phoneDisplay: '',                  email: '', photo: '' },
+        { name: 'HIROSHI WATANABE', nameJa: '渡辺 浩',    role: 'Pending assignment', roleJa: '配属待ち', phone: '',               phoneDisplay: '',                  email: '', photo: '' },
+        { name: 'KATRIN ONELL',     nameJa: '',          role: 'Pending assignment', roleJa: '配属待ち', phone: '+971558664700',  phoneDisplay: '+971 55 866 4700', email: '', photo: '' },
+        { name: 'KATSUYA',          nameJa: '',          role: 'Pending assignment', roleJa: '配属待ち', phone: '',               phoneDisplay: '',                  email: '', photo: '' },
+        { name: 'KUNIYASU TOIZUMI', nameJa: '戸泉 邦泰',   role: 'Pending assignment', roleJa: '配属待ち', phone: '+818066410007',  phoneDisplay: '+81 80 6641 0007', email: '', photo: '' },
+        { name: 'LAITH',            nameJa: '',          role: 'Pending assignment', roleJa: '配属待ち', phone: '',               phoneDisplay: '',                  email: '', photo: '' },
+        { name: 'LU',               nameJa: '',          role: 'Pending assignment', roleJa: '配属待ち', phone: '+971555328787',  phoneDisplay: '+971 55 532 8787', email: '', photo: '' },
+        { name: 'MOUAD',            nameJa: '',          role: 'Admin',              roleJa: '管理者',   phone: '',               phoneDisplay: '',                  email: '', photo: '' },
+        { name: 'TATSUO',           nameJa: '',          role: 'Pending assignment', roleJa: '配属待ち', phone: '+819055481390',  phoneDisplay: '+81 90 5548 1390', email: '', photo: '' },
+        { name: 'YOSHIMI SUGIURA',  nameJa: '杉浦 ヨシミ', role: 'Pending assignment', roleJa: '配属待ち', phone: '',               phoneDisplay: '',                  email: '', photo: '' },
+        { name: 'YUKA',             nameJa: '',          role: 'Exceed Japan',       roleJa: 'Exceed Japan', phone: '',           phoneDisplay: '',                  email: '', photo: '' },
+        { name: 'YUPON',            nameJa: '',          role: 'Pending assignment', roleJa: '配属待ち', phone: '+971585608166',  phoneDisplay: '+971 58 560 8166', email: '', photo: '' }
       ]
     };
+
+    // === COMPANY HIERARCHY ===
+    // CEO at top → 3 companies, each with its own sub-teams. Board members are a separate
+    // governance row. Used by renderChart() to draw the family tree.
+    const COMPANIES = [
+      {
+        id: 'exceed-re',
+        name: 'Exceed Real Estate',
+        nameJa: 'Exceed Real Estate',
+        accent: '#d4b87a',
+        teams: [
+          { id: 'japan-sales',  ja: '日本営業',       en: 'Japan Sales',  icon: 'pin' },
+          { id: 'dubai-sales',  ja: 'ドバイ営業',      en: 'Dubai Sales',  icon: 'pin' },
+          { id: 'dubai-office', ja: 'ドバイオフィス',   en: 'Dubai Office', icon: 'building' },
+          { id: 'japan-office', ja: '日本オフィス',     en: 'Japan Office', icon: 'building' },
+          { id: 'lombok',       ja: 'ロンボク',        en: 'Lombok',       icon: 'island' }
+        ]
+      },
+      {
+        id: 'ayuva-co',
+        name: 'AYUVA',
+        nameJa: 'AYUVA',
+        accent: '#9bbf5e',
+        teams: [
+          { id: 'ayuva', ja: 'AYUVAチーム', en: 'AYUVA Team', icon: 'leaf' }
+        ]
+      },
+      {
+        id: 'takumi-co',
+        name: 'Takumi Renovation',
+        nameJa: 'Takumi リノベーション',
+        accent: '#a87a3a',
+        teams: [
+          { id: 'takumi-renovation', ja: 'チーム', en: 'Team', icon: 'tools' }
+        ]
+      }
+    ];
 
     // ============ I18N ============
     const I18N = {
@@ -693,8 +819,10 @@
         cooEmpty: 'COO 募集中',
         boardTitle: '取締役会',
         partnersTitle: 'デベロッパーパートナー',
+        rosterTitle: '登録メンバー（配属待ち）',
+        rosterSub: 'これらのメンバーはまだ部門に配属されていません。管理者として「ツリーを編集」ボタンから各メンバーを編集して、適切なチームに配属してください。',
         empty: 'メンバー未登録',
-        addHint: '<strong>メンバー追加方法:</strong> <code>team.html</code> の <code>TEAM</code> オブジェクトにエントリを追加し、写真を <code>team/&lt;ファイル名&gt;.png</code> に配置してください。'
+        addHint: '<strong>メンバー追加方法:</strong> 管理者でログインすると右上に「ツリーを編集」ボタンが表示されます。写真は <code>team/&lt;ファイル名&gt;.png</code> にアップロード後、編集画面でファイル名を指定してください。'
       },
       en: {
         back: 'Dashboard', hello: 'Hi, ',
@@ -704,8 +832,10 @@
         cooEmpty: 'COO — open',
         boardTitle: 'Board of Directors',
         partnersTitle: 'Developer Partners',
+        rosterTitle: 'Registered Members (Unassigned)',
+        rosterSub: 'These members are registered for the portal but not yet assigned to a team. Sign in as admin and use the "Edit Tree" button to move each into the correct division.',
         empty: 'No members yet',
-        addHint: '<strong>How to add a member:</strong> append an entry to the <code>TEAM</code> object in <code>team.html</code> and drop the photo at <code>team/&lt;filename&gt;.png</code>.'
+        addHint: '<strong>How to add a member:</strong> sign in as admin to see the "Edit Tree" button. Photos go in <code>team/&lt;filename&gt;.png</code>; reference the path in the editor.'
       }
     };
     let currentLang = 'ja';
@@ -785,20 +915,39 @@
     }
 
     // ============ RENDER ORG CHART ============
-    function buildDivisionsHtml(parentKey) {
+    function buildTeamHtml(team) {
       const dict = I18N[currentLang];
-      return (DIVISIONS_BY_PARENT[parentKey] || []).map(d => {
-        const list = TEAM[d.id] || [];
-        const stack = list.length
-          ? `<div class="member-stack">${list.map((m, i) => `<div class="member-node">${personCard(m, '', d.id, i)}</div>`).join('')}</div>`
-          : `<div class="empty-pill">${dict.empty}</div>`;
-        const addBtn = `<button class="add-member-btn" onclick="openMemberAdd('${d.id}')">+ ${currentLang === 'ja' ? 'メンバー追加' : 'Add member'}</button>`;
+      const list = TEAM[team.id] || [];
+      const stack = list.length
+        ? `<div class="member-stack">${list.map((m, i) => `<div class="member-node">${personCard(m, '', team.id, i)}</div>`).join('')}</div>`
+        : `<div class="empty-pill">${dict.empty}</div>`;
+      const addBtn = `<button class="add-member-btn" onclick="openMemberAdd('${team.id}')">+ ${currentLang === 'ja' ? 'メンバー追加' : 'Add member'}</button>`;
+      return `
+        <li>
+          <div class="node-wrap">
+            ${divisionHeader(team)}
+            ${addBtn}
+            ${stack}
+          </div>
+        </li>`;
+    }
+
+    function buildCompaniesHtml() {
+      return COMPANIES.map(co => {
+        const teamsHtml = co.teams.map(buildTeamHtml).join('');
+        const label = currentLang === 'ja' ? co.nameJa : co.name;
         return `
           <li>
             <div class="node-wrap">
-              ${divisionHeader(d)}
-              ${addBtn}
-              ${stack}
+              <div class="node company" style="--co-accent:${co.accent}">
+                <div class="company-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+                </div>
+                <h4>${label}</h4>
+              </div>
+              <ul>
+                ${teamsHtml}
+              </ul>
             </div>
           </li>`;
       }).join('');
@@ -807,12 +956,12 @@
     function renderChart() {
       const dict = I18N[currentLang];
       const ceo = TEAM.ceo[0];
-      const md  = TEAM.md[0];
-      const coo = TEAM.coo[0];
-
       const ceoCard = ceo ? personCard(ceo, 'tier-ceo', 'ceo', 0) : vacantCard('CEO', 'tier-ceo');
-      const mdCard  = md  ? personCard(md, 'tier-md', 'md', 0)    : vacantCard('MD — open', 'tier-md');
-      const cooCard = coo ? personCard(coo, 'tier-coo', 'coo', 0) : vacantCard(dict.cooEmpty, 'tier-coo');
+
+      // Board members rendered as a horizontal sub-row beside CEO (visual governance band)
+      const boardList = TEAM.board || [];
+      const boardItems = boardList.map((m, i) => `<li><div class="node-wrap">${personCard(m, 'tier-board', 'board', i)}</div></li>`).join('');
+      const boardAddBtn = `<li><div class="node-wrap"><button class="board-add-btn" onclick="openMemberAdd('board')">+ ${currentLang === 'ja' ? '取締役追加' : 'Add board member'}</button></div></li>`;
 
       const html = `
         <ul class="tree">
@@ -820,22 +969,11 @@
             <div class="node-wrap">
               ${ceoCard}
               <ul>
-                <li>
-                  <div class="node-wrap">
-                    ${mdCard}
-                    <ul>
-                      ${buildDivisionsHtml('md')}
-                    </ul>
-                  </div>
-                </li>
-                <li>
-                  <div class="node-wrap">
-                    ${cooCard}
-                    <ul>
-                      ${buildDivisionsHtml('coo')}
-                    </ul>
-                  </div>
-                </li>
+                ${boardItems ? `<li><div class="node-wrap">
+                  <div class="node board-band"><h4>${currentLang === 'ja' ? '取締役会' : 'Board of Directors'}</h4></div>
+                  <ul>${boardItems}${boardAddBtn}</ul>
+                </div></li>` : ''}
+                ${buildCompaniesHtml()}
               </ul>
             </div>
           </li>
@@ -845,13 +983,14 @@
 
     function renderAside() {
       const dict = I18N[currentLang];
-      ['board','partners'].forEach(key => {
+      ['board','partners','roster'].forEach(key => {
         const list = TEAM[key] || [];
         const grid = document.getElementById(key + 'Grid');
         const count = document.getElementById(key + 'Count');
+        if (!grid || !count) return;
         count.textContent = list.length;
         grid.innerHTML = list.length
-          ? list.map(m => personCard(m)).join('')
+          ? list.map((m, i) => personCard(m, '', key, i)).join('')
           : `<div class="empty-pill">${dict.empty}</div>`;
       });
     }
