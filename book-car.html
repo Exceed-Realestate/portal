@@ -58,15 +58,30 @@
     }
     .car-card .car-image {
       width: 100%;
-      height: 180px;
-      background-image: var(--car-photo);
-      background-size: contain;
-      background-repeat: no-repeat;
-      background-position: center;
+      height: 200px;
       margin-bottom: 18px;
-      filter: drop-shadow(0 14px 28px rgba(0,0,0,.6));
+      position: relative;
+      overflow: hidden;
+      filter: drop-shadow(0 14px 30px rgba(0,0,0,.7)) drop-shadow(0 0 36px rgba(212,184,122,0.18));
     }
-    .car-card .car-image svg { width: 100%; height: 100%; display: block; }
+    .car-card .car-image img,
+    .car-card .car-image svg {
+      width: 100%; height: 100%;
+      object-fit: contain;
+      display: block;
+      transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
+      will-change: transform;
+    }
+    /* CSS-fakes "transparent background" for non-alpha PNGs (Phantom JPG-sourced)
+       by multiplying against the dark card backdrop. */
+    .car-card .car-image img.no-alpha {
+      mix-blend-mode: lighten;
+      filter: contrast(1.15) brightness(1.05);
+    }
+    .car-card:hover .car-image img,
+    .car-card:hover .car-image svg { transform: translateX(-8px) scale(1.04); }
+    .car-card[data-car="phantom"]:hover .car-image img,
+    .car-card[data-car="phantom"]:hover .car-image svg { transform: translateX(8px) scale(1.04); }
     .car-card h3 { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 600; margin: 0 0 4px; color: var(--cream); letter-spacing: 0.5px; }
     .car-card .car-tagline { color: var(--muted); font-size: 13px; line-height: 1.5; margin: 0 0 14px; }
     .car-card .car-meta { display: flex; gap: 10px; flex-wrap: wrap; }
@@ -293,10 +308,31 @@
           <span class="hint" id="budgetHint">Phantom requires <strong>≥ 10,000,000 AED</strong></span>
         </div>
       </div>
-      <div class="row full">
+      <div class="row">
         <div class="field">
-          <label>Purpose / notes</label>
-          <textarea id="bNotes" placeholder="Property viewing in Dubai Hills, client coming from airport..."></textarea>
+          <label>Property name <span style="color:#ff8a8a">*</span></label>
+          <input type="text" id="bProperty" required placeholder="Bulgari Residences / Address Downtown / etc." />
+        </div>
+        <div class="field">
+          <label>Area to visit <span style="color:#ff8a8a">*</span></label>
+          <input type="text" id="bArea" required placeholder="Dubai Hills / Marina / Downtown / Palm Jumeirah" />
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>Lead source <span style="color:#ff8a8a">*</span></label>
+          <select id="bLeadSource" required>
+            <option value="">— select —</option>
+            <option value="Personal">Personal</option>
+            <option value="Marketing">Marketing</option>
+            <option value="Referral">Referral</option>
+            <option value="Walk-in">Walk-in</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Purpose / notes (optional)</label>
+          <input type="text" id="bNotes" placeholder="VIP airport pickup / contract signing / etc." />
         </div>
       </div>
 
@@ -323,7 +359,10 @@
   <div class="send-modal-bd" id="sendModalBd" onclick="if(event.target===this)closeSendModal()">
     <div class="send-modal">
       <h3>📩 Send approval request</h3>
-      <p style="color:var(--muted);font-size:13px;margin:0 0 8px;line-height:1.55">Tap a button to open WhatsApp prefilled with the booking details + one-tap approve/decline links. Send to MD and CEO.</p>
+      <p style="color:var(--muted);font-size:13px;margin:0 0 8px;line-height:1.55">Message copied to your clipboard automatically. Tap a button below to open Shoya's or Teruo's WhatsApp directly — paste & send. Approve/decline links are embedded.</p>
+      <div id="lateBanner" style="display:none; background: rgba(255,107,107,0.15); border: 1px solid rgba(255,107,107,0.5); color: #ff8a78; padding: 12px 14px; border-radius: 10px; margin-bottom: 12px; font-size: 13px; line-height: 1.5;">
+        ⚠️ <strong>Less than 3-day advance notice.</strong> The message includes a bold warning so the approver knows this is an exception request.
+      </div>
       <div class="preview" id="msgPreview">—</div>
       <div class="send-row">
         <a class="btn-wa" id="sendShoya" target="_blank" rel="noopener">
@@ -464,19 +503,57 @@
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
     import { collection, addDoc, getDocs, query, orderBy, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
-    // Inject SVG illustrations into the car cards (or use real photos if present)
+    // Approver phones — fill in with real numbers, then WhatsApp deep-links work directly.
+    // Format: + then digits only (no spaces, no dashes) — required by wa.me links.
+    const APPROVERS = {
+      shoya: { name: 'Shoya Hosoyama', phone: '+971505931748' },
+      teruo: { name: 'Teruo Shimada',  phone: '' }
+    };
+
+    // Load car images: prefer PNG (alpha), fall back to JPG, then SVG silhouette.
     function loadCarImages() {
       ['escalade', 'phantom'].forEach(car => {
-        const img = new Image();
-        img.onload = () => { document.getElementById(car + 'Img').style.backgroundImage = `url('cars/${car}.jpg')`; };
-        img.onerror = () => {
-          const tmpl = document.getElementById(car + 'Svg');
-          document.getElementById(car + 'Img').innerHTML = tmpl.innerHTML;
+        const slot = document.getElementById(car + 'Img');
+        const tryLoad = (ext, onFail) => {
+          const im = new Image();
+          im.onload = () => {
+            const tag = document.createElement('img');
+            tag.src = im.src;
+            tag.alt = car;
+            tag.dataset.car = car;
+            // Phantom comes from a JPG source so it has no real alpha — use blend trick.
+            // Escalade's PNG has true alpha, no blend needed.
+            if (car === 'phantom') tag.classList.add('no-alpha');
+            slot.innerHTML = '';
+            slot.appendChild(tag);
+          };
+          im.onerror = onFail;
+          im.src = 'cars/' + car + '.' + ext;
         };
-        img.src = 'cars/' + car + '.jpg';
+        tryLoad('png', () => tryLoad('jpg', () => {
+          const tmpl = document.getElementById(car + 'Svg');
+          if (tmpl) slot.innerHTML = tmpl.innerHTML;
+        }));
       });
     }
     loadCarImages();
+
+    // Scroll-driven parallax — cars drift horizontally as you scroll
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const y = window.scrollY;
+        document.querySelectorAll('.car-image img, .car-image svg').forEach(el => {
+          const car = el.dataset.car || el.closest('.car-card')?.dataset.car;
+          const dir = car === 'phantom' ? 1 : -1;
+          // gentle drift: 0.18 px per scroll px, with subtle tilt
+          el.style.transform = `translateX(${y * 0.18 * dir}px)`;
+        });
+        ticking = false;
+      });
+    }, { passive: true });
 
     let currentUser = null;
     let selectedCar = null; // 'escalade' | 'phantom'
@@ -519,8 +596,18 @@
         end: document.getElementById('bEnd').value,
         client: document.getElementById('bClient').value.trim(),
         budget: Number(document.getElementById('bBudget').value) || 0,
+        property: document.getElementById('bProperty').value.trim(),
+        area: document.getElementById('bArea').value.trim(),
+        leadSource: document.getElementById('bLeadSource').value,
         notes: document.getElementById('bNotes').value.trim()
       };
+    }
+    // 3-day advance rule — true means the booking is at least 3 days out
+    function isAdvanceNoticeOk(dateStr, startStr) {
+      const target = new Date(fmtDateTime(dateStr, startStr || '00:00'));
+      const now = new Date();
+      const diffMs = target - now;
+      return diffMs >= 3 * 24 * 60 * 60 * 1000;
     }
 
     function checkConflicts() {
@@ -551,18 +638,39 @@
       const url = `${location.origin}${location.pathname.replace('book-car.html','car-approve.html')}?id=${bookingId}`;
       const carName = f.car === 'phantom' ? 'Rolls-Royce Phantom' : 'Cadillac Escalade';
       const requester = currentUser?.displayName || currentUser?.email?.split('@')[0] || 'Team member';
-      const budgetTxt = f.budget ? `\nClient budget: ${f.budget.toLocaleString()} AED` : '';
-      return `🚗 *Company Car — Approval Request*
+      const budgetTxt = f.budget ? `\n*Client budget:* ${f.budget.toLocaleString()} AED` : '';
+      const lateNotice = !isAdvanceNoticeOk(f.date, f.start)
+        ? `\n\n⚠️ *URGENT — NOT WITHIN 3-DAY ADVANCE NOTICE*\n_This request is being submitted with less than 3 days' notice. Please consider as a special exception._\n`
+        : '';
+      return `🚗 *Company Car — Approval Request*${lateNotice}
 
 *Requester:* ${requester}
 *Car:* ${carName}
 *When:* ${f.date}  ${f.start}–${f.end}
+*Property:* ${f.property}
+*Area:* ${f.area}
+*Lead source:* ${f.leadSource}
 *Client:* ${f.client || '—'}${budgetTxt}
 *Notes:* ${f.notes || '—'}
 
 ✅ Approve / Decline:
 ${url}&action=approve
 ${url}&action=decline`;
+    }
+
+    async function copyToClipboard(text) {
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+          return true;
+        }
+        // Fallback: temp textarea
+        const ta = document.createElement('textarea');
+        ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); ta.remove();
+        return true;
+      } catch (e) { return false; }
     }
 
     window.submitBooking = async function() {
@@ -572,11 +680,14 @@ ${url}&action=decline`;
       const startISO = fmtDateTime(f.date, f.start);
       const endISO   = fmtDateTime(f.date, f.end);
       if (new Date(startISO) >= new Date(endISO)) { showToast('End time must be after start time.'); return; }
+      // Mandatory fields
+      if (!f.property)   { showToast('Property name is required.'); document.getElementById('bProperty').focus(); return; }
+      if (!f.area)       { showToast('Area to visit is required.'); document.getElementById('bArea').focus(); return; }
+      if (!f.leadSource) { showToast('Lead source is required.'); document.getElementById('bLeadSource').focus(); return; }
       if (f.car === 'phantom') {
         if (!f.client) { showToast('Phantom requires a client name.'); return; }
         if (f.budget < 10_000_000) { showToast('Phantom requires a 10M AED+ budget.'); return; }
       }
-      // re-check conflicts
       const conflicts = bookings.filter(b => b.car === f.car && b.status !== 'declined' && new Date(startISO) < new Date(b.endISO) && new Date(b.startISO) < new Date(endISO));
       if (conflicts.length) { showToast('Conflict with existing booking — pick another slot.'); return; }
 
@@ -589,22 +700,35 @@ ${url}&action=decline`;
           startISO, endISO,
           client: f.client,
           budget: f.budget,
+          property: f.property,
+          area: f.area,
+          leadSource: f.leadSource,
           notes: f.notes,
+          urgent: !isAdvanceNoticeOk(f.date, f.start),
           status: 'pending',
           requesterUid: currentUser.uid,
           requesterName,
           requesterEmail: currentUser.email,
           createdAt: serverTimestamp()
         });
-        showToast('✓ Booking saved. Send to MD/CEO for approval.');
-        // Open send modal with formatted message + WhatsApp deeplinks
+
         const msg = buildMessage(f, ref.id);
-        document.getElementById('msgPreview').textContent = msg;
+        const copied = await copyToClipboard(msg);
+        showToast(copied
+          ? '✓ Booking saved + message copied to clipboard'
+          : '✓ Booking saved — copy the message manually');
+
+        // Render preview, including a notice banner when urgent
+        const previewEl = document.getElementById('msgPreview');
+        previewEl.textContent = msg;
+        const isLate = !isAdvanceNoticeOk(f.date, f.start);
+        document.getElementById('lateBanner').style.display = isLate ? 'block' : 'none';
+
         const enc = encodeURIComponent(msg);
-        // Phone numbers: Shoya / Teruo. Filled in by admin via Team Members.
-        // For now we use generic wa.me/?text= which lets the user pick the contact.
-        document.getElementById('sendShoya').href = `https://wa.me/?text=${enc}`;
-        document.getElementById('sendTeruo').href = `https://wa.me/?text=${enc}`;
+        const sP = APPROVERS.shoya.phone.replace(/[^\d+]/g,'').replace(/^\+/, '');
+        const tP = APPROVERS.teruo.phone.replace(/[^\d+]/g,'').replace(/^\+/, '');
+        document.getElementById('sendShoya').href = sP ? `https://wa.me/${sP}?text=${enc}` : `https://wa.me/?text=${enc}`;
+        document.getElementById('sendTeruo').href = tP ? `https://wa.me/${tP}?text=${enc}` : `https://wa.me/?text=${enc}`;
         document.getElementById('sendModalBd').classList.add('show');
         loadBookings();
       } catch (e) {
