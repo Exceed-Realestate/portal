@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Travel — Exceed Real Estate</title>
+  <link rel="icon" type="image/jpeg" href="logo.jpg">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600&family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="liquid.css">
+  <style>
+    :root { --navy-0:#051428; --navy-1:#0a1f3d; --navy-2:#102a4f; --line:rgba(255,255,255,0.10); --line-strong:rgba(255,255,255,0.18); --text:#f5f7fb; --muted:#9aa8c2; --gold:#d4b87a; --cream:#f1ead8; --green:#5cc98f; --radius:14px; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    html { background: var(--navy-0); }
+    body {
+      font-family: 'Noto Sans JP', 'Inter', sans-serif;
+      background: radial-gradient(900px 600px at 80% -10%, rgba(212,184,122,0.08), transparent 60%), radial-gradient(800px 600px at -10% 110%, rgba(23,54,99,0.6), transparent 60%), var(--navy-0);
+      color: var(--text); min-height: 100vh;
+    }
+    .topbar { display: flex; align-items: center; justify-content: space-between; padding: 16px 32px; border-bottom: 1px solid var(--line); backdrop-filter: blur(8px); background: rgba(5,20,40,0.7); position: sticky; top: 0; z-index: 10; }
+    .brand { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+    .brand img { width: 40px; height: 40px; border-radius: 8px; }
+    .brand-name { font-family: 'Playfair Display', serif; letter-spacing: 2px; font-weight: 600; }
+    .brand-name span { color: var(--gold); font-weight: 400; }
+    .topbar-right { display: flex; align-items: center; gap: 14px; color: var(--muted); font-size: 13px; }
+    .topbar-right strong { color: var(--cream); font-weight: 600; }
+    .icon-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--line); color: var(--text); padding: 8px 14px; border-radius: 8px; cursor: pointer; font-family: inherit; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; transition: background .2s, border-color .2s; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
+    .icon-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--line-strong); }
+    .icon-btn svg { width: 14px; height: 14px; }
+    .lang-toggle { display: inline-flex; align-items: center; background: rgba(255,255,255,0.05); border: 1px solid var(--line); border-radius: 999px; padding: 4px; position: relative; }
+    .lang-toggle button { background: transparent; border: none; color: var(--muted); font-family: inherit; font-size: 12px; font-weight: 600; letter-spacing: 1px; padding: 6px 12px; border-radius: 999px; cursor: pointer; transition: color .25s; position: relative; z-index: 1; }
+    .lang-toggle button.active { color: var(--navy-0); }
+    .lang-toggle .pill { position: absolute; top: 4px; bottom: 4px; background: var(--cream); border-radius: 999px; transition: transform .35s cubic-bezier(.34,1.56,.64,1), width .35s ease; z-index: 0; }
+    .page-head { max-width: 1100px; margin: 0 auto; padding: 40px 32px 0; }
+    .page-head .eyebrow { color: var(--gold); letter-spacing: 5px; font-size: 11px; text-transform: uppercase; margin-bottom: 10px; }
+    .page-head h1 { font-family: 'Noto Serif JP', 'Playfair Display', serif; font-weight: 500; font-size: clamp(28px, 4vw, 40px); margin: 0 0 8px; }
+    .page-head .lede { color: var(--muted); font-size: 14px; max-width: 640px; margin: 0; line-height: 1.6; }
+
+    main { max-width: 1100px; margin: 0 auto; padding: 30px 32px 80px; }
+
+    .instructions { background: linear-gradient(180deg, rgba(212,184,122,0.08), rgba(212,184,122,0.02)); border: 1px solid rgba(212,184,122,0.3); border-radius: var(--radius); padding: 24px 28px; margin-bottom: 28px; position: relative; }
+    .instructions::before { content: ''; position: absolute; top: -1px; left: 24px; right: 24px; height: 2px; background: linear-gradient(90deg, transparent, var(--gold), transparent); opacity: 0.5; }
+    .instructions-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+    .instructions-title { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 600; color: var(--cream); display: flex; align-items: center; gap: 10px; }
+    .instructions-title svg { width: 20px; height: 20px; color: var(--gold); }
+    .instructions-dismiss { background: transparent; border: 1px solid var(--line); color: var(--muted); cursor: pointer; font-family: inherit; font-size: 11px; padding: 6px 12px; border-radius: 999px; letter-spacing: 1px; text-transform: uppercase; transition: color .15s, border-color .15s; }
+    .instructions-dismiss:hover { color: var(--cream); border-color: var(--line-strong); }
+    .steps { margin: 0; padding: 0; list-style: none; counter-reset: step; }
+    .steps li { counter-increment: step; padding: 10px 0 10px 44px; position: relative; color: var(--text); font-size: 14px; line-height: 1.6; }
+    .steps li::before { content: counter(step); position: absolute; left: 0; top: 8px; width: 28px; height: 28px; background: rgba(212,184,122,0.15); border: 1px solid rgba(212,184,122,0.4); color: var(--gold); border-radius: 50%; display: grid; place-items: center; font-family: 'Playfair Display', serif; font-weight: 600; font-size: 13px; }
+    .steps li code { background: rgba(255,255,255,0.07); border: 1px solid var(--line); padding: 2px 7px; border-radius: 5px; font-family: ui-monospace, 'SF Mono', monospace; font-size: 12px; color: var(--cream); }
+    .steps li strong { color: var(--cream); font-weight: 600; }
+    .tip { margin-top: 14px; padding: 12px 14px; background: rgba(255,255,255,0.04); border-left: 3px solid var(--gold); border-radius: 6px; color: var(--muted); font-size: 13px; line-height: 1.55; }
+    .tip strong { color: var(--cream); }
+
+    .feature { background: linear-gradient(180deg, rgba(16,42,79,0.85), rgba(10,31,61,0.85)); border: 1px solid var(--line); border-radius: var(--radius); padding: 28px; }
+    .feature h2 { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 600; margin: 0 0 18px; color: var(--cream); }
+    .feature .sub { color: var(--muted); font-size: 13px; margin: -12px 0 22px; }
+
+    .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 18px; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label { font-size: 11px; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; font-weight: 500; }
+    .field input, .field select { background: rgba(5,20,40,0.7); border: 1px solid var(--line); border-radius: 8px; color: var(--text); padding: 12px 14px; font-family: inherit; font-size: 14px; outline: none; transition: border-color .2s, background .2s; }
+    .field input:focus, .field select:focus { border-color: var(--gold); background: rgba(5,20,40,0.95); }
+    .btn-primary { background: linear-gradient(135deg, var(--cream), var(--gold)); color: var(--navy-0); border: none; padding: 12px 24px; border-radius: 8px; font-weight: 700; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; font-family: inherit; transition: transform .15s, box-shadow .2s; }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 10px 24px -10px rgba(212,184,122,.5); }
+    .country-tz { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: rgba(212,184,122,0.1); border: 1px solid rgba(212,184,122,0.3); color: var(--gold); border-radius: 999px; font-size: 11px; font-family: ui-monospace, 'SF Mono', monospace; }
+    .empty-list { text-align: center; color: var(--muted); padding: 30px 20px; font-size: 13px; }
+
+    @media (max-width: 700px) { .topbar { padding: 14px 18px; flex-wrap: wrap; gap: 12px; } .page-head, main { padding-left: 18px; padding-right: 18px; } .feature { padding: 20px; } }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand" onclick="window.location.href='agent.html'">
+      <img src="logo.jpg" alt="Exceed" />
+      <div class="brand-name">EXCEED <span>REAL ESTATE</span></div>
+    </div>
+    <div class="topbar-right">
+      <a class="icon-btn" href="agent.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        <span data-i18n="back">ダッシュボード</span>
+      </a>
+      <span><span data-i18n="hello">こんにちは、</span><strong id="userName">—</strong></span>
+      <div class="lang-toggle" id="langToggle">
+        <span class="pill" id="langPill"></span>
+        <button data-lang="ja" class="active">日本語</button>
+        <button data-lang="en">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="page-head">
+    <div class="eyebrow" data-i18n="eyebrow">Travel</div>
+    <h1 data-i18n="title">出張予定</h1>
+    <p class="lede" data-i18n="lede">出張先の国を登録すると、チームがあなたの現地時間でミーティングを組めます。日本・UAE・インドネシアなど主要タイムゾーンに自動対応。</p>
+  </div>
+
+  <main>
+    <div class="instructions" id="ins-travel">
+      <div class="instructions-head">
+        <div class="instructions-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span data-i18n="insTitle">使い方ガイド</span>
+        </div>
+        <button class="instructions-dismiss" onclick="dismissIns()" data-i18n="hide">非表示</button>
+      </div>
+      <ol class="steps">
+        <li data-i18n-html="t-s1"><strong>「出張を追加」</strong>をクリック</li>
+        <li data-i18n-html="t-s2">出発日・帰着日・滞在国を入力。国を選ぶと<strong>タイムゾーンが自動設定</strong>されます（例: 日本 → JST、UAE → GST、インドネシア → WIB）。</li>
+        <li data-i18n-html="t-s3">保存すると、チームのリストにあなたの名前の横に <strong>✈️</strong> アイコンと滞在地・期間が表示されます。</li>
+        <li data-i18n-html="t-s4">出張期間中、<strong>「Availability Sharing」のあなたの空き時間は滞在国のタイムゾーンで計算</strong>されます。</li>
+        <li data-i18n-html="t-s5">予定は<strong>いつでも編集・削除</strong>できます。</li>
+      </ol>
+      <div class="tip" data-i18n-html="t-tip"><strong>対応タイムゾーン:</strong> 日本 (Asia/Tokyo · JST)、UAE (Asia/Dubai · GST)、インドネシア (Asia/Jakarta · WIB)。その他の国も追加可能です。</div>
+    </div>
+
+    <div class="feature">
+      <h2 data-i18n="featTitle">出張を追加</h2>
+      <p class="sub" data-i18n="featSub">出張の前にあらかじめ登録しておくと、チームがあなたの現地時間で予定を組めます。</p>
+
+      <div class="row">
+        <div class="field">
+          <label data-i18n="fromDate">出発日</label>
+          <input type="date" id="travelFrom" />
+        </div>
+        <div class="field">
+          <label data-i18n="toDate">帰着日</label>
+          <input type="date" id="travelTo" />
+        </div>
+        <div class="field">
+          <label data-i18n="country">滞在国</label>
+          <select id="travelCountry" onchange="updateTzPreview()">
+            <option value="">— <span data-i18n="selectCountry">選択</span> —</option>
+            <option value="JP" data-tz="Asia/Tokyo" data-label="JST · 日本標準時">🇯🇵 日本 / Japan</option>
+            <option value="AE" data-tz="Asia/Dubai" data-label="GST · 湾岸標準時">🇦🇪 UAE / アラブ首長国連邦</option>
+            <option value="ID" data-tz="Asia/Jakarta" data-label="WIB · 西インドネシア時間">🇮🇩 インドネシア / Indonesia</option>
+            <option value="HK" data-tz="Asia/Hong_Kong" data-label="HKT · 香港時間">🇭🇰 香港 / Hong Kong</option>
+            <option value="SG" data-tz="Asia/Singapore" data-label="SGT · シンガポール時間">🇸🇬 シンガポール / Singapore</option>
+            <option value="IN" data-tz="Asia/Kolkata" data-label="IST · インド標準時">🇮🇳 インド / India</option>
+            <option value="GB" data-tz="Europe/London" data-label="GMT/BST · 英国時間">🇬🇧 英国 / UK</option>
+            <option value="US" data-tz="America/New_York" data-label="ET · 米国東部時間">🇺🇸 米国 (東部) / USA East</option>
+            <option value="SA" data-tz="Asia/Riyadh" data-label="AST · アラビア標準時">🇸🇦 サウジアラビア / Saudi Arabia</option>
+          </select>
+        </div>
+        <div class="field">
+          <label data-i18n="tzPreview">タイムゾーン（自動）</label>
+          <div style="padding:12px 14px;"><span class="country-tz" id="tzPreview">— <span data-i18n="autoFill">国を選ぶと自動入力</span> —</span></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field" style="grid-column: 1 / -1;">
+          <label data-i18n="travelNote">メモ（任意）</label>
+          <input type="text" placeholder="例: Tiger Properties 視察 / クライアント案件" />
+        </div>
+      </div>
+      <button class="btn-primary" onclick="saveTravelStub()" data-i18n="btnAddTravel">出張を追加</button>
+
+      <h2 style="margin-top:36px;" data-i18n="travelListTitle">あなたの出張予定</h2>
+      <div class="empty-list" data-i18n="emptyTravel">登録された出張はありません。</div>
+
+      <h2 style="margin-top:36px;" data-i18n="teamTravelTitle">チームの出張予定</h2>
+      <div class="empty-list" data-i18n="emptyTeamTravel">チームメンバーの出張予定はまだありません。</div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { auth, db } from './firebase-init.js';
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+    const I18N = {
+      ja: {
+        back: 'ダッシュボード', hello: 'こんにちは、',
+        eyebrow: 'Travel', title: '出張予定',
+        lede: '出張先の国を登録すると、チームがあなたの現地時間でミーティングを組めます。日本・UAE・インドネシアなど主要タイムゾーンに自動対応。',
+        insTitle: '使い方ガイド', hide: '非表示',
+        't-s1': '<strong>「出張を追加」</strong>をクリック',
+        't-s2': '出発日・帰着日・滞在国を入力。国を選ぶと<strong>タイムゾーンが自動設定</strong>されます（例: 日本 → JST、UAE → GST、インドネシア → WIB）。',
+        't-s3': '保存すると、チームのリストにあなたの名前の横に <strong>✈️</strong> アイコンと滞在地・期間が表示されます。',
+        't-s4': '出張期間中、<strong>「Availability Sharing」のあなたの空き時間は滞在国のタイムゾーンで計算</strong>されます。',
+        't-s5': '予定は<strong>いつでも編集・削除</strong>できます。',
+        't-tip': '<strong>対応タイムゾーン:</strong> 日本 (Asia/Tokyo · JST)、UAE (Asia/Dubai · GST)、インドネシア (Asia/Jakarta · WIB)。その他の国も追加可能です。',
+        featTitle: '出張を追加', featSub: '出張の前にあらかじめ登録しておくと、チームがあなたの現地時間で予定を組めます。',
+        fromDate: '出発日', toDate: '帰着日', country: '滞在国', selectCountry: '選択',
+        tzPreview: 'タイムゾーン（自動）', autoFill: '国を選ぶと自動入力',
+        travelNote: 'メモ（任意）', btnAddTravel: '出張を追加',
+        travelListTitle: 'あなたの出張予定', emptyTravel: '登録された出張はありません。',
+        teamTravelTitle: 'チームの出張予定', emptyTeamTravel: 'チームメンバーの出張予定はまだありません。'
+      },
+      en: {
+        back: 'Dashboard', hello: 'Hi, ',
+        eyebrow: 'Travel', title: 'Trips',
+        lede: 'Register your trip and the team will schedule meetings in your destination time. Auto-detects time zones for Japan, UAE, Indonesia and more.',
+        insTitle: 'How to use', hide: 'Hide',
+        't-s1': 'Click <strong>"Add travel"</strong>',
+        't-s2': 'Enter departure, return, and destination country. Picking a country <strong>auto-fills the timezone</strong> (e.g. Japan → JST, UAE → GST, Indonesia → WIB).',
+        't-s3': 'Once saved, your name shows ✈️ to the team along with location & dates.',
+        't-s4': 'During the trip, your <strong>availability is calculated in the destination timezone</strong>.',
+        't-s5': '<strong>Edit or delete</strong> at any time.',
+        't-tip': '<strong>Built-in timezones:</strong> Japan (Asia/Tokyo · JST), UAE (Asia/Dubai · GST), Indonesia (Asia/Jakarta · WIB). Other countries supported too.',
+        featTitle: 'Add a trip', featSub: 'Register your trip in advance so the team can schedule in your destination time.',
+        fromDate: 'Depart', toDate: 'Return', country: 'Country', selectCountry: 'Select',
+        tzPreview: 'Time zone (auto)', autoFill: 'Auto-filled when you pick a country',
+        travelNote: 'Note (optional)', btnAddTravel: 'Add travel',
+        travelListTitle: 'Your trips', emptyTravel: 'No trips registered.',
+        teamTravelTitle: 'Team trips', emptyTeamTravel: 'No upcoming team travel.'
+      }
+    };
+    let currentLang = 'ja';
+    function setLang(lang) {
+      currentLang = lang;
+      const dict = I18N[lang];
+      document.documentElement.lang = lang;
+      document.querySelectorAll('[data-i18n]').forEach(el => { const k = el.getAttribute('data-i18n'); if (dict[k]) el.textContent = dict[k]; });
+      document.querySelectorAll('[data-i18n-html]').forEach(el => { const k = el.getAttribute('data-i18n-html'); if (dict[k]) el.innerHTML = dict[k]; });
+      document.querySelectorAll('.lang-toggle button').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+      positionPill();
+    }
+    function positionPill() {
+      const pill = document.getElementById('langPill');
+      const active = document.querySelector('.lang-toggle button.active');
+      if (!active || !pill) return;
+      const r = active.getBoundingClientRect();
+      const pr = active.parentElement.getBoundingClientRect();
+      pill.style.width = r.width + 'px';
+      pill.style.transform = `translateX(${r.left - pr.left - 4}px)`;
+    }
+    document.querySelectorAll('.lang-toggle button').forEach(b => b.addEventListener('click', () => setLang(b.dataset.lang)));
+
+    window.dismissIns = function() {
+      const el = document.getElementById('ins-travel');
+      if (el) el.style.display = 'none';
+      try { localStorage.setItem('insDismissed_travel', '1'); } catch (e) {}
+    };
+    try { if (localStorage.getItem('insDismissed_travel') === '1') { const el = document.getElementById('ins-travel'); if (el) el.style.display = 'none'; } } catch (e) {}
+
+    window.updateTzPreview = function() {
+      const sel = document.getElementById('travelCountry');
+      const opt = sel.options[sel.selectedIndex];
+      const tz = opt && opt.dataset ? opt.dataset.tz : '';
+      const label = opt && opt.dataset ? opt.dataset.label : '';
+      const out = document.getElementById('tzPreview');
+      if (tz) {
+        const now = new Intl.DateTimeFormat(currentLang === 'ja' ? 'ja-JP' : 'en-GB', { timeZone: tz, hour: '2-digit', minute: '2-digit', timeZoneName: 'short' }).format(new Date());
+        out.innerHTML = `${tz} · <strong>${label || ''}</strong> · ${now}`;
+      } else {
+        out.textContent = '— ' + (I18N[currentLang].autoFill || '') + ' —';
+      }
+    };
+    window.saveTravelStub = function() {
+      alert(currentLang === 'ja' ? 'Firestore連携は次のステップで実装予定です。' : 'Firestore wiring comes in the next step.');
+    };
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = 'index.html'; return; }
+      let firstName = (user.displayName || '').trim().split(/\s+/)[0];
+      try { const snap = await getDoc(doc(db, 'agents', user.uid)); if (snap.exists() && snap.data().firstName) firstName = snap.data().firstName; } catch (e) {}
+      if (!firstName && user.email) { const local = user.email.split('@')[0].split(/[._-]/)[0]; firstName = local.charAt(0).toUpperCase() + local.slice(1); }
+      document.getElementById('userName').textContent = firstName || 'Agent';
+    });
+
+    window.addEventListener('load', () => { setLang('ja'); });
+    window.addEventListener('resize', positionPill);
+  </script>
+</body>
+</html>

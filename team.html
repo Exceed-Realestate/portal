@@ -17,8 +17,8 @@
       --text: #f5f7fb;
       --muted: #9aa8c2;
       --gold: #d4b87a;
+      --gold-soft: rgba(212,184,122,0.45);
       --cream: #f1ead8;
-      --green: #5cc98f;
       --wa: #25d366;
       --radius: 14px;
     }
@@ -28,13 +28,14 @@
     body {
       font-family: 'Noto Sans JP', 'Inter', sans-serif;
       background:
-        radial-gradient(900px 600px at 80% -10%, rgba(212,184,122,0.08), transparent 60%),
-        radial-gradient(800px 600px at -10% 110%, rgba(23,54,99,0.6), transparent 60%),
+        radial-gradient(1100px 700px at 50% -10%, rgba(212,184,122,0.10), transparent 60%),
+        radial-gradient(900px 700px at -10% 110%, rgba(23,54,99,0.7), transparent 60%),
         var(--navy-0);
       color: var(--text);
       min-height: 100vh;
     }
 
+    /* topbar */
     .topbar { display: flex; align-items: center; justify-content: space-between; padding: 16px 32px; border-bottom: 1px solid var(--line); backdrop-filter: blur(8px); background: rgba(5,20,40,0.7); position: sticky; top: 0; z-index: 10; }
     .brand { display: flex; align-items: center; gap: 12px; cursor: pointer; }
     .brand img { width: 40px; height: 40px; border-radius: 8px; }
@@ -50,153 +51,293 @@
     .lang-toggle button.active { color: var(--navy-0); }
     .lang-toggle .pill { position: absolute; top: 4px; bottom: 4px; background: var(--cream); border-radius: 999px; transition: transform .35s cubic-bezier(.34,1.56,.64,1), width .35s ease; z-index: 0; }
 
-    .page-head { max-width: 1280px; margin: 0 auto; padding: 40px 32px 0; }
+    /* page head */
+    .page-head { max-width: 1400px; margin: 0 auto; padding: 36px 32px 0; text-align: center; }
     .page-head .eyebrow { color: var(--gold); letter-spacing: 5px; font-size: 11px; text-transform: uppercase; margin-bottom: 10px; }
     .page-head h1 { font-family: 'Noto Serif JP', 'Playfair Display', serif; font-weight: 500; font-size: clamp(28px, 4vw, 40px); margin: 0 0 8px; }
-    .page-head .lede { color: var(--muted); font-size: 14px; max-width: 720px; margin: 0; line-height: 1.6; }
+    .page-head .lede { color: var(--muted); font-size: 14px; max-width: 720px; margin: 0 auto; line-height: 1.6; }
 
-    /* Sub-tab nav — horizontal scrollable for many tabs */
-    .subtabs-wrap { max-width: 1280px; margin: 30px auto 0; padding: 0 32px; border-bottom: 1px solid var(--line); }
-    .subtabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: thin; -webkit-overflow-scrolling: touch; }
-    .subtabs::-webkit-scrollbar { height: 4px; }
-    .subtabs::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 4px; }
-    .subtab {
-      background: transparent; border: none; color: var(--muted);
-      font-family: inherit; font-size: 13px; font-weight: 500;
-      padding: 14px 16px; cursor: pointer; position: relative;
-      transition: color .2s; white-space: nowrap; letter-spacing: 0.3px;
-      flex: none;
+    /* ========================= ORG CHART ========================= */
+    .chart-scroll {
+      max-width: 100%;
+      overflow-x: auto;
+      overflow-y: visible;
+      padding: 50px 32px 60px;
+      scrollbar-width: thin;
     }
-    .subtab:hover { color: var(--cream); }
-    .subtab.active { color: var(--gold); }
-    .subtab.active::after { content: ''; position: absolute; bottom: -1px; left: 8px; right: 8px; height: 2px; background: var(--gold); border-radius: 2px; }
-    .subtab .count { display: inline-block; margin-left: 6px; padding: 1px 7px; background: rgba(255,255,255,0.05); border: 1px solid var(--line); border-radius: 999px; font-size: 10px; color: var(--muted); }
-    .subtab.active .count { background: rgba(212,184,122,0.15); border-color: rgba(212,184,122,0.4); color: var(--gold); }
+    .chart-scroll::-webkit-scrollbar { height: 6px; }
+    .chart-scroll::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 6px; }
 
-    .panel { display: none; max-width: 1280px; margin: 0 auto; padding: 30px 32px 80px; }
-    .panel.active { display: block; }
+    .tree, .tree ul { list-style: none; padding: 0; margin: 0; }
+    .tree { text-align: center; }
+    .tree ul {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding-top: 36px;
+      position: relative;
+    }
+    .tree li {
+      position: relative;
+      padding: 36px 12px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    /* Horizontal line connecting siblings (top edge of each li) */
+    .tree li::before, .tree li::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      height: 36px;
+      border-top: 1px solid var(--gold-soft);
+      width: 50%;
+    }
+    .tree li::before { right: 50%; }
+    .tree li::after { left: 50%; }
+    /* Hide outer hooks for first/last child so the line doesn't overshoot */
+    .tree li:first-child::before, .tree li:last-child::after { border: 0; }
+    /* Hide both for only-child */
+    .tree li:only-child::before, .tree li:only-child::after { display: none; }
+    /* Vertical drop from parent center to child */
+    .tree li::before, .tree li::after { /* keep horizontal */ }
+    .tree li > .node-wrap::before {
+      content: '';
+      position: absolute;
+      top: -36px; left: 50%;
+      width: 1px; height: 36px;
+      background: var(--gold-soft);
+      transform: translateX(-0.5px);
+    }
+    /* Root: no upward line */
+    .tree > li > .node-wrap::before { display: none; }
+    /* For only-child, restore the vertical drop from parent */
+    .tree li:only-child > .node-wrap::before { display: block; }
 
-    .section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 18px; gap: 12px; flex-wrap: wrap; }
-    .section-head h2 { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 600; margin: 0; color: var(--cream); }
-    .section-head .sub { color: var(--muted); font-size: 13px; }
-
-    .grid {
-      display: grid; gap: 18px;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    /* node-wrap holds the card + (optional) member stack below */
+    .node-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      position: relative;
     }
 
-    .member-card {
-      background: linear-gradient(180deg, rgba(16,42,79,0.85), rgba(10,31,61,0.85));
+    /* ========================= NODE CARDS ========================= */
+    .node {
+      background: linear-gradient(180deg, rgba(16,42,79,0.92), rgba(10,31,61,0.92));
       border: 1px solid var(--line);
       border-radius: var(--radius);
-      padding: 22px 22px 18px;
-      transition: transform .25s, border-color .25s, box-shadow .25s;
+      padding: 14px 14px 12px;
+      width: 200px;
+      text-align: center;
+      transition: transform .2s, border-color .2s, box-shadow .2s;
+      backdrop-filter: blur(6px);
       position: relative;
-      overflow: hidden;
     }
-    .member-card:hover { transform: translateY(-3px); border-color: rgba(212,184,122,0.4); box-shadow: 0 18px 40px -16px rgba(0,0,0,.55); }
+    .node:hover { transform: translateY(-2px); border-color: var(--gold-soft); box-shadow: 0 14px 30px -14px rgba(0,0,0,.6); }
 
-    .avatar-wrap {
-      width: 96px; height: 96px;
+    .node.tier-ceo { width: 240px; padding: 18px 18px 16px; border-color: rgba(212,184,122,0.5); box-shadow: 0 0 0 1px rgba(212,184,122,0.18), 0 18px 40px -16px rgba(0,0,0,.6); }
+    .node.tier-ceo::after { content: 'CEO'; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, var(--cream), var(--gold)); color: var(--navy-0); font-family: 'Playfair Display', serif; font-size: 10px; font-weight: 700; letter-spacing: 3px; padding: 3px 12px; border-radius: 999px; }
+
+    .node.tier-md { width: 220px; }
+    .node.tier-md::after { content: 'MD'; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: rgba(212,184,122,0.18); border: 1px solid rgba(212,184,122,0.5); color: var(--gold); font-size: 9px; font-weight: 700; letter-spacing: 2px; padding: 3px 10px; border-radius: 999px; }
+    .node.tier-coo::after { content: 'COO'; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: rgba(212,184,122,0.18); border: 1px solid rgba(212,184,122,0.5); color: var(--gold); font-size: 9px; font-weight: 700; letter-spacing: 2px; padding: 3px 10px; border-radius: 999px; }
+
+    /* Division header card */
+    .node.division {
+      width: 180px;
+      background: linear-gradient(180deg, rgba(212,184,122,0.10), rgba(212,184,122,0.04));
+      border-color: rgba(212,184,122,0.35);
+    }
+    .node.division .div-icon {
+      width: 36px; height: 36px;
       border-radius: 50%;
-      margin: 0 auto 14px;
-      position: relative;
+      background: linear-gradient(135deg, rgba(212,184,122,0.3), rgba(212,184,122,0.1));
+      border: 1px solid rgba(212,184,122,0.5);
+      display: grid; place-items: center;
+      margin: 0 auto 8px;
+      color: var(--gold);
+    }
+    .node.division .div-icon svg { width: 18px; height: 18px; }
+    .node.division h4 {
+      font-family: 'Playfair Display', serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--cream);
+      margin: 0 0 2px;
+      letter-spacing: 0.3px;
+    }
+    .node.division .div-count {
+      display: inline-block;
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 3px 9px;
+      background: rgba(0,0,0,0.25);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      margin-top: 6px;
+    }
+
+    /* Person card content (CEO, MD, members) */
+    .avatar {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      margin: 0 auto 10px;
       background: linear-gradient(135deg, var(--gold), #8a6a30);
       padding: 2px;
+      position: relative;
     }
-    .avatar {
+    .avatar-inner {
       width: 100%; height: 100%;
       border-radius: 50%;
-      background: linear-gradient(135deg, rgba(212,184,122,0.25), rgba(23,54,99,0.6));
+      overflow: hidden;
+      background: linear-gradient(135deg, rgba(212,184,122,0.25), rgba(23,54,99,0.7));
       display: grid; place-items: center;
       color: var(--cream);
       font-family: 'Playfair Display', serif;
-      font-size: 32px; font-weight: 600;
+      font-size: 22px; font-weight: 600;
       letter-spacing: 1px;
-      overflow: hidden;
       position: relative;
     }
-    .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .avatar img[src$="placeholder"] { display: none; }
+    .avatar-inner img { width: 100%; height: 100%; object-fit: cover; display: block; position: absolute; inset: 0; }
 
-    .member-name {
-      text-align: center;
+    .node.tier-ceo .avatar { width: 88px; height: 88px; }
+    .node.tier-ceo .avatar-inner { font-size: 28px; }
+    .node.tier-md .avatar { width: 76px; height: 76px; }
+
+    .node h3 {
       font-family: 'Playfair Display', serif;
-      font-size: 18px; font-weight: 600;
-      letter-spacing: 0.3px;
-      margin: 0 0 2px;
+      font-size: 15px;
+      font-weight: 600;
       color: var(--cream);
+      margin: 0;
+      letter-spacing: 0.2px;
+      line-height: 1.25;
     }
-    .member-name-ja {
-      text-align: center;
+    .node .name-ja {
       font-family: 'Noto Serif JP', serif;
-      font-size: 13px;
-      color: var(--muted);
-      margin: 0 0 10px;
-    }
-    .member-role {
-      text-align: center;
       font-size: 11px;
-      letter-spacing: 1.5px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .node .role {
+      font-size: 10px;
+      letter-spacing: 1.2px;
       text-transform: uppercase;
       color: var(--gold);
-      margin: 0 0 14px;
-    }
-    .member-meta {
-      display: flex; flex-direction: column; gap: 6px;
-      padding: 12px 0;
-      border-top: 1px solid var(--line);
-      margin-top: 8px;
-      font-size: 12px;
-      color: var(--muted);
-    }
-    .member-meta-row { display: flex; align-items: center; gap: 8px; }
-    .member-meta-row svg { width: 13px; height: 13px; flex: none; opacity: .8; }
-    .member-meta-row a { color: var(--cream); text-decoration: none; word-break: break-all; }
-    .member-meta-row a:hover { color: var(--gold); }
-    .tz-pill {
-      display: inline-flex; align-items: center; gap: 5px;
-      padding: 2px 8px; background: rgba(212,184,122,0.1);
-      border: 1px solid rgba(212,184,122,0.3);
-      color: var(--gold); border-radius: 999px;
-      font-size: 10px; letter-spacing: 0.5px; font-family: ui-monospace, 'SF Mono', monospace;
+      margin-top: 6px;
+      line-height: 1.4;
     }
 
-    .actions { display: flex; gap: 8px; margin-top: 14px; }
+    .actions { display: flex; gap: 5px; margin-top: 10px; justify-content: center; }
     .action {
-      flex: 1;
-      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-      padding: 10px 12px; border-radius: 8px; font-size: 12px;
-      letter-spacing: 0.5px; font-weight: 600; cursor: pointer;
-      text-decoration: none;
+      width: 28px; height: 28px;
+      display: grid; place-items: center;
+      border-radius: 7px;
       border: 1px solid var(--line);
       background: rgba(255,255,255,0.04);
       color: var(--text);
       transition: all .15s;
+      text-decoration: none;
     }
-    .action:hover { background: rgba(255,255,255,0.1); border-color: var(--line-strong); }
-    .action svg { width: 14px; height: 14px; }
+    .action:hover { transform: translateY(-1px); }
+    .action svg { width: 13px; height: 13px; }
     .action.wa { background: rgba(37,211,102,0.12); border-color: rgba(37,211,102,0.4); color: #5ee896; }
-    .action.wa:hover { background: rgba(37,211,102,0.22); border-color: var(--wa); color: #fff; }
+    .action.wa:hover { background: var(--wa); color: #fff; border-color: var(--wa); }
     .action.tel { background: rgba(122,167,255,0.10); border-color: rgba(122,167,255,0.35); color: #a8c8ff; }
-    .action.tel:hover { background: rgba(122,167,255,0.20); color: #fff; }
+    .action.tel:hover { background: rgba(122,167,255,0.3); color: #fff; }
     .action.mail { background: rgba(212,184,122,0.10); border-color: rgba(212,184,122,0.35); color: var(--gold); }
-    .action.mail:hover { background: rgba(212,184,122,0.20); color: #fff; }
+    .action.mail:hover { background: var(--gold); color: var(--navy-0); }
 
-    .empty {
-      text-align: center;
-      padding: 60px 24px;
-      border: 1px dashed var(--line-strong);
-      border-radius: 12px;
-      color: var(--muted);
+    /* Member stack under each division — vertical list with vertical line on left of each */
+    .member-stack {
+      margin-top: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+      position: relative;
     }
-    .empty-title { color: var(--cream); font-size: 16px; font-weight: 600; margin: 0 0 8px; }
-    .empty p { font-size: 13px; margin: 0; line-height: 1.55; }
+    .member-stack::before {
+      content: '';
+      position: absolute;
+      top: -24px; left: 50%;
+      width: 1px; height: 24px;
+      background: var(--gold-soft);
+      transform: translateX(-0.5px);
+    }
+    .member-stack .member-node {
+      position: relative;
+    }
+    /* connector between stacked members */
+    .member-stack .member-node + .member-node::before {
+      content: '';
+      position: absolute;
+      top: -18px; left: 50%;
+      width: 1px; height: 18px;
+      background: var(--gold-soft);
+      transform: translateX(-0.5px);
+    }
 
-    /* Quick add hint — for admin to know how to add members later */
+    /* Compact member node within division */
+    .member-node .node {
+      width: 180px;
+      padding: 12px 12px 10px;
+    }
+    .member-node .avatar { width: 52px; height: 52px; }
+    .member-node .avatar-inner { font-size: 18px; }
+    .member-node .node h3 { font-size: 13px; }
+    .member-node .node .name-ja { font-size: 10px; }
+    .member-node .node .role { font-size: 9px; }
+
+    .empty-pill {
+      font-size: 10px;
+      color: var(--muted);
+      padding: 8px 12px;
+      background: rgba(255,255,255,0.03);
+      border: 1px dashed var(--line);
+      border-radius: 999px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-top: 12px;
+    }
+
+    /* Aside sections (Board / Partners) — full-width below tree */
+    .aside {
+      max-width: 1400px;
+      margin: 40px auto 0;
+      padding: 0 32px;
+    }
+    .aside-head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+    .aside-head h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px; font-weight: 600;
+      margin: 0;
+      color: var(--cream);
+      letter-spacing: 0.5px;
+    }
+    .aside-head h2 svg { width: 20px; height: 20px; vertical-align: -3px; margin-right: 8px; color: var(--gold); }
+    .aside-head .count { color: var(--muted); font-size: 12px; letter-spacing: 1px; }
+    .aside-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+    }
+    .aside-grid .empty-pill { grid-column: 1 / -1; text-align: center; padding: 22px; }
+
+    /* Add hint at bottom */
     .add-hint {
-      margin-top: 36px;
-      padding: 16px 18px;
+      max-width: 1400px;
+      margin: 50px auto 60px;
+      padding: 16px 22px;
       background: rgba(255,255,255,0.03);
       border: 1px dashed var(--line-strong);
       border-radius: 10px;
@@ -209,7 +350,14 @@
 
     @media (max-width: 700px) {
       .topbar { padding: 14px 18px; flex-wrap: wrap; gap: 12px; }
-      .page-head, .subtabs-wrap, .panel { padding-left: 18px; padding-right: 18px; }
+      .page-head { padding-left: 18px; padding-right: 18px; }
+      .chart-scroll { padding: 40px 18px; }
+      .aside { padding-left: 18px; padding-right: 18px; }
+      .node { width: 160px; }
+      .node.tier-ceo { width: 200px; }
+      .node.tier-md { width: 180px; }
+      .node.division { width: 150px; }
+      .member-node .node { width: 160px; }
     }
   </style>
 </head>
@@ -234,16 +382,34 @@
   </header>
 
   <div class="page-head">
-    <div class="eyebrow" data-i18n="eyebrow">Team Members</div>
-    <h1 data-i18n="title">チームメンバー一覧</h1>
-    <p class="lede" data-i18n="lede">役員・各事業部のメンバー、連絡先、タイムゾーン。WhatsAppアイコンをクリックで直接メッセージを送れます。</p>
+    <div class="eyebrow" data-i18n="eyebrow">Organisation Chart</div>
+    <h1 data-i18n="title">組織図</h1>
+    <p class="lede" data-i18n="lede">Exceed グループの全メンバー。CEO を頂点に、部門ごとにツリー構造で確認できます。WhatsAppアイコンをクリックで直接連絡。</p>
   </div>
 
-  <div class="subtabs-wrap">
-    <nav class="subtabs" id="subtabs"></nav>
+  <div class="chart-scroll">
+    <div id="orgChart"></div>
   </div>
 
-  <main id="panels"></main>
+  <!-- Board -->
+  <section class="aside" id="board-section">
+    <div class="aside-head">
+      <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><span data-i18n="boardTitle">取締役会</span></h2>
+      <div class="count" id="boardCount">0</div>
+    </div>
+    <div class="aside-grid" id="boardGrid"></div>
+  </section>
+
+  <!-- Partners -->
+  <section class="aside" id="partners-section">
+    <div class="aside-head">
+      <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11h-6"/></svg><span data-i18n="partnersTitle">デベロッパーパートナー</span></h2>
+      <div class="count" id="partnersCount">0</div>
+    </div>
+    <div class="aside-grid" id="partnersGrid"></div>
+  </section>
+
+  <div class="add-hint" data-i18n-html="addHint"><strong>メンバー追加方法:</strong> <code>team.html</code> の <code>TEAM</code> オブジェクトにエントリを追加し、写真を <code>team/&lt;ファイル名&gt;.png</code> に配置してください。</div>
 
   <script type="module">
     import { auth, db } from './firebase-init.js';
@@ -251,134 +417,84 @@
     import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
     // ============ TEAM DATA ============
-    // Add members here. Drop photos into the team/ folder using the filename in `photo`.
-    // tz uses IANA strings: Asia/Tokyo, Asia/Dubai, Asia/Jakarta, Asia/Hong_Kong, etc.
-    // phone: keep international format with + and digits only (used for tel: and wa.me/ links).
-    const SECTIONS = [
-      { id: 'ceo',                ja: '代表取締役 CEO',         en: 'CEO' },
-      { id: 'md',                 ja: 'マネージング・ディレクター', en: 'Managing Director' },
-      { id: 'coo',                ja: '最高執行責任者 COO',      en: 'COO' },
-      { id: 'board',              ja: '取締役会',              en: 'Board Members' },
-      { id: 'dubai-sales',        ja: 'ドバイ営業チーム',         en: 'Dubai Sales Team' },
-      { id: 'japan-sales',        ja: '日本営業チーム',          en: 'Japan Sales Team' },
-      { id: 'lombok',             ja: 'ロンボクプロジェクト',       en: 'Lombok Project' },
-      { id: 'japan-office',       ja: '日本オフィス',            en: 'Japan Office' },
-      { id: 'way-office',         ja: 'Way オフィス',           en: 'Way Office' },
-      { id: 'marketing',          ja: 'マーケティング',           en: 'Marketing' },
-      { id: 'ayuva',              ja: 'AYUVAプロジェクト',       en: 'Ayuva Project' },
-      { id: 'takumi-renovation',  ja: 'Takumi リノベーション',    en: 'Takumi Renovation' },
-      { id: 'partners',           ja: 'デベロッパーパートナー',    en: 'Partners (Developers)' }
-    ];
-
+    // To add a member: drop their photo at team/<filename>.png and append a record to the matching array.
+    // Phone format: + then digits only (used for tel:, wa.me, etc.).
     const TEAM = {
       ceo: [
-        {
-          name: 'TERUO SHIMADA',
-          nameJa: '島田 輝雄',
-          role: 'Chief Executive Officer',
-          roleJa: '代表取締役 CEO',
-          location: '',
-          tz: '',
-          tzLabel: '',
-          phone: '',
-          phoneDisplay: '',
-          email: '',
-          photo: 'team/teruo-shimada.png'
-        }
+        { name: 'TERUO SHIMADA',   nameJa: '島田 輝雄',   role: 'Chief Executive Officer', roleJa: '代表取締役 CEO',
+          phone: '', phoneDisplay: '', email: '', photo: 'team/teruo-shimada.png' }
       ],
       md: [
-        {
-          name: 'SHOYA HOSOYAMA',
-          nameJa: '細山 翔也',
-          role: 'Managing Director · Head of Japan Sales',
-          roleJa: 'マネージング・ディレクター / 日本営業部長',
-          location: '',
-          tz: '',
-          tzLabel: '',
-          phone: '',
-          phoneDisplay: '',
-          email: '',
-          photo: 'team/shoya-hosoyama.png'
-        }
+        { name: 'SHOYA HOSOYAMA',  nameJa: '細山 翔也',   role: 'Managing Director', roleJa: 'マネージング・ディレクター',
+          phone: '', phoneDisplay: '', email: '', photo: 'team/shoya-hosoyama.png' }
       ],
-      coo: [],
+      coo: [
+        { name: 'MALIK BOUESSAH', nameJa: 'مالك بو عيسى', role: 'COO · Head of Dubai Sales', roleJa: 'COO・ドバイ営業部長',
+          phone: '', phoneDisplay: '', email: '', photo: 'team/malik-bouessah.png' }
+      ],
       board: [],
-      'dubai-sales': [],
+      'dubai-sales': [
+        { name: 'MALIK BOUESSAH', nameJa: 'مالك بو عيسى', role: 'Head of Dubai Sales · COO', roleJa: 'ドバイ営業部長 / COO',
+          phone: '', phoneDisplay: '', email: '', photo: 'team/malik-bouessah.png' }
+      ],
       'japan-sales': [
-        {
-          name: 'SHOYA HOSOYAMA',
-          nameJa: '細山 翔也',
-          role: 'Head of Japan Sales · Managing Director',
-          roleJa: '日本営業部長 / マネージング・ディレクター',
-          location: '',
-          tz: '',
-          tzLabel: '',
-          phone: '',
-          phoneDisplay: '',
-          email: '',
-          photo: 'team/shoya-hosoyama.png'
-        }
+        { name: 'SHOYA HOSOYAMA',  nameJa: '細山 翔也',   role: 'Head of Japan Sales', roleJa: '日本営業部長',
+          phone: '', phoneDisplay: '', email: '', photo: 'team/shoya-hosoyama.png' }
       ],
       lombok: [
-        {
-          name: 'YUTA NAGATOSHI',
-          nameJa: '長利 ユウタ',
-          role: 'Lombok Project',
-          roleJa: 'ロンボクプロジェクト',
-          location: 'Lombok, Indonesia',
-          tz: 'Asia/Jakarta',
-          tzLabel: 'WIB',
-          phone: '+817084548230',
-          phoneDisplay: '+81 70 8454 8230',
-          email: '',
-          photo: 'team/yuta-nagatoshi.png'
-        }
+        { name: 'YUTA NAGATOSHI',  nameJa: '長利 ユウタ', role: 'Lombok Project', roleJa: 'ロンボクプロジェクト',
+          phone: '+817084548230', phoneDisplay: '+81 70 8454 8230', email: '', photo: 'team/yuta-nagatoshi.png' }
       ],
       'japan-office': [],
       'way-office': [],
       marketing: [],
       ayuva: [],
       'takumi-renovation': [
-        {
-          name: 'TAKUMI SHOJI',
-          nameJa: '庄司 拓海',
-          role: 'CEO · Takumi Renovation',
-          roleJa: 'CEO・Takumi リノベーション',
-          location: '',
-          tz: '',
-          tzLabel: '',
-          phone: '',
-          phoneDisplay: '',
-          email: '',
-          photo: 'team/takumi-shoji.png'
-        }
+        { name: 'TAKUMI SHOJI',    nameJa: '庄司 拓海',   role: 'CEO · Takumi Renovation', roleJa: 'CEO・Takumi リノベーション',
+          phone: '', phoneDisplay: '', email: '', photo: 'team/takumi-shoji.png' }
       ],
       partners: []
+    };
+
+    // Divisions split between MD (Japan / Projects) and COO (Dubai / Operations)
+    const DIVISIONS_BY_PARENT = {
+      md: [
+        { id: 'japan-sales',       ja: '日本営業',             en: 'Japan Sales',       icon: 'pin' },
+        { id: 'lombok',            ja: 'ロンボクプロジェクト',     en: 'Lombok Project',    icon: 'island' },
+        { id: 'japan-office',      ja: '日本オフィス',           en: 'Japan Office',      icon: 'building' },
+        { id: 'ayuva',             ja: 'AYUVAプロジェクト',     en: 'AYUVA Project',     icon: 'leaf' },
+        { id: 'takumi-renovation', ja: 'Takumi リノベーション', en: 'Takumi Renovation', icon: 'tools' }
+      ],
+      coo: [
+        { id: 'dubai-sales',       ja: 'ドバイ営業',           en: 'Dubai Sales',       icon: 'pin' },
+        { id: 'way-office',        ja: 'Way オフィス',          en: 'Way Office',        icon: 'building' },
+        { id: 'marketing',         ja: 'マーケティング',          en: 'Marketing',         icon: 'megaphone' }
+      ]
     };
 
     // ============ I18N ============
     const I18N = {
       ja: {
         back: 'ダッシュボード', hello: 'こんにちは、',
-        eyebrow: 'Team Members',
-        title: 'チームメンバー一覧',
-        lede: '役員・各事業部のメンバー、連絡先、タイムゾーン。WhatsAppアイコンをクリックで直接メッセージを送れます。',
-        emptyTitle: 'メンバーは未登録です',
-        emptyBody: 'この事業部のメンバーは順次追加されます。管理者にご連絡ください。',
-        wa: 'WhatsApp', tel: '電話', mail: 'メール',
-        addHint: '<strong>メンバー追加方法:</strong> <code>team.html</code> の <code>TEAM</code> オブジェクトにメンバー情報を追加し、写真を <code>team/</code> フォルダに配置してください。',
-        memberCount: '名'
+        eyebrow: 'Organisation Chart',
+        title: '組織図',
+        lede: 'Exceed グループの全メンバー。CEO を頂点に、部門ごとにツリー構造で確認できます。WhatsAppアイコンをクリックで直接連絡。',
+        cooEmpty: 'COO 募集中',
+        boardTitle: '取締役会',
+        partnersTitle: 'デベロッパーパートナー',
+        empty: 'メンバー未登録',
+        addHint: '<strong>メンバー追加方法:</strong> <code>team.html</code> の <code>TEAM</code> オブジェクトにエントリを追加し、写真を <code>team/&lt;ファイル名&gt;.png</code> に配置してください。'
       },
       en: {
         back: 'Dashboard', hello: 'Hi, ',
-        eyebrow: 'Team Members',
+        eyebrow: 'Organisation Chart',
         title: 'Our Team',
-        lede: 'Leadership and division members, with contact details and time zones. Tap the WhatsApp icon to message directly.',
-        emptyTitle: 'No members yet',
-        emptyBody: 'Members for this division will be added soon. Contact the admin to be added.',
-        wa: 'WhatsApp', tel: 'Call', mail: 'Email',
-        addHint: '<strong>How to add a member:</strong> add an entry to the <code>TEAM</code> object in <code>team.html</code> and drop their photo in the <code>team/</code> folder.',
-        memberCount: ''
+        lede: 'The full Exceed Group, top-down. CEO at the head, divisions branching below. Tap any WhatsApp icon to message directly.',
+        cooEmpty: 'COO — open',
+        boardTitle: 'Board of Directors',
+        partnersTitle: 'Developer Partners',
+        empty: 'No members yet',
+        addHint: '<strong>How to add a member:</strong> append an entry to the <code>TEAM</code> object in <code>team.html</code> and drop the photo at <code>team/&lt;filename&gt;.png</code>.'
       }
     };
     let currentLang = 'ja';
@@ -389,101 +505,135 @@
       tel: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>`,
       mail: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>`,
       pin: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
-      clock: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+      island: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 18h20"/><path d="M12 18V8"/><path d="M8 8c0-2 2-4 4-4s4 2 4 4"/><path d="M5 18c-1-2 0-4 2-4"/><path d="M19 18c1-2 0-4-2-4"/></svg>`,
+      building: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="1"/><line x1="9" y1="6" x2="9" y2="6"/><line x1="15" y1="6" x2="15" y2="6"/><line x1="9" y1="10" x2="9" y2="10"/><line x1="15" y1="10" x2="15" y2="10"/><line x1="9" y1="14" x2="9" y2="14"/><line x1="15" y1="14" x2="15" y2="14"/><path d="M10 22v-4h4v4"/></svg>`,
+      megaphone: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l18-7v16L3 13z"/><path d="M11 13v6"/></svg>`,
+      leaf: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 4 13c0-7 8-11 17-11-2 11-6 18-10 18z"/><path d="M2 22c5-7 8-11 12-12"/></svg>`,
+      tools: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94z"/></svg>`,
+      vacant: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`
     };
 
-    // ============ RENDER ============
+    // ============ HELPERS ============
     function initials(name) {
       return (name || '').split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0]).join('').toUpperCase() || '?';
     }
-    function localTime(tz) {
-      try {
-        return new Intl.DateTimeFormat(currentLang === 'ja' ? 'ja-JP' : 'en-GB', {
-          timeZone: tz, hour: '2-digit', minute: '2-digit'
-        }).format(new Date());
-      } catch { return ''; }
-    }
-
-    function memberCard(m) {
+    function actionBtns(m) {
       const phoneClean = (m.phone || '').replace(/[^\d+]/g, '').replace(/^\+/, '');
       const wa = phoneClean ? `https://wa.me/${phoneClean}` : '';
       const tel = m.phone ? `tel:${m.phone}` : '';
       const mail = m.email ? `mailto:${m.email}` : '';
-      const lang = I18N[currentLang];
+      let html = '<div class="actions">';
+      if (wa)   html += `<a class="action wa" href="${wa}" target="_blank" rel="noopener" title="WhatsApp" onclick="event.stopPropagation()">${ICON.wa}</a>`;
+      if (tel)  html += `<a class="action tel" href="${tel}" title="Call" onclick="event.stopPropagation()">${ICON.tel}</a>`;
+      if (mail) html += `<a class="action mail" href="${mail}" title="Email" onclick="event.stopPropagation()">${ICON.mail}</a>`;
+      html += '</div>';
+      return html;
+    }
+    function personCard(m, tierClass = '') {
+      const role = currentLang === 'ja' ? (m.roleJa || m.role) : (m.role || m.roleJa);
       return `
-        <article class="member-card">
-          <div class="avatar-wrap">
-            <div class="avatar">
+        <div class="node ${tierClass}">
+          <div class="avatar">
+            <div class="avatar-inner">
+              <span style="position:relative;z-index:0">${initials(m.name)}</span>
               ${m.photo ? `<img src="${m.photo}" alt="${m.name}" onerror="this.remove()" />` : ''}
-              <span style="position:absolute">${initials(m.name)}</span>
             </div>
           </div>
-          <h3 class="member-name">${m.name}</h3>
-          ${m.nameJa ? `<div class="member-name-ja">${m.nameJa}</div>` : ''}
-          <div class="member-role">${currentLang === 'ja' ? (m.roleJa || m.role || '') : (m.role || m.roleJa || '')}</div>
-
-          <div class="member-meta">
-            ${m.location ? `<div class="member-meta-row">${ICON.pin}<span>${m.location}</span></div>` : ''}
-            ${m.tz ? `<div class="member-meta-row">${ICON.clock}<span class="tz-pill">${m.tzLabel || m.tz}</span><span>${localTime(m.tz)}</span></div>` : ''}
-            ${m.phoneDisplay || m.phone ? `<div class="member-meta-row">${ICON.tel}<a href="${tel}">${m.phoneDisplay || m.phone}</a></div>` : ''}
-            ${m.email ? `<div class="member-meta-row">${ICON.mail}<a href="${mail}">${m.email}</a></div>` : ''}
-          </div>
-
-          <div class="actions">
-            ${wa ? `<a class="action wa" href="${wa}" target="_blank" rel="noopener" aria-label="WhatsApp">${ICON.wa}<span>${lang.wa}</span></a>` : ''}
-            ${tel ? `<a class="action tel" href="${tel}" aria-label="Call">${ICON.tel}<span>${lang.tel}</span></a>` : ''}
-            ${mail ? `<a class="action mail" href="${mail}" aria-label="Email">${ICON.mail}<span>${lang.mail}</span></a>` : ''}
-          </div>
-        </article>`;
+          <h3>${m.name}</h3>
+          ${m.nameJa ? `<div class="name-ja">${m.nameJa}</div>` : ''}
+          ${role ? `<div class="role">${role}</div>` : ''}
+          ${actionBtns(m)}
+        </div>`;
+    }
+    function vacantCard(label, tierClass) {
+      return `
+        <div class="node ${tierClass}" style="opacity:.55; border-style: dashed;">
+          <div class="avatar"><div class="avatar-inner">${ICON.vacant}</div></div>
+          <h3 style="color: var(--muted)">${label}</h3>
+        </div>`;
+    }
+    function divisionHeader(d) {
+      const label = currentLang === 'ja' ? d.ja : d.en;
+      const list = TEAM[d.id] || [];
+      return `
+        <div class="node division">
+          <div class="div-icon">${ICON[d.icon] || ICON.pin}</div>
+          <h4>${label}</h4>
+          <div class="div-count">${list.length}</div>
+        </div>`;
     }
 
-    function renderTabs() {
+    // ============ RENDER ORG CHART ============
+    function buildDivisionsHtml(parentKey) {
       const dict = I18N[currentLang];
-      const tabsEl = document.getElementById('subtabs');
-      const panelsEl = document.getElementById('panels');
-      tabsEl.innerHTML = SECTIONS.map((s, i) => {
-        const count = (TEAM[s.id] || []).length;
-        const label = currentLang === 'ja' ? s.ja : s.en;
-        return `<button class="subtab ${i === 0 ? 'active' : ''}" data-tab="${s.id}">
-          ${label}<span class="count">${count}</span>
-        </button>`;
-      }).join('');
-
-      panelsEl.innerHTML = SECTIONS.map((s, i) => {
-        const list = TEAM[s.id] || [];
-        const label = currentLang === 'ja' ? s.ja : s.en;
-        const cards = list.length
-          ? `<div class="grid">${list.map(memberCard).join('')}</div>`
-          : `<div class="empty">
-              <div class="empty-title">${dict.emptyTitle}</div>
-              <p>${dict.emptyBody}</p>
-            </div>`;
+      return (DIVISIONS_BY_PARENT[parentKey] || []).map(d => {
+        const list = TEAM[d.id] || [];
+        const stack = list.length
+          ? `<div class="member-stack">${list.map(m => `<div class="member-node">${personCard(m)}</div>`).join('')}</div>`
+          : `<div class="empty-pill">${dict.empty}</div>`;
         return `
-          <section class="panel ${i === 0 ? 'active' : ''}" data-panel="${s.id}">
-            <div class="section-head">
-              <h2>${label}</h2>
-              <div class="sub">${list.length}${dict.memberCount}</div>
+          <li>
+            <div class="node-wrap">
+              ${divisionHeader(d)}
+              ${stack}
             </div>
-            ${cards}
-            <div class="add-hint" data-i18n-html="addHint">${dict.addHint}</div>
-          </section>`;
+          </li>`;
       }).join('');
-
-      document.querySelectorAll('.subtab').forEach(b => {
-        b.addEventListener('click', () => {
-          const tab = b.dataset.tab;
-          document.querySelectorAll('.subtab').forEach(x => x.classList.toggle('active', x === b));
-          document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.dataset.panel === tab));
-          history.replaceState(null, '', '#' + tab);
-        });
-      });
-      if (location.hash) {
-        const t = location.hash.replace('#', '');
-        const btn = document.querySelector(`.subtab[data-tab="${t}"]`);
-        if (btn) btn.click();
-      }
     }
 
+    function renderChart() {
+      const dict = I18N[currentLang];
+      const ceo = TEAM.ceo[0];
+      const md  = TEAM.md[0];
+      const coo = TEAM.coo[0];
+
+      const ceoCard = ceo ? personCard(ceo, 'tier-ceo') : vacantCard('CEO', 'tier-ceo');
+      const mdCard  = md  ? personCard(md, 'tier-md')   : vacantCard('MD — open', 'tier-md');
+      const cooCard = coo ? personCard(coo, 'tier-coo') : vacantCard(dict.cooEmpty, 'tier-coo');
+
+      const html = `
+        <ul class="tree">
+          <li>
+            <div class="node-wrap">
+              ${ceoCard}
+              <ul>
+                <li>
+                  <div class="node-wrap">
+                    ${mdCard}
+                    <ul>
+                      ${buildDivisionsHtml('md')}
+                    </ul>
+                  </div>
+                </li>
+                <li>
+                  <div class="node-wrap">
+                    ${cooCard}
+                    <ul>
+                      ${buildDivisionsHtml('coo')}
+                    </ul>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </li>
+        </ul>`;
+      document.getElementById('orgChart').innerHTML = html;
+    }
+
+    function renderAside() {
+      const dict = I18N[currentLang];
+      ['board','partners'].forEach(key => {
+        const list = TEAM[key] || [];
+        const grid = document.getElementById(key + 'Grid');
+        const count = document.getElementById(key + 'Count');
+        count.textContent = list.length;
+        grid.innerHTML = list.length
+          ? list.map(m => personCard(m)).join('')
+          : `<div class="empty-pill">${dict.empty}</div>`;
+      });
+    }
+
+    // ============ I18N + LANG TOGGLE ============
     function setLang(lang) {
       currentLang = lang;
       const dict = I18N[lang];
@@ -492,9 +642,14 @@
         const k = el.getAttribute('data-i18n');
         if (dict[k]) el.textContent = dict[k];
       });
+      document.querySelectorAll('[data-i18n-html]').forEach(el => {
+        const k = el.getAttribute('data-i18n-html');
+        if (dict[k]) el.innerHTML = dict[k];
+      });
       document.querySelectorAll('.lang-toggle button').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
       positionPill();
-      renderTabs();
+      renderChart();
+      renderAside();
     }
     function positionPill() {
       const pill = document.getElementById('langPill');
@@ -524,15 +679,6 @@
 
     window.addEventListener('load', () => { setLang('ja'); });
     window.addEventListener('resize', positionPill);
-    setInterval(() => {
-      // Refresh "current local time" pills every minute
-      document.querySelectorAll('.tz-pill').forEach(el => {
-        // tz pill itself doesn't change; the time text next to it does
-      });
-      const allTimeNodes = document.querySelectorAll('.member-meta-row .tz-pill');
-      // Re-render to update times — cheap
-      renderTabs();
-    }, 60000);
   </script>
 </body>
 </html>

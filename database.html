@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Database — Exceed Real Estate</title>
+  <link rel="icon" type="image/jpeg" href="logo.jpg">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="liquid.css">
+  <style>
+    :root { --navy-0:#051428; --navy-1:#0a1f3d; --navy-2:#102a4f; --line:rgba(255,255,255,0.10); --line-strong:rgba(255,255,255,0.18); --text:#f5f7fb; --muted:#9aa8c2; --gold:#d4b87a; --cream:#f1ead8; --green:#5cc98f; --radius:14px; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    html { background: var(--navy-0); }
+    body { font-family: 'Noto Sans JP', 'Inter', sans-serif; background: radial-gradient(900px 600px at 80% -10%, rgba(212,184,122,0.08), transparent 60%), radial-gradient(800px 600px at -10% 110%, rgba(23,54,99,0.6), transparent 60%), var(--navy-0); color: var(--text); min-height: 100vh; }
+
+    .topbar { display: flex; align-items: center; justify-content: space-between; padding: 16px 32px; border-bottom: 1px solid var(--line); backdrop-filter: blur(8px); background: rgba(5,20,40,0.7); position: sticky; top: 0; z-index: 10; }
+    .brand { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+    .brand img { width: 40px; height: 40px; border-radius: 8px; }
+    .brand-name { font-family: 'Playfair Display', serif; letter-spacing: 2px; font-weight: 600; }
+    .brand-name span { color: var(--gold); font-weight: 400; }
+    .topbar-right { display: flex; align-items: center; gap: 14px; color: var(--muted); font-size: 13px; }
+    .topbar-right strong { color: var(--cream); font-weight: 600; }
+    .icon-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--line); color: var(--text); padding: 8px 14px; border-radius: 8px; cursor: pointer; font-family: inherit; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; transition: background .2s, border-color .2s; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
+    .icon-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--line-strong); }
+    .icon-btn svg { width: 14px; height: 14px; }
+    .lang-toggle { display: inline-flex; align-items: center; background: rgba(255,255,255,0.05); border: 1px solid var(--line); border-radius: 999px; padding: 4px; position: relative; }
+    .lang-toggle button { background: transparent; border: none; color: var(--muted); font-family: inherit; font-size: 12px; font-weight: 600; letter-spacing: 1px; padding: 6px 12px; border-radius: 999px; cursor: pointer; transition: color .25s; position: relative; z-index: 1; }
+    .lang-toggle button.active { color: var(--navy-0); }
+    .lang-toggle .pill { position: absolute; top: 4px; bottom: 4px; background: var(--cream); border-radius: 999px; transition: transform .35s cubic-bezier(.34,1.56,.64,1), width .35s ease; z-index: 0; }
+
+    .page-head { max-width: 1400px; margin: 0 auto; padding: 36px 32px 0; }
+    .page-head .eyebrow { color: var(--gold); letter-spacing: 5px; font-size: 11px; text-transform: uppercase; margin-bottom: 10px; }
+    .page-head h1 { font-family: 'Noto Serif JP', 'Playfair Display', serif; font-weight: 500; font-size: clamp(28px, 4vw, 40px); margin: 0 0 8px; }
+    .page-head .lede { color: var(--muted); font-size: 14px; max-width: 720px; margin: 0; line-height: 1.6; }
+
+    .global-search {
+      max-width: 1400px;
+      margin: 24px auto 0;
+      padding: 0 32px;
+    }
+    .gs-wrap {
+      display: flex; align-items: center; gap: 12px;
+      background: linear-gradient(180deg, rgba(212,184,122,0.10), rgba(212,184,122,0.04));
+      border: 1px solid rgba(212,184,122,0.35);
+      border-radius: 14px;
+      padding: 14px 20px;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .gs-wrap:focus-within { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(212,184,122,0.12); }
+    .gs-wrap svg { width: 20px; height: 20px; color: var(--gold); flex: none; }
+    .gs-wrap input { flex: 1; background: transparent; border: none; outline: none; color: var(--text); font-family: inherit; font-size: 16px; }
+    .gs-wrap input::placeholder { color: var(--muted); }
+    .gs-meta { color: var(--muted); font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; }
+
+    /* Sub-tabs */
+    .subtabs-wrap { max-width: 1400px; margin: 28px auto 0; padding: 0 32px; border-bottom: 1px solid var(--line); }
+    .subtabs { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: thin; -webkit-overflow-scrolling: touch; padding-bottom: 0; }
+    .subtabs::-webkit-scrollbar { height: 4px; }
+    .subtabs::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 4px; }
+    .dev-tab {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 10px 14px;
+      cursor: pointer;
+      position: relative;
+      transition: color .2s;
+      white-space: nowrap;
+      flex: none;
+      letter-spacing: 0.3px;
+    }
+    .dev-tab .logo {
+      width: 28px; height: 28px;
+      border-radius: 7px;
+      display: grid; place-items: center;
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+      flex: none;
+    }
+    .dev-tab:hover { color: var(--cream); }
+    .dev-tab.active { color: var(--gold); }
+    .dev-tab.active::after { content: ''; position: absolute; bottom: -1px; left: 8px; right: 8px; height: 2px; background: var(--gold); border-radius: 2px; }
+    .dev-tab .count {
+      display: inline-block; margin-left: 4px;
+      padding: 1px 7px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-size: 10px;
+      color: var(--muted);
+    }
+    .dev-tab.active .count { background: rgba(212,184,122,0.15); border-color: rgba(212,184,122,0.4); color: var(--gold); }
+
+    /* Panel */
+    .panel { display: none; max-width: 1400px; margin: 0 auto; padding: 30px 32px 80px; }
+    .panel.active { display: block; }
+
+    .dev-hero {
+      display: flex; align-items: center; gap: 18px;
+      padding: 22px 24px;
+      background: var(--dev-bg, linear-gradient(135deg, #1a2540, #0a1224));
+      border: 1px solid var(--dev-line, var(--line));
+      border-radius: var(--radius);
+      margin-bottom: 22px;
+      position: relative;
+      overflow: hidden;
+    }
+    .dev-hero::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(circle at 100% 0%, var(--dev-glow, rgba(255,255,255,0.05)), transparent 60%);
+      pointer-events: none;
+    }
+    .dev-hero .logo-big {
+      width: 80px; height: 80px;
+      border-radius: 14px;
+      background: var(--dev-accent, var(--gold));
+      display: grid; place-items: center;
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: 28px;
+      color: var(--dev-fg, #000);
+      letter-spacing: 1.5px;
+      flex: none;
+      box-shadow: 0 12px 30px -10px rgba(0,0,0,.5);
+      position: relative;
+      z-index: 1;
+    }
+    .dev-hero h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 26px;
+      font-weight: 600;
+      margin: 0 0 4px;
+      color: var(--cream);
+      letter-spacing: 0.3px;
+      position: relative;
+      z-index: 1;
+    }
+    .dev-hero .tagline {
+      color: var(--muted);
+      font-size: 13px;
+      margin: 0;
+      position: relative;
+      z-index: 1;
+    }
+    .dev-hero .stat {
+      margin-left: auto;
+      text-align: right;
+      position: relative;
+      z-index: 1;
+    }
+    .dev-hero .stat .num {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--gold);
+    }
+    .dev-hero .stat .label {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .docs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 14px;
+      margin-bottom: 30px;
+    }
+    .doc-card {
+      background: linear-gradient(180deg, rgba(16,42,79,0.85), rgba(10,31,61,0.85));
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+      text-decoration: none;
+      color: var(--cream);
+      transition: transform .15s, border-color .15s, box-shadow .15s;
+    }
+    .doc-card:hover { transform: translateY(-2px); border-color: rgba(212,184,122,0.4); box-shadow: 0 14px 30px -14px rgba(0,0,0,.5); }
+    .doc-icon {
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      background: rgba(212,184,122,0.10);
+      border: 1px solid rgba(212,184,122,0.3);
+      display: grid; place-items: center;
+      color: var(--gold);
+      flex: none;
+    }
+    .doc-icon svg { width: 18px; height: 18px; }
+    .doc-info { flex: 1; min-width: 0; }
+    .doc-name { font-size: 14px; font-weight: 600; color: var(--cream); margin-bottom: 3px; line-height: 1.3; word-break: break-word; }
+    .doc-meta { font-size: 11px; color: var(--muted); display: flex; gap: 10px; }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 32px;
+      border: 1px dashed var(--line-strong);
+      border-radius: 14px;
+      color: var(--muted);
+    }
+    .empty-icon {
+      width: 56px; height: 56px;
+      border-radius: 14px;
+      background: rgba(212,184,122,0.08);
+      border: 1px solid rgba(212,184,122,0.3);
+      display: grid; place-items: center;
+      color: var(--gold);
+      margin: 0 auto 16px;
+    }
+    .empty-icon svg { width: 24px; height: 24px; }
+    .empty-state h3 { color: var(--cream); font-size: 17px; font-weight: 600; margin: 0 0 8px; font-family: 'Playfair Display', serif; }
+    .empty-state p { font-size: 13px; line-height: 1.55; margin: 0 auto; max-width: 460px; }
+    .empty-state code { background: rgba(255,255,255,0.06); padding: 2px 7px; border-radius: 4px; font-family: ui-monospace, 'SF Mono', monospace; font-size: 11px; color: var(--cream); }
+
+    .add-hint {
+      max-width: 1400px;
+      margin: 30px auto 0;
+      padding: 16px 22px;
+      background: rgba(255,255,255,0.03);
+      border: 1px dashed var(--line-strong);
+      border-radius: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    .add-hint strong { color: var(--cream); }
+    .add-hint code { background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px; font-family: ui-monospace, 'SF Mono', monospace; font-size: 11px; color: var(--cream); }
+
+    @media (max-width: 700px) {
+      .topbar { padding: 14px 18px; flex-wrap: wrap; gap: 12px; }
+      .page-head, .global-search, .subtabs-wrap, .panel, .add-hint { padding-left: 18px; padding-right: 18px; }
+      .dev-hero { flex-wrap: wrap; padding: 18px; }
+      .dev-hero .logo-big { width: 60px; height: 60px; font-size: 22px; }
+      .dev-hero .stat { margin-left: 0; text-align: left; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand" onclick="window.location.href='agent.html'">
+      <img src="logo.jpg" alt="Exceed" />
+      <div class="brand-name">EXCEED <span>REAL ESTATE</span></div>
+    </div>
+    <div class="topbar-right">
+      <a class="icon-btn" href="agent.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        <span data-i18n="back">ダッシュボード</span>
+      </a>
+      <span><span data-i18n="hello">こんにちは、</span><strong id="userName">—</strong></span>
+      <div class="lang-toggle" id="langToggle">
+        <span class="pill" id="langPill"></span>
+        <button data-lang="ja" class="active">日本語</button>
+        <button data-lang="en">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="page-head">
+    <div class="eyebrow" data-i18n="eyebrow">Database</div>
+    <h1 data-i18n="title">ブローシャー・データベース</h1>
+    <p class="lede" data-i18n="lede">主要ドバイデベロッパーのブローシャー・PDF・ファクトシートを一括管理。検索バーで全デベロッパー横断検索、または下のタブから個別に閲覧。</p>
+  </div>
+
+  <div class="global-search">
+    <div class="gs-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="globalSearch" placeholder="ブローシャー・物件名で検索…" oninput="filterDocs()" />
+      <span class="gs-meta" id="searchMeta"></span>
+    </div>
+  </div>
+
+  <div class="subtabs-wrap">
+    <nav class="subtabs" id="subtabs"></nav>
+  </div>
+
+  <main id="panels"></main>
+
+  <div class="add-hint" data-i18n-html="addHint">
+    <strong>ブローシャー追加方法:</strong> リポジトリの <code>developers/&lt;developer-id&gt;/</code> フォルダにPDFをアップロードし、<code>database.html</code> の <code>DOCS</code> 配列に <code>{ name, file }</code> を追加してください。
+  </div>
+
+  <script type="module">
+    import { auth, db } from './firebase-init.js';
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+    // ============ DEVELOPERS ============
+    // bg / accent / fg = brand colors. Drop a real logo PNG at developers/<id>/logo.png
+    // and it will replace the monogram automatically.
+    const DEVELOPERS = [
+      { id: 'emaar',     name: 'Emaar',            taglineJa: 'ダウンタウン・ドバイヒルズの代表的開発',  taglineEn: 'Downtown, Dubai Hills, iconic landmarks',  initials: 'EM', bg: 'linear-gradient(135deg, #1a2540, #050d1f)', accent: '#d4b87a', fg: '#000' },
+      { id: 'damac',     name: 'DAMAC',            taglineJa: '高級・ブランデッドレジデンス',           taglineEn: 'Luxury & branded residences',              initials: 'DM', bg: 'linear-gradient(135deg, #2a0a0a, #1a0505)', accent: '#e32726', fg: '#fff' },
+      { id: 'sobha',     name: 'Sobha Realty',     taglineJa: 'ハートランド、プレミアムビラ',           taglineEn: 'Hartland and premium villas',              initials: 'SO', bg: 'linear-gradient(135deg, #1b2d5b, #0a1224)', accent: '#a88b5a', fg: '#fff' },
+      { id: 'nakheel',   name: 'Nakheel',          taglineJa: 'パームジュメイラ、ザ・ワールド',         taglineEn: 'Palm Jumeirah, The World',                 initials: 'NK', bg: 'linear-gradient(135deg, #0a2618, #04140d)', accent: '#0e914f', fg: '#fff' },
+      { id: 'meraas',    name: 'Meraas',           taglineJa: 'シティウォーク、ブルーウォーターズ',     taglineEn: 'City Walk, Bluewaters',                    initials: 'MR', bg: 'linear-gradient(135deg, #0d2a2a, #051515)', accent: '#00897b', fg: '#fff' },
+      { id: 'omniyat',   name: 'Omniyat',          taglineJa: 'ウルトララグジュアリー',                 taglineEn: 'Ultra-luxury, ONE Palm, AVA',              initials: 'OM', bg: 'linear-gradient(135deg, #1a0f1a, #0a0410)', accent: '#9a7bff', fg: '#fff' },
+      { id: 'mag',       name: 'MAG',              taglineJa: 'MAGシティ、Keturah',                    taglineEn: 'MAG City, Keturah Reserve',                initials: 'MG', bg: 'linear-gradient(135deg, #1a0f05, #0a0502)', accent: '#f26522', fg: '#fff' },
+      { id: 'binghatti', name: 'Binghatti',        taglineJa: '象徴的な曲線ファサード',                 taglineEn: 'Iconic curved-facade towers',              initials: 'BH', bg: 'linear-gradient(135deg, #1a1500, #0a0800)', accent: '#f4c61c', fg: '#000' },
+      { id: 'azizi',     name: 'Azizi',            taglineJa: 'リビエラ、MBR City',                    taglineEn: 'Riviera, MBR City',                        initials: 'AZ', bg: 'linear-gradient(135deg, #1a0a12, #0a0408)', accent: '#a8233e', fg: '#fff' },
+      { id: 'tiger',     name: 'Tiger Properties', taglineJa: 'JVC、JVT、新興エリア',                  taglineEn: 'JVC, JVT, emerging districts',             initials: 'TG', bg: 'linear-gradient(135deg, #1a0f00, #0a0500)', accent: '#f8a92b', fg: '#000' },
+      { id: 'ellington', name: 'Ellington',        taglineJa: 'デザイン重視、現代建築',                 taglineEn: 'Design-led contemporary',                  initials: 'EL', bg: 'linear-gradient(135deg, #0f1f1f, #050d0d)', accent: '#5ba8a0', fg: '#000' },
+      { id: 'danube',    name: 'Danube',           taglineJa: 'アフォーダブル・ラグジュアリー',         taglineEn: 'Affordable luxury',                        initials: 'DN', bg: 'linear-gradient(135deg, #0a1a2a, #050d18)', accent: '#1a6fb8', fg: '#fff' },
+      { id: 'select',    name: 'Select Group',     taglineJa: 'Marina、Studio One',                    taglineEn: 'Marina, Studio One',                       initials: 'SG', bg: 'linear-gradient(135deg, #122230, #060c14)', accent: '#5d8fb5', fg: '#000' },
+      { id: 'aldar',     name: 'Aldar',            taglineJa: 'アブダビ、Saadiyat',                    taglineEn: 'Abu Dhabi, Saadiyat, Yas',                 initials: 'AL', bg: 'linear-gradient(135deg, #0a1a14, #050d0a)', accent: '#71a87a', fg: '#000' }
+    ];
+
+    // ============ DOCS ============
+    // Paths are relative to the repo root. To add a brochure:
+    //   1. Drop the PDF (or JPG) into developers/<dev-id>/<filename>
+    //   2. Append { devId, name, file, type, size, date } below
+    const DOCS = [
+      // Example placeholders — replace with real files. The cards still render search-friendly.
+      // { devId: 'emaar', name: 'Address Residences Dubai Hills — Brochure', file: 'developers/emaar/address-dubai-hills.pdf', type: 'PDF', size: '12 MB', date: '2026-04-30' }
+    ];
+
+    // ============ I18N ============
+    const I18N = {
+      ja: {
+        back: 'ダッシュボード', hello: 'こんにちは、',
+        eyebrow: 'Database',
+        title: 'ブローシャー・データベース',
+        lede: '主要ドバイデベロッパーのブローシャー・PDF・ファクトシートを一括管理。検索バーで全デベロッパー横断検索、または下のタブから個別に閲覧。',
+        searchPh: 'ブローシャー・物件名で検索…',
+        emptyTitle: 'まだブローシャーがありません',
+        emptyBody: 'リポジトリの <code>developers/{ID}/</code> フォルダにPDFファイルを配置し、<code>database.html</code> の <code>DOCS</code> 配列にエントリを追加してください。',
+        searchAllResults: '件',
+        statLabel: 'ブローシャー',
+        addHint: '<strong>ブローシャー追加方法:</strong> リポジトリの <code>developers/&lt;developer-id&gt;/</code> フォルダにPDFをアップロードし、<code>database.html</code> の <code>DOCS</code> 配列に <code>{ name, file }</code> を追加してください。'
+      },
+      en: {
+        back: 'Dashboard', hello: 'Hi, ',
+        eyebrow: 'Database',
+        title: 'Brochure Database',
+        lede: 'All major Dubai developer brochures, PDFs, and fact-sheets in one place. Use the global search bar to find anything across developers, or browse by tab.',
+        searchPh: 'Search brochures or property names…',
+        emptyTitle: 'No brochures yet',
+        emptyBody: 'Drop PDFs into the <code>developers/{ID}/</code> folder in the repo, then append entries to the <code>DOCS</code> array in <code>database.html</code>.',
+        searchAllResults: ' results',
+        statLabel: 'Brochures',
+        addHint: '<strong>How to add brochures:</strong> Upload PDFs to <code>developers/&lt;developer-id&gt;/</code> in the repo, then append <code>{ name, file }</code> entries to the <code>DOCS</code> array in <code>database.html</code>.'
+      }
+    };
+    let currentLang = 'ja';
+
+    function docsForDev(id) { return DOCS.filter(d => d.devId === id); }
+    function fileIcon(type) {
+      const t = (type || 'PDF').toUpperCase();
+      const color = t === 'PDF' ? '#ff6b6b' : t === 'JPG' || t === 'PNG' ? '#5ee896' : 'var(--gold)';
+      return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`;
+    }
+
+    function renderTabs() {
+      const tabsEl = document.getElementById('subtabs');
+      tabsEl.innerHTML = DEVELOPERS.map((d, i) => {
+        const count = docsForDev(d.id).length;
+        return `<button class="dev-tab ${i === 0 ? 'active' : ''}" data-tab="${d.id}">
+          <span class="logo" style="background:${d.accent}; color:${d.fg};">${d.initials}</span>
+          <span>${d.name}</span>
+          <span class="count">${count}</span>
+        </button>`;
+      }).join('');
+    }
+
+    function renderPanels() {
+      const dict = I18N[currentLang];
+      const panelsEl = document.getElementById('panels');
+      panelsEl.innerHTML = DEVELOPERS.map((d, i) => {
+        const list = docsForDev(d.id);
+        const tagline = currentLang === 'ja' ? d.taglineJa : d.taglineEn;
+        const docs = list.length
+          ? `<div class="docs-grid">${list.map(doc => `
+              <a class="doc-card" href="${doc.file}" target="_blank" rel="noopener">
+                <div class="doc-icon">${fileIcon(doc.type)}</div>
+                <div class="doc-info">
+                  <div class="doc-name">${doc.name}</div>
+                  <div class="doc-meta">
+                    <span>${doc.type || 'PDF'}</span>
+                    ${doc.size ? `<span>·</span><span>${doc.size}</span>` : ''}
+                    ${doc.date ? `<span>·</span><span>${doc.date}</span>` : ''}
+                  </div>
+                </div>
+              </a>`).join('')}</div>`
+          : `<div class="empty-state">
+              <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+              <h3>${dict.emptyTitle}</h3>
+              <p>${dict.emptyBody.replace('{ID}', d.id)}</p>
+            </div>`;
+        return `<section class="panel ${i === 0 ? 'active' : ''}" data-panel="${d.id}" style="--dev-bg:${d.bg}; --dev-accent:${d.accent}; --dev-fg:${d.fg}; --dev-glow:${d.accent}33;">
+          <div class="dev-hero">
+            <div class="logo-big">${d.initials}</div>
+            <div>
+              <h2>${d.name}</h2>
+              <p class="tagline">${tagline}</p>
+            </div>
+            <div class="stat">
+              <div class="num">${list.length}</div>
+              <div class="label">${dict.statLabel}</div>
+            </div>
+          </div>
+          ${docs}
+        </section>`;
+      }).join('');
+
+      document.querySelectorAll('.dev-tab').forEach(b => {
+        b.addEventListener('click', () => {
+          const tab = b.dataset.tab;
+          document.querySelectorAll('.dev-tab').forEach(x => x.classList.toggle('active', x === b));
+          document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.dataset.panel === tab));
+          history.replaceState(null, '', '#' + tab);
+          document.getElementById('globalSearch').value = '';
+          filterDocs();
+        });
+      });
+      if (location.hash) {
+        const t = location.hash.replace('#', '');
+        const btn = document.querySelector(`.dev-tab[data-tab="${t}"]`);
+        if (btn) btn.click();
+      }
+    }
+
+    window.filterDocs = function() {
+      const q = (document.getElementById('globalSearch').value || '').trim().toLowerCase();
+      const meta = document.getElementById('searchMeta');
+      if (!q) {
+        // restore tab view
+        document.querySelectorAll('.panel').forEach(p => {
+          p.style.display = '';
+          p.querySelectorAll('.doc-card').forEach(c => c.style.display = '');
+        });
+        meta.textContent = '';
+        return;
+      }
+      // Show all panels at once when searching globally
+      let total = 0;
+      document.querySelectorAll('.panel').forEach(p => {
+        let visible = 0;
+        p.querySelectorAll('.doc-card').forEach(c => {
+          const t = c.textContent.toLowerCase();
+          const hit = t.includes(q);
+          c.style.display = hit ? '' : 'none';
+          if (hit) visible++;
+        });
+        // Show panel if any matches OR if no docs exist yet (so the empty state still shows)
+        const hasMatches = visible > 0;
+        p.style.display = hasMatches ? 'block' : 'none';
+        total += visible;
+      });
+      const dict = I18N[currentLang];
+      meta.textContent = total + dict.searchAllResults;
+    };
+
+    function setLang(lang) {
+      currentLang = lang;
+      const dict = I18N[lang];
+      document.documentElement.lang = lang;
+      document.querySelectorAll('[data-i18n]').forEach(el => { const k = el.getAttribute('data-i18n'); if (dict[k]) el.textContent = dict[k]; });
+      document.querySelectorAll('[data-i18n-html]').forEach(el => { const k = el.getAttribute('data-i18n-html'); if (dict[k]) el.innerHTML = dict[k]; });
+      document.getElementById('globalSearch').placeholder = dict.searchPh;
+      document.querySelectorAll('.lang-toggle button').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+      positionPill();
+      renderTabs();
+      renderPanels();
+    }
+    function positionPill() {
+      const pill = document.getElementById('langPill');
+      const active = document.querySelector('.lang-toggle button.active');
+      if (!active || !pill) return;
+      const r = active.getBoundingClientRect();
+      const pr = active.parentElement.getBoundingClientRect();
+      pill.style.width = r.width + 'px';
+      pill.style.transform = `translateX(${r.left - pr.left - 4}px)`;
+    }
+    document.querySelectorAll('.lang-toggle button').forEach(b => b.addEventListener('click', () => setLang(b.dataset.lang)));
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = 'index.html'; return; }
+      let firstName = (user.displayName || '').trim().split(/\s+/)[0];
+      try { const snap = await getDoc(doc(db, 'agents', user.uid)); if (snap.exists() && snap.data().firstName) firstName = snap.data().firstName; } catch (e) {}
+      if (!firstName && user.email) { const local = user.email.split('@')[0].split(/[._-]/)[0]; firstName = local.charAt(0).toUpperCase() + local.slice(1); }
+      document.getElementById('userName').textContent = firstName || 'Agent';
+    });
+
+    window.addEventListener('load', () => { setLang('ja'); });
+    window.addEventListener('resize', positionPill);
+  </script>
+</body>
+</html>
