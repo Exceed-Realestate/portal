@@ -12,11 +12,97 @@
     * { box-sizing: border-box; }
     html, body { margin: 0; padding: 0; }
     html { background: var(--navy-0); }
-    body {
-      font-family: 'Noto Sans JP', 'Inter', sans-serif;
-      background: radial-gradient(900px 600px at 80% -10%, rgba(212,184,122,0.08), transparent 60%), radial-gradient(800px 600px at -10% 110%, rgba(23,54,99,0.6), transparent 60%), var(--navy-0);
-      color: var(--text); min-height: 100vh;
+    body { font-family: 'Noto Sans JP', 'Inter', sans-serif; color: var(--text); min-height: 100vh; position: relative; }
+
+    /* Sunrise / sunset jet-takeoff scene as a fixed backdrop */
+    .scene-bg {
+      position: fixed; inset: 0; z-index: -3;
+      background: linear-gradient(180deg, #1a0a1f 0%, #4a1530 12%, #b03a2e 25%, #e85d2c 38%, #f0b060 52%, #5a708a 70%, #1f3050 86%, #0a1424 100%);
     }
+    .scene-bg::before {
+      content: '';
+      position: absolute; bottom: 28%; left: 50%;
+      transform: translateX(-50%);
+      width: 320px; height: 320px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #fff5d6 0%, #ffd070 25%, #ff8a3a 55%, transparent 75%);
+      opacity: 0.85;
+      filter: blur(2px);
+    }
+    .scene-clouds {
+      position: fixed; inset: 0; z-index: -2; pointer-events: none;
+      background:
+        radial-gradient(ellipse 35% 4% at 18% 56%, rgba(255,255,255,0.30), transparent 70%),
+        radial-gradient(ellipse 28% 3% at 78% 68%, rgba(255,255,255,0.22), transparent 70%),
+        radial-gradient(ellipse 45% 5% at 50% 78%, rgba(255,200,160,0.20), transparent 70%);
+    }
+    .scene-overlay {
+      position: fixed; inset: 0; z-index: -2; pointer-events: none;
+      background:
+        radial-gradient(80% 60% at 50% 25%, rgba(255,150,80,0.30), transparent 60%),
+        linear-gradient(180deg, rgba(5,20,40,0.10) 0%, rgba(5,20,40,0.45) 60%, rgba(5,20,40,0.85) 100%);
+    }
+    .scene-plane {
+      position: fixed; top: 18%; right: 6%;
+      width: clamp(280px, 36vw, 540px);
+      z-index: -2; pointer-events: none;
+      filter: drop-shadow(0 14px 26px rgba(0,0,0,.6));
+      transform: rotate(-12deg);
+      opacity: 0.94;
+      animation: plane-drift 22s ease-in-out infinite alternate;
+    }
+    @keyframes plane-drift {
+      from { transform: rotate(-12deg) translate(0, 0); }
+      to   { transform: rotate(-13deg) translate(-30px, -22px); }
+    }
+    .scene-plane svg { width: 100%; height: auto; display: block; }
+
+    .panel, .feature, .instructions { backdrop-filter: blur(18px) saturate(160%); -webkit-backdrop-filter: blur(18px) saturate(160%); background: linear-gradient(180deg, rgba(16,42,79,0.78), rgba(10,31,61,0.78)) !important; }
+
+    /* Travel-type segmented control */
+    .seg-control {
+      display: inline-flex;
+      background: rgba(5,20,40,0.7);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 4px;
+      gap: 4px;
+    }
+    .seg-control button {
+      flex: 1; padding: 9px 18px;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      border-radius: 999px;
+      transition: all .15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .seg-control button.active {
+      background: linear-gradient(135deg, var(--cream), var(--gold));
+      color: var(--navy-0);
+      box-shadow: 0 6px 16px -6px rgba(212,184,122,.5);
+    }
+    .seg-control button:not(.active):hover { color: var(--cream); background: rgba(255,255,255,0.04); }
+    .status-preview {
+      margin-top: 12px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      line-height: 1.5;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .status-preview svg { width: 18px; height: 18px; flex: none; }
+    .status-preview.work    { background: rgba(122,167,255,0.10); border: 1px solid rgba(122,167,255,0.35); color: #a8c8ff; }
+    .status-preview.holiday { background: rgba(92,201,143,0.10); border: 1px solid rgba(92,201,143,0.35); color: #5cf08a; }
     .topbar { display: flex; align-items: center; justify-content: space-between; padding: 16px 32px; border-bottom: 1px solid var(--line); backdrop-filter: blur(8px); background: rgba(5,20,40,0.7); position: sticky; top: 0; z-index: 10; }
     .brand { display: flex; align-items: center; gap: 12px; cursor: pointer; }
     .brand img { width: 40px; height: 40px; border-radius: 8px; }
@@ -71,6 +157,63 @@
   </style>
 </head>
 <body>
+  <!-- Sunrise jet-takeoff scene -->
+  <div class="scene-bg"></div>
+  <div class="scene-clouds"></div>
+  <div class="scene-overlay"></div>
+  <div class="scene-plane">
+    <svg viewBox="0 0 800 280" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="plane-body" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#f5f0e8"/>
+          <stop offset="1" stop-color="#a89878"/>
+        </linearGradient>
+        <linearGradient id="plane-shade" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#1a1a24"/>
+          <stop offset="1" stop-color="#0a0a14"/>
+        </linearGradient>
+      </defs>
+      <!-- engine contrails -->
+      <path d="M40 170 Q200 165 320 162" stroke="rgba(255,255,255,0.55)" stroke-width="6" fill="none" stroke-linecap="round" opacity=".7"/>
+      <path d="M40 195 Q200 190 320 185" stroke="rgba(255,255,255,0.45)" stroke-width="5" fill="none" stroke-linecap="round" opacity=".55"/>
+      <!-- fuselage -->
+      <path d="M280 150 L640 130 Q700 128 730 135 Q745 138 745 145 Q745 152 730 155 Q700 162 640 170 L280 195 Q260 195 250 178 Q260 165 280 150 Z" fill="url(#plane-body)" stroke="rgba(0,0,0,0.2)" stroke-width="1"/>
+      <!-- belly stripe -->
+      <path d="M300 178 L640 160 Q700 158 730 161" stroke="#c8102e" stroke-width="3" fill="none" opacity=".75"/>
+      <!-- nose -->
+      <path d="M715 138 Q740 142 745 148 Q740 154 715 158" fill="#0d2540"/>
+      <!-- tail fin -->
+      <path d="M280 150 L260 100 L290 105 L300 145 Z" fill="url(#plane-body)" stroke="rgba(0,0,0,0.2)" stroke-width="1"/>
+      <!-- tail logo accent -->
+      <path d="M268 110 L295 113" stroke="#c8102e" stroke-width="3" stroke-linecap="round"/>
+      <!-- main wing -->
+      <path d="M380 170 L460 235 L540 232 L500 168 Z" fill="url(#plane-shade)"/>
+      <!-- engine nacelle -->
+      <ellipse cx="500" cy="200" rx="30" ry="12" fill="#1a1a22"/>
+      <ellipse cx="488" cy="200" rx="6" ry="10" fill="#0a0a14"/>
+      <!-- windows row -->
+      <g fill="#1a2540" opacity=".85">
+        <rect x="320" y="148" width="6" height="6" rx="1"/>
+        <rect x="345" y="146" width="6" height="6" rx="1"/>
+        <rect x="370" y="144" width="6" height="6" rx="1"/>
+        <rect x="395" y="142" width="6" height="6" rx="1"/>
+        <rect x="420" y="140" width="6" height="6" rx="1"/>
+        <rect x="445" y="139" width="6" height="6" rx="1"/>
+        <rect x="470" y="138" width="6" height="6" rx="1"/>
+        <rect x="495" y="137" width="6" height="6" rx="1"/>
+        <rect x="520" y="136" width="6" height="6" rx="1"/>
+        <rect x="545" y="135" width="6" height="6" rx="1"/>
+        <rect x="570" y="134" width="6" height="6" rx="1"/>
+        <rect x="595" y="133" width="6" height="6" rx="1"/>
+        <rect x="620" y="132" width="6" height="6" rx="1"/>
+        <rect x="645" y="131" width="6" height="6" rx="1"/>
+        <rect x="670" y="131" width="6" height="6" rx="1"/>
+      </g>
+      <!-- cockpit windscreen -->
+      <path d="M695 142 Q712 142 720 145 Q716 150 705 152 Q700 148 695 142 Z" fill="#1a2540"/>
+    </svg>
+  </div>
+
   <header class="topbar">
     <div class="brand" onclick="window.location.href='agent.html'">
       <img src="logo.jpg" alt="Exceed" />
@@ -119,6 +262,25 @@
       <h2 data-i18n="featTitle">出張を追加</h2>
       <p class="sub" data-i18n="featSub">出張の前にあらかじめ登録しておくと、チームがあなたの現地時間で予定を組めます。</p>
 
+      <div class="row" style="grid-template-columns: 1fr; margin-bottom: 8px;">
+        <div class="field">
+          <label data-i18n="travelType">出張タイプ</label>
+          <div class="seg-control" id="travelType">
+            <button type="button" class="active" data-type="work" onclick="setTravelType('work')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              <span data-i18n="ttWork">Work</span>
+            </button>
+            <button type="button" data-type="holiday" onclick="setTravelType('holiday')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="6" r="3"/><path d="M12 9v12"/><path d="M5 21c1-3 4-5 7-5s6 2 7 5"/></svg>
+              <span data-i18n="ttHoliday">Holiday</span>
+            </button>
+          </div>
+          <div class="status-preview work" id="statusPreview">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+            <span id="statusPreviewText" data-i18n="statusWork">Out of office (working in destination time zone)</span>
+          </div>
+        </div>
+      </div>
       <div class="row">
         <div class="field">
           <label data-i18n="fromDate">出発日</label>
@@ -186,7 +348,9 @@
         tzPreview: 'タイムゾーン（自動）', autoFill: '国を選ぶと自動入力',
         travelNote: 'メモ（任意）', btnAddTravel: '出張を追加',
         travelListTitle: 'あなたの出張予定', emptyTravel: '登録された出張はありません。',
-        teamTravelTitle: 'チームの出張予定', emptyTeamTravel: 'チームメンバーの出張予定はまだありません。'
+        teamTravelTitle: 'チームの出張予定', emptyTeamTravel: 'チームメンバーの出張予定はまだありません。',
+        travelType: '出張タイプ', ttWork: '仕事', ttHoliday: '休暇',
+        statusWork: '不在（現地のタイムゾーンで業務中）', statusHoliday: '不在（休暇中・連絡不可）'
       },
       en: {
         back: 'Dashboard', hello: 'Hi, ',
@@ -204,7 +368,10 @@
         tzPreview: 'Time zone (auto)', autoFill: 'Auto-filled when you pick a country',
         travelNote: 'Note (optional)', btnAddTravel: 'Add travel',
         travelListTitle: 'Your trips', emptyTravel: 'No trips registered.',
-        teamTravelTitle: 'Team trips', emptyTeamTravel: 'No upcoming team travel.'
+        teamTravelTitle: 'Team trips', emptyTeamTravel: 'No upcoming team travel.',
+        travelType: 'Trip type', ttWork: 'Work', ttHoliday: 'Holiday',
+        statusWork: 'Out of office (working in destination time zone)',
+        statusHoliday: 'Out of office (holidays — fully unreachable)'
       }
     };
     let currentLang = 'ja';
@@ -250,6 +417,18 @@
     };
     window.saveTravelStub = function() {
       alert(currentLang === 'ja' ? 'Firestore連携は次のステップで実装予定です。' : 'Firestore wiring comes in the next step.');
+    };
+
+    let TRAVEL_TYPE = 'work';
+    window.setTravelType = function(t) {
+      TRAVEL_TYPE = t;
+      document.querySelectorAll('#travelType button').forEach(b => b.classList.toggle('active', b.dataset.type === t));
+      const sp = document.getElementById('statusPreview');
+      const txt = document.getElementById('statusPreviewText');
+      sp.classList.toggle('work', t === 'work');
+      sp.classList.toggle('holiday', t === 'holiday');
+      const dict = I18N[currentLang];
+      txt.textContent = t === 'holiday' ? dict.statusHoliday : dict.statusWork;
     };
 
     onAuthStateChanged(auth, async (user) => {
