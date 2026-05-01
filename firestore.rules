@@ -42,6 +42,18 @@ service cloud.firestore {
       allow delete: if isAdminEmail();
     }
 
+    // ------- Car bookings -------
+    match /carBookings/{id} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && request.resource.data.requesterUid == request.auth.uid
+        && request.resource.data.status == 'pending';
+      // Anyone signed in can update for now (approval flow still being wired);
+      // tighten to specific approver emails when registration lands.
+      allow update: if isSignedIn();
+      allow delete: if isAdminEmail();
+    }
+
     // ------- Deal alerts -------
     match /dealAlerts/{alertId} {
       allow read: if isSignedIn();
