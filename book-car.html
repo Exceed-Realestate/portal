@@ -507,33 +507,47 @@
     // Format: + then digits only (no spaces, no dashes) — required by wa.me links.
     const APPROVERS = {
       shoya: { name: 'Shoya Hosoyama', phone: '+971505931748' },
-      teruo: { name: 'Teruo Shimada',  phone: '' }
+      teruo: { name: 'Teruo Shimada',  phone: '+971507438754' }
     };
 
-    // Load car images: prefer PNG (alpha), fall back to JPG, then SVG silhouette.
+    // Detects whether a loaded raster has real alpha (not just the file claims PNG).
+    function imageHasAlpha(img) {
+      try {
+        const c = document.createElement('canvas');
+        c.width = img.naturalWidth || 1;
+        c.height = img.naturalHeight || 1;
+        const ctx = c.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        const w = c.width - 1, h = c.height - 1;
+        // Sample 4 corners + 4 edges — if any are transparent, the image has true alpha.
+        const pts = [[0,0],[w,0],[0,h],[w,h],[w/2|0,0],[w,h/2|0],[w/2|0,h],[0,h/2|0]];
+        return pts.some(([x,y]) => ctx.getImageData(x, y, 1, 1).data[3] < 250);
+      } catch { return false; }
+    }
+
+    // Load car images: prefer a true-alpha PNG, otherwise fall back to a clean SVG silhouette
+    // (no checkerboard / white background showing through). User can drop a real transparent
+    // cars/<car>.png at any time and it will be used automatically.
     function loadCarImages() {
       ['escalade', 'phantom'].forEach(car => {
         const slot = document.getElementById(car + 'Img');
-        const tryLoad = (ext, onFail) => {
-          const im = new Image();
-          im.onload = () => {
+        const tmpl = document.getElementById(car + 'Svg');
+        const useSvg = () => { if (tmpl) slot.innerHTML = tmpl.innerHTML; };
+
+        const im = new Image();
+        im.crossOrigin = 'anonymous';
+        im.onload = () => {
+          if (imageHasAlpha(im)) {
             const tag = document.createElement('img');
-            tag.src = im.src;
-            tag.alt = car;
-            tag.dataset.car = car;
-            // Phantom comes from a JPG source so it has no real alpha — use blend trick.
-            // Escalade's PNG has true alpha, no blend needed.
-            if (car === 'phantom') tag.classList.add('no-alpha');
-            slot.innerHTML = '';
-            slot.appendChild(tag);
-          };
-          im.onerror = onFail;
-          im.src = 'cars/' + car + '.' + ext;
+            tag.src = im.src; tag.alt = car; tag.dataset.car = car;
+            slot.innerHTML = ''; slot.appendChild(tag);
+          } else {
+            // PNG/JPG exists but has no real transparency — use the silhouette.
+            useSvg();
+          }
         };
-        tryLoad('png', () => tryLoad('jpg', () => {
-          const tmpl = document.getElementById(car + 'Svg');
-          if (tmpl) slot.innerHTML = tmpl.innerHTML;
-        }));
+        im.onerror = useSvg;
+        im.src = 'cars/' + car + '.png';
       });
     }
     loadCarImages();

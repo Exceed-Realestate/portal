@@ -1429,6 +1429,22 @@
         snap.forEach(d => RECENT_DEALS.push({ id: d.id, ...d.data() }));
       } catch (e) { console.warn('deal alerts load failed:', e?.message); }
       renderRecentDeals(false);
+      maybeAutoPlayUnseen();
+    }
+
+    // Auto-popup the most recent deal alert if the user hasn't seen it yet (per-device).
+    function maybeAutoPlayUnseen() {
+      if (!RECENT_DEALS.length || !window.triggerCelebration) return;
+      const latest = RECENT_DEALS[0];
+      if (!latest.id) return;
+      let seen;
+      try { seen = JSON.parse(localStorage.getItem('seenDealAlerts') || '[]'); } catch { seen = []; }
+      if (seen.includes(latest.id)) return;
+      // Mark seen first so it doesn't fire twice on reload
+      seen.unshift(latest.id);
+      try { localStorage.setItem('seenDealAlerts', JSON.stringify(seen.slice(0, 50))); } catch {}
+      // Slight delay so dashboard is visible first, then the celebration takes over
+      setTimeout(() => window.triggerCelebration(latest), 1200);
     }
     function fmtDealAmount(n, cur) {
       const num = Number(n) || 0;
@@ -1695,9 +1711,24 @@
     }
     document.querySelectorAll('.lang-toggle button').forEach(b => b.addEventListener('click', () => setLang(b.dataset.lang)));
 
-    function updateStats() {
-      document.getElementById('statTeam').textContent = '4';  // Teruo, Shoya, Yuta, Takumi
+    async function updateStats() {
+      // Tools count comes from the in-memory catalogue
       document.getElementById('statTools').textContent = visibleTools().filter(t => t.action !== 'soon').length;
+      // Team count = unique members across all teamConfig sections
+      try {
+        const cfg = await loadTeamConfig();
+        const seen = new Set();
+        let count = 0;
+        Object.values(cfg || {}).forEach(arr => {
+          if (Array.isArray(arr)) arr.forEach(m => {
+            const key = (m?.name || '').trim().toLowerCase();
+            if (key && !seen.has(key)) { seen.add(key); count++; }
+          });
+        });
+        document.getElementById('statTeam').textContent = String(count || 0);
+      } catch (e) {
+        document.getElementById('statTeam').textContent = '—';
+      }
     }
 
     // Search filter

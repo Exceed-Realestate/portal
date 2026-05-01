@@ -730,17 +730,27 @@
     const TEAM = {
       ceo: [
         { name: 'TERUO SHIMADA',   nameJa: '島田 輝雄',   role: 'Chief Executive Officer', roleJa: '代表取締役 CEO',
-          phone: '', phoneDisplay: '', email: '', photo: 'team/teruo-shimada.png' }
+          phone: '+971507438754', phoneDisplay: '+971 50 743 8754', email: '', photo: 'team/teruo-shimada.png' }
       ],
       board: [],
       // Exceed Real Estate teams
       'japan-sales': [
         { name: 'SHOYA HOSOYAMA',  nameJa: '細山 翔也',   role: 'MD · Head of Japan Sales', roleJa: 'MD・日本営業部長',
-          phone: '', phoneDisplay: '', email: '', photo: 'team/shoya-hosoyama.png' }
+          phone: '', phoneDisplay: '', email: '', photo: 'team/shoya-hosoyama.png' },
+        { name: 'ASUKA ITO',       nameJa: '伊藤 明日香', role: 'Japan Sales',              roleJa: '日本営業',
+          phone: '', phoneDisplay: '', email: '', photo: '' },
+        { name: 'HIRA',            nameJa: '',           role: 'Japan Sales',              roleJa: '日本営業',
+          phone: '', phoneDisplay: '', email: '', photo: '' },
+        { name: 'KATSUYA',         nameJa: '',           role: 'Japan Sales',              roleJa: '日本営業',
+          phone: '', phoneDisplay: '', email: '', photo: '' }
       ],
       'dubai-sales': [
         { name: 'MALIK BOUESSAH', nameJa: 'مالك بو عيسى', role: 'COO · Head of Dubai Sales', roleJa: 'COO・ドバイ営業部長',
-          phone: '', phoneDisplay: '', email: '', photo: 'team/malik-bouessah.png' }
+          phone: '', phoneDisplay: '', email: '', photo: 'team/malik-bouessah.png' },
+        { name: 'ALINA',           nameJa: '',           role: 'Dubai Sales',              roleJa: 'ドバイ営業',
+          phone: '+971568880055',  phoneDisplay: '+971 56 888 0055', email: '', photo: '' },
+        { name: 'KATRIN ONELL',    nameJa: '',           role: 'Dubai Sales',              roleJa: 'ドバイ営業',
+          phone: '+971558664700',  phoneDisplay: '+971 55 866 4700', email: '', photo: '' }
       ],
       'dubai-office': [],
       'japan-office': [],
@@ -768,14 +778,9 @@
       // Roster — names registered for the portal but not yet assigned to a team.
       // Admin moves them into the proper division using the Edit Tree button.
       roster: [
-        { name: 'ALINA',            nameJa: '',          role: 'Pending assignment', roleJa: '配属待ち', phone: '+971568880055',  phoneDisplay: '+971 56 888 0055', email: '', photo: '' },
-        { name: 'ASUKA ITO',        nameJa: '伊藤 明日香', role: 'Pending assignment', roleJa: '配属待ち', phone: '',               phoneDisplay: '',                  email: '', photo: '' },
         { name: 'HAMZA',            nameJa: '',          role: 'Admin · Exceed',     roleJa: 'Admin · Exceed', phone: '',          phoneDisplay: '',                  email: '', photo: '' },
         { name: 'HAYA',             nameJa: '',          role: 'Pending assignment', roleJa: '配属待ち', phone: '',               phoneDisplay: '',                  email: '', photo: '' },
-        { name: 'HIRA',             nameJa: '',          role: 'Exceed',             roleJa: 'Exceed',   phone: '',               phoneDisplay: '',                  email: '', photo: '' },
         { name: 'HIROSHI WATANABE', nameJa: '渡辺 浩',    role: 'Pending assignment', roleJa: '配属待ち', phone: '',               phoneDisplay: '',                  email: '', photo: '' },
-        { name: 'KATRIN ONELL',     nameJa: '',          role: 'Pending assignment', roleJa: '配属待ち', phone: '+971558664700',  phoneDisplay: '+971 55 866 4700', email: '', photo: '' },
-        { name: 'KATSUYA',          nameJa: '',          role: 'Pending assignment', roleJa: '配属待ち', phone: '',               phoneDisplay: '',                  email: '', photo: '' },
         { name: 'KUNIYASU TOIZUMI', nameJa: '戸泉 邦泰',   role: 'Pending assignment', roleJa: '配属待ち', phone: '+818066410007',  phoneDisplay: '+81 80 6641 0007', email: '', photo: '' },
         { name: 'LAITH',            nameJa: '',          role: 'Pending assignment', roleJa: '配属待ち', phone: '',               phoneDisplay: '',                  email: '', photo: '' },
         { name: 'LU',               nameJa: '',          role: 'Pending assignment', roleJa: '配属待ち', phone: '+971555328787',  phoneDisplay: '+971 55 532 8787', email: '', photo: '' },
@@ -886,6 +891,51 @@
       html += '</div>';
       return html;
     }
+    window.cleanCheckerBg = cleanCheckerBg; // exposed for inline onload handler
+    // Runtime cleanup: many of the source PNGs are screenshots that have the
+    // checkerboard transparency-indicator pattern baked in as actual pixels.
+    // This removes those near-grey light pixels (typical checker colours)
+    // and writes the cleaned image back as a true-transparent data URL.
+    function cleanCheckerBg(imgEl) {
+      try {
+        const c = document.createElement('canvas');
+        c.width = imgEl.naturalWidth;
+        c.height = imgEl.naturalHeight;
+        if (!c.width || !c.height) return;
+        const ctx = c.getContext('2d');
+        ctx.drawImage(imgEl, 0, 0);
+        const id = ctx.getImageData(0, 0, c.width, c.height);
+        const d = id.data;
+
+        // Detect checker by sampling top-left 30x30 corner — if it has near-grey
+        // light pixels with low colour saturation, treat as checker bg.
+        let checkerHits = 0;
+        const sampleN = Math.min(30, c.width, c.height);
+        for (let y = 0; y < sampleN; y++) {
+          for (let x = 0; x < sampleN; x++) {
+            const i = (y * c.width + x) * 4;
+            const r = d[i], g = d[i+1], b = d[i+2];
+            const max = Math.max(r,g,b), min = Math.min(r,g,b);
+            const lum = (r + g + b) / 3;
+            if ((max - min) < 10 && lum > 190 && lum < 252) checkerHits++;
+          }
+        }
+        if (checkerHits < 50) return; // doesn't look like checker — leave alone
+
+        // Sweep all pixels: kill near-greyscale, light pixels (the checker)
+        for (let i = 0; i < d.length; i += 4) {
+          const r = d[i], g = d[i+1], b = d[i+2];
+          const max = Math.max(r,g,b), min = Math.min(r,g,b);
+          const lum = (r + g + b) / 3;
+          if ((max - min) < 14 && lum > 192 && lum < 252) {
+            d[i+3] = 0;
+          }
+        }
+        ctx.putImageData(id, 0, 0);
+        imgEl.src = c.toDataURL('image/png');
+      } catch (e) { /* CORS or canvas error — silently leave original */ }
+    }
+
     function personCard(m, tierClass = '', section = null, index = null) {
       const role = currentLang === 'ja' ? (m.roleJa || m.role) : (m.role || m.roleJa);
       const editControls = (section !== null && index !== null) ? `
@@ -903,7 +953,7 @@
           <div class="avatar ${hasPhoto ? 'has-photo' : ''}">
             <div class="avatar-inner">
               ${hasPhoto
-                ? `<img src="${m.photo}" alt="${m.name}" onerror="this.parentElement.parentElement.classList.remove('has-photo'); this.remove();" />`
+                ? `<img src="${m.photo}" alt="${m.name}" onload="cleanCheckerBg(this)" onerror="this.parentElement.parentElement.classList.remove('has-photo'); this.remove();" />`
                 : `<span>${initials(m.name)}</span>`}
             </div>
           </div>
@@ -936,16 +986,20 @@
     function buildTeamHtml(team) {
       const dict = I18N[currentLang];
       const list = TEAM[team.id] || [];
-      const stack = list.length
-        ? `<div class="member-stack">${list.map((m, i) => `<div class="member-node">${personCard(m, '', team.id, i)}</div>`).join('')}</div>`
-        : `<div class="empty-pill">${dict.empty}</div>`;
       const addBtn = `<button class="add-member-btn" onclick="openMemberAdd('${team.id}')">+ ${currentLang === 'ja' ? 'メンバー追加' : 'Add member'}</button>`;
+      // Render members as horizontal tree siblings — they appear side-by-side
+      // under their team header with connector lines, NOT stacked vertically.
+      const memberTree = list.length
+        ? `<ul>${list.map((m, i) =>
+            `<li><div class="node-wrap member-node">${personCard(m, '', team.id, i)}</div></li>`
+          ).join('')}</ul>`
+        : `<div class="empty-pill">${dict.empty}</div>`;
       return `
         <li>
           <div class="node-wrap">
             ${divisionHeader(team)}
             ${addBtn}
-            ${stack}
+            ${memberTree}
           </div>
         </li>`;
     }
