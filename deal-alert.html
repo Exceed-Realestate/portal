@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deal Alert — Exceed Real Estate</title>
+  <link rel="icon" type="image/jpeg" href="logo.jpg">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="liquid.css">
+  <style>
+    :root { --navy-0:#051428; --navy-1:#0a1f3d; --navy-2:#102a4f; --line:rgba(255,255,255,0.10); --line-strong:rgba(255,255,255,0.18); --text:#f5f7fb; --muted:#9aa8c2; --gold:#d4b87a; --cream:#f1ead8; --green:#5cc98f; --radius:14px; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    html { background: var(--navy-0); }
+    body { font-family: 'Noto Sans JP', 'Inter', sans-serif; background: radial-gradient(900px 600px at 80% -10%, rgba(255,209,102,0.10), transparent 60%), radial-gradient(800px 600px at -10% 110%, rgba(255,107,107,0.08), transparent 60%), var(--navy-0); color: var(--text); min-height: 100vh; }
+
+    .topbar { display: flex; align-items: center; justify-content: space-between; padding: 16px 32px; border-bottom: 1px solid var(--line); backdrop-filter: blur(8px); background: rgba(5,20,40,0.7); position: sticky; top: 0; z-index: 10; }
+    .brand { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+    .brand img { width: 40px; height: 40px; border-radius: 8px; }
+    .brand-name { font-family: 'Playfair Display', serif; letter-spacing: 2px; font-weight: 600; }
+    .brand-name span { color: var(--gold); font-weight: 400; }
+    .topbar-right { display: flex; align-items: center; gap: 14px; color: var(--muted); font-size: 13px; }
+    .topbar-right strong { color: var(--cream); font-weight: 600; }
+    .icon-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--line); color: var(--text); padding: 8px 14px; border-radius: 8px; cursor: pointer; font-family: inherit; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; transition: background .2s, border-color .2s; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
+    .icon-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--line-strong); }
+    .icon-btn svg { width: 14px; height: 14px; }
+
+    .page-head { max-width: 1100px; margin: 0 auto; padding: 36px 32px 0; }
+    .page-head .eyebrow { color: var(--gold); letter-spacing: 5px; font-size: 11px; text-transform: uppercase; margin-bottom: 10px; }
+    .page-head h1 { font-family: 'Playfair Display', 'Noto Serif JP', serif; font-weight: 600; font-size: clamp(32px, 5vw, 48px); margin: 0 0 8px; background: linear-gradient(135deg, #fff 0%, var(--gold) 60%, #ff7a59 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .page-head .lede { color: var(--muted); font-size: 14px; max-width: 720px; margin: 0; line-height: 1.6; }
+
+    main { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(280px, 1fr); gap: 24px; }
+    @media (max-width: 860px) { main { grid-template-columns: 1fr; } }
+
+    .panel { background: linear-gradient(180deg, rgba(16,42,79,0.65), rgba(10,31,61,0.65)); border: 1px solid var(--line); border-radius: var(--radius); padding: 28px; backdrop-filter: blur(14px); }
+    .panel h2 { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 600; margin: 0 0 4px; color: var(--cream); }
+    .panel .sub { color: var(--muted); font-size: 13px; margin: 0 0 22px; line-height: 1.55; }
+    .panel.locked { opacity: 0.7; }
+
+    .badge-locked {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 12px;
+      background: rgba(255,209,102,0.12);
+      border: 1px dashed rgba(255,209,102,0.4);
+      color: #ffd166;
+      border-radius: 999px;
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 18px;
+    }
+
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+    .row.full { grid-template-columns: 1fr; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label { font-size: 11px; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; font-weight: 600; }
+    .field input, .field select, .field textarea {
+      background: rgba(5,20,40,0.7);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 12px 14px;
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      transition: border-color .15s, background .15s;
+    }
+    .field textarea { min-height: 90px; resize: vertical; }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--gold); background: rgba(5,20,40,0.95); }
+    .field .hint { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+    .submit-row { display: flex; gap: 12px; margin-top: 18px; flex-wrap: wrap; }
+    .btn-primary {
+      background: linear-gradient(135deg, #ffd166, var(--gold), #ff7a59);
+      color: var(--navy-0);
+      border: none;
+      padding: 14px 28px;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      font-family: inherit;
+      transition: transform .15s, box-shadow .2s;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 14px 30px -10px rgba(255,209,102,.6); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-secondary {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--line-strong);
+      color: var(--cream);
+      padding: 14px 24px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 12px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      font-weight: 600;
+      transition: background .15s;
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,0.1); }
+
+    .alert-list { display: flex; flex-direction: column; gap: 12px; }
+    .alert-card {
+      background: linear-gradient(180deg, rgba(255,209,102,0.06), rgba(255,209,102,0.02));
+      border: 1px solid rgba(255,209,102,0.25);
+      border-radius: 12px;
+      padding: 16px 18px;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .alert-card:hover { transform: translateY(-2px); border-color: var(--gold); box-shadow: 0 12px 28px -12px rgba(255,209,102,.4); }
+    .alert-card .alert-amount { font-family: ui-monospace, 'SF Mono', monospace; font-size: 22px; font-weight: 700; color: var(--gold); margin-bottom: 4px; letter-spacing: 0.5px; }
+    .alert-card .alert-closers { font-family: 'Inter','Noto Sans JP',sans-serif; font-weight: 700; font-size: 14px; color: var(--cream); margin-bottom: 4px; }
+    .alert-card .alert-prop { font-size: 12px; color: var(--muted); line-height: 1.4; }
+    .alert-card .alert-time { font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-top: 8px; }
+    .alert-empty { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 13px; line-height: 1.5; border: 1px dashed var(--line); border-radius: 12px; }
+
+    .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(120%); background: rgba(16,42,79,0.95); border: 1px solid var(--gold); color: var(--text); padding: 14px 22px; border-radius: 10px; font-size: 14px; transition: transform .35s cubic-bezier(.34,1.56,.64,1); z-index: 200; backdrop-filter: blur(10px); }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    .closers-input { display: flex; flex-direction: column; gap: 8px; }
+    .closer-row { display: flex; gap: 8px; }
+    .closer-row input { flex: 1; }
+    .closer-row .del { background: rgba(255,107,107,0.12); border: 1px solid rgba(255,107,107,0.35); color: #ff8a8a; cursor: pointer; padding: 0 12px; border-radius: 7px; font-size: 14px; }
+    .closer-row .del:hover { background: rgba(255,107,107,0.25); }
+    .add-closer-btn { padding: 8px 14px; background: rgba(212,184,122,0.10); border: 1px dashed rgba(212,184,122,0.4); color: var(--gold); border-radius: 8px; cursor: pointer; font-family: inherit; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; font-weight: 600; align-self: flex-start; transition: all .15s; }
+    .add-closer-btn:hover { background: rgba(212,184,122,0.2); }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand" onclick="window.location.href='agent.html'">
+      <img src="logo.jpg" alt="Exceed" />
+      <div class="brand-name">EXCEED <span>REAL ESTATE</span></div>
+    </div>
+    <div class="topbar-right">
+      <a class="icon-btn" href="agent.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        <span>Dashboard</span>
+      </a>
+      <span>Hi, <strong id="userName">—</strong></span>
+    </div>
+  </header>
+
+  <div class="page-head">
+    <div class="eyebrow">🚨 Deal Alert</div>
+    <h1>Deal Alert Center</h1>
+    <p class="lede">Submit a closed deal — the dramatic celebration plays for the whole team. Demo button at the right replays the most recent alert any time.</p>
+  </div>
+
+  <main>
+    <!-- LEFT: Submission form (locked unless allowed) -->
+    <section class="panel" id="formPanel">
+      <h2>Submit a deal</h2>
+      <p class="sub">Restricted to <strong>Balraj, Malik & Shoya</strong>. Once submitted, the celebration plays automatically and the alert is saved to the team feed.</p>
+
+      <div class="badge-locked" id="lockBadge" style="display:none">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span id="lockText">Locked — only authorised submitters can post deals</span>
+      </div>
+
+      <form id="dealForm" onsubmit="event.preventDefault(); submitDeal();">
+        <div class="row full">
+          <div class="field">
+            <label>Closer(s)</label>
+            <div class="closers-input" id="closersInput"></div>
+            <button type="button" class="add-closer-btn" onclick="addCloser()">+ Add another closer</button>
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Property type</label>
+            <input type="text" id="propType" placeholder="2BR rental / 3BR sale / Villa / Penthouse" />
+          </div>
+          <div class="field">
+            <label>Property name</label>
+            <input type="text" id="propName" placeholder="Executive Residence, Dubai Hills" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Amount</label>
+            <input type="number" id="amount" min="0" step="1000" placeholder="200000" />
+          </div>
+          <div class="field">
+            <label>Currency</label>
+            <select id="currency">
+              <option value="AED" selected>AED</option>
+              <option value="USD">USD</option>
+              <option value="JPY">JPY</option>
+              <option value="EUR">EUR</option>
+              <option value="GBP">GBP</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Lead source</label>
+            <input type="text" id="leadSource" placeholder="Personal Lead / Marketing / Referral" />
+          </div>
+          <div class="field">
+            <label>Custom message (optional)</label>
+            <input type="text" id="customMsg" placeholder="More to come, Insha'Allah 🤲🏼" />
+          </div>
+        </div>
+
+        <div class="submit-row">
+          <button type="submit" class="btn-primary" id="submitBtn">
+            🚨 Trigger Deal Alert
+          </button>
+          <button type="button" class="btn-secondary" onclick="previewDemo()">
+            ▶ Preview demo
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- RIGHT: Recent alerts -->
+    <section class="panel">
+      <h2>Recent alerts</h2>
+      <p class="sub">Click any card to replay the celebration.</p>
+      <div class="alert-list" id="alertList">
+        <div class="alert-empty">Loading…</div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="celebration.js"></script>
+  <script type="module">
+    import { auth, db, isAdmin } from './firebase-init.js';
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+    import { collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+    // Authorised submitters — admin emails plus explicit Malik/Shoya placeholders.
+    // Update with their real @exceed-re.ae emails when known.
+    const SUBMITTER_EMAILS = [
+      'balraj@exceed-re.ae',
+      'admin@exceed-re.ae',
+      'malik@exceed-re.ae',
+      'shoya@exceed-re.ae'
+    ];
+    const isSubmitter = (email) => !!email && SUBMITTER_EMAILS.includes(email.toLowerCase());
+
+    let currentUser = null;
+    let canSubmit = false;
+    let closerCount = 0;
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(t._tm);
+      t._tm = setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    window.addCloser = function(name = '', photo = '') {
+      const wrap = document.getElementById('closersInput');
+      const idx = ++closerCount;
+      const row = document.createElement('div');
+      row.className = 'closer-row';
+      row.dataset.idx = idx;
+      row.innerHTML = `
+        <input type="text" class="closer-name" placeholder="Closer name (e.g. TERUO SHIMADA)" value="${name.replace(/"/g,'&quot;')}" />
+        <input type="text" class="closer-photo" placeholder="Photo path (optional)" value="${photo.replace(/"/g,'&quot;')}" style="max-width:200px" />
+        <button type="button" class="del" onclick="this.parentElement.remove()" title="Remove">×</button>
+      `;
+      wrap.appendChild(row);
+    };
+
+    function readClosers() {
+      return [...document.querySelectorAll('.closer-row')].map(r => ({
+        name: r.querySelector('.closer-name').value.trim(),
+        photo: r.querySelector('.closer-photo').value.trim()
+      })).filter(c => c.name);
+    }
+
+    function readDeal() {
+      return {
+        closers: readClosers(),
+        propertyType: document.getElementById('propType').value.trim(),
+        property: document.getElementById('propName').value.trim(),
+        amount: Number(document.getElementById('amount').value) || 0,
+        currency: document.getElementById('currency').value,
+        leadSource: document.getElementById('leadSource').value.trim(),
+        message: document.getElementById('customMsg').value.trim() || "More to come, Insha'Allah 🤲🏼"
+      };
+    }
+
+    window.submitDeal = async function() {
+      if (!canSubmit) { showToast('You are not authorised to submit deals.'); return; }
+      const deal = readDeal();
+      if (!deal.closers.length) { showToast('Add at least one closer.'); return; }
+      if (!deal.amount) { showToast('Enter the deal amount.'); return; }
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      try {
+        await addDoc(collection(db, 'dealAlerts'), {
+          ...deal,
+          createdBy: currentUser?.uid || null,
+          createdByEmail: currentUser?.email || null,
+          createdAt: serverTimestamp()
+        });
+        triggerCelebration(deal);
+        document.getElementById('dealForm').reset();
+        document.getElementById('closersInput').innerHTML = '';
+        addCloser();
+        loadAlerts();
+      } catch (e) {
+        console.error(e);
+        showToast('Save failed: ' + (e.message || e.code));
+      } finally {
+        btn.disabled = false;
+      }
+    };
+
+    window.previewDemo = function() {
+      // The CEO Teruo demo deal (10M AED) the user requested
+      triggerCelebration({
+        closers: [
+          { name: 'TERUO SHIMADA', photo: 'team/teruo-shimada.png' }
+        ],
+        propertyType: '4BR Penthouse',
+        property: 'Bulgari Residences, Jumeirah Bay Island',
+        amount: 10000000,
+        currency: 'AED',
+        leadSource: 'Personal Lead',
+        message: "More to come, Insha'Allah 🤲🏼  Let's gooooo! 📈🚀"
+      });
+    };
+
+    async function loadAlerts() {
+      const listEl = document.getElementById('alertList');
+      try {
+        const q = query(collection(db, 'dealAlerts'), orderBy('createdAt', 'desc'), limit(20));
+        const snap = await getDocs(q);
+        const items = [];
+        snap.forEach(d => items.push({ id: d.id, ...d.data() }));
+        if (!items.length) {
+          listEl.innerHTML = `<div class="alert-empty">No deals yet. Submit one or replay the demo to test the celebration.</div>`;
+          return;
+        }
+        listEl.innerHTML = items.map(it => {
+          const closers = (it.closers || []).map(c => c.name).join(' & ') || 'Team';
+          const prop = [it.propertyType, it.property].filter(Boolean).join(' — ');
+          const when = it.createdAt?.toDate ? it.createdAt.toDate().toLocaleString() : '';
+          const amt = (it.amount || 0).toLocaleString() + ' ' + (it.currency || 'AED');
+          return `<div class="alert-card" data-id="${it.id}">
+            <div class="alert-amount">${amt}</div>
+            <div class="alert-closers">${closers}</div>
+            <div class="alert-prop">${prop || '—'}</div>
+            <div class="alert-time">${when}</div>
+          </div>`;
+        }).join('');
+        // Click to replay
+        listEl.querySelectorAll('.alert-card').forEach((card, i) => {
+          card.addEventListener('click', () => triggerCelebration(items[i]));
+        });
+      } catch (e) {
+        console.error(e);
+        listEl.innerHTML = `<div class="alert-empty">Couldn't load alerts (${e.code || 'error'}). The celebration still works via the Preview Demo button.</div>`;
+      }
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = 'index.html'; return; }
+      currentUser = user;
+      let firstName = (user.displayName || '').trim().split(/\s+/)[0];
+      if (!firstName && user.email) {
+        const local = user.email.split('@')[0].split(/[._-]/)[0];
+        firstName = local.charAt(0).toUpperCase() + local.slice(1);
+      }
+      document.getElementById('userName').textContent = firstName || 'Agent';
+
+      // Permission gating intentionally OFF for now — will tighten later when team registration lands.
+      // To re-enable: uncomment the block below.
+      // canSubmit = isSubmitter(user.email) || isAdmin(user.email);
+      // if (!canSubmit) { ...lock the form... }
+      canSubmit = true;
+      loadAlerts();
+    });
+
+    // Seed one closer row on load
+    addCloser();
+  </script>
+</body>
+</html>

@@ -234,13 +234,14 @@
     /* Birthdays card — sits below the schedule card */
     .birthday-card {
       margin-top: 16px;
-      background: linear-gradient(180deg, rgba(212,184,122,0.08), rgba(212,184,122,0.02));
-      border: 1px solid rgba(212,184,122,0.3);
+      background:
+        linear-gradient(135deg, rgba(255,143,177,0.10), rgba(212,184,122,0.06) 50%, rgba(122,167,255,0.08));
+      border: 1px solid rgba(255,143,177,0.3);
       border-radius: var(--radius);
       padding: 20px 22px;
       backdrop-filter: blur(14px) saturate(160%);
       -webkit-backdrop-filter: blur(14px) saturate(160%);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 16px 36px -16px rgba(0,0,0,.4);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 16px 36px -16px rgba(0,0,0,.4);
       position: relative;
       overflow: hidden;
     }
@@ -248,9 +249,22 @@
       content: '';
       position: absolute;
       top: -1px; left: 24px; right: 24px; height: 2px;
-      background: linear-gradient(90deg, transparent, var(--gold), transparent);
-      opacity: 0.55;
+      background: linear-gradient(90deg, transparent, #ffd166, #ff8fb1, #ffd166, transparent);
+      opacity: 0.7;
     }
+    /* Floating cake + balloons illustration */
+    .birthday-card::after {
+      content: '';
+      position: absolute;
+      right: -30px; bottom: -20px;
+      width: 160px; height: 160px;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><g fill='none' stroke='%23ffd166' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M55 145 L55 110 Q55 100 65 100 L135 100 Q145 100 145 110 L145 145 Z' fill='%23d4b87a' opacity='0.3'/><path d='M65 100 L65 80 Q65 72 73 72 L127 72 Q135 72 135 80 L135 100 Z' fill='%23ff8fb1' opacity='0.35'/><path d='M77 72 L77 56 Q77 50 83 50 L117 50 Q123 50 123 56 L123 72 Z' fill='%23ffd166' opacity='0.4'/><line x1='85' y1='50' x2='85' y2='42'/><line x1='100' y1='50' x2='100' y2='38'/><line x1='115' y1='50' x2='115' y2='42'/><circle cx='85' cy='38' r='3' fill='%23ff8fb1'/><circle cx='100' cy='34' r='3' fill='%23ffd166'/><circle cx='115' cy='38' r='3' fill='%23ff8fb1'/><circle cx='40' cy='40' r='10' fill='%23ff8fb1' opacity='0.4'/><line x1='40' y1='50' x2='40' y2='80'/><circle cx='160' cy='30' r='8' fill='%237aa7ff' opacity='0.4'/><line x1='160' y1='38' x2='160' y2='65'/><circle cx='25' cy='60' r='6' fill='%23ffd166' opacity='0.4'/><line x1='25' y1='66' x2='25' y2='90'/><path d='M50 80 L70 80 M130 80 L150 80 M50 110 L70 110 M130 110 L150 110' stroke-dasharray='2 4' opacity='0.5'/></g></svg>");
+      background-size: contain;
+      background-repeat: no-repeat;
+      opacity: 0.4;
+      pointer-events: none;
+    }
+    .birthday-card > * { position: relative; z-index: 1; }
     .bday-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
     .bday-eyebrow { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); margin-bottom: 4px; font-family: 'Inter', sans-serif; font-weight: 600; }
     .bday-month {
@@ -548,10 +562,10 @@
     .tz-card {
       position: relative;
       display: grid;
-      grid-template-columns: auto 1fr auto;
+      grid-template-columns: 1fr auto;
       align-items: center;
       gap: 14px;
-      padding: 14px 18px;
+      padding: 16px 20px;
       border-radius: 12px;
       overflow: hidden;
       background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
@@ -559,22 +573,70 @@
       transition: transform .15s, border-color .15s, box-shadow .15s;
     }
     .tz-card:hover { transform: translateY(-1px); border-color: rgba(212,184,122,0.35); }
+    .tz-card:hover .tz-remove { opacity: 1; }
     .tz-card .tz-flag-strip {
       position: absolute; inset: 0;
-      opacity: 0.13;
+      opacity: 0.16;
       pointer-events: none;
     }
-    .tz-card .tz-flag-em {
-      width: 36px; height: 36px;
-      border-radius: 9px;
+    .tz-remove {
+      position: absolute;
+      top: 6px; right: 8px;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: rgba(255,107,107,0.18);
+      border: 1px solid rgba(255,107,107,0.4);
+      color: #ff8a8a;
+      cursor: pointer;
+      font-size: 13px; line-height: 1;
       display: grid; place-items: center;
-      background: rgba(0,0,0,0.4);
-      border: 1px solid rgba(255,255,255,0.18);
-      backdrop-filter: blur(6px);
-      font-size: 20px;
-      position: relative; z-index: 1;
-      box-shadow: 0 4px 12px -4px rgba(0,0,0,.5);
+      opacity: 0;
+      transition: opacity .15s, background .15s;
+      z-index: 3;
     }
+    .tz-remove:hover { background: rgba(255,107,107,0.35); }
+    .tz-add {
+      width: 100%;
+      padding: 12px 14px;
+      background: rgba(212,184,122,0.08);
+      border: 1px dashed rgba(212,184,122,0.4);
+      color: var(--gold);
+      border-radius: 10px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 12px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      font-weight: 600;
+      transition: all .15s;
+    }
+    .tz-add:hover { background: rgba(212,184,122,0.18); color: var(--cream); }
+    .tz-picker {
+      max-height: 240px;
+      overflow-y: auto;
+      background: rgba(5,20,40,0.95);
+      border: 1px solid var(--line-strong);
+      border-radius: 10px;
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .tz-picker button {
+      text-align: left;
+      padding: 9px 12px;
+      background: transparent;
+      border: none;
+      color: var(--cream);
+      cursor: pointer;
+      border-radius: 7px;
+      font-family: inherit;
+      font-size: 12px;
+      transition: background .12s;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .tz-picker button:hover { background: rgba(212,184,122,0.15); color: var(--gold); }
+    .tz-picker button .tz-tag-mini { font-size: 9px; color: var(--muted); letter-spacing: 1px; font-family: ui-monospace, monospace; }
     .tz-card .tz-meta { position: relative; z-index: 1; min-width: 0; }
     .tz-card .tz-city {
       font-family: 'Inter', 'Noto Sans JP', system-ui, sans-serif;
@@ -974,6 +1036,14 @@
         badge: 'new'
       },
       {
+        key: 'deal-alert',
+        label: 'Deal Alert', labelEn: 'Deal Alert',
+        desc: '成約アラート 🚨', descEn: 'Closing celebration 🚨',
+        action: 'page', target: 'deal-alert.html',
+        icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+        badge: 'new'
+      },
+      {
         key: 'listings',
         label: 'Listings', labelEn: 'Listings',
         desc: '物件リスティング', descEn: 'Property listings',
@@ -1069,17 +1139,43 @@
         bdayLabel: 'THIS MONTH\'S BIRTHDAYS', bdayEmpty: 'No team birthdays this month yet. Admin can add dates from the Team Members → Edit Tree screen.'
       }
     };
-    // Each TZ card has a flag-colour stripe behind, time tag in WITA/JST/etc.
-    const TZS = [
-      { em: '🇦🇪', name: 'Dubai',     tz: 'Asia/Dubai',     tag: 'GST',
+    // Locked default TZs (always shown, cannot be removed)
+    const TZS_DEFAULT = [
+      { id: 'dubai',  name: 'Dubai',  tz: 'Asia/Dubai',     tag: 'GST',
         flagBg: 'linear-gradient(90deg, #ce1126 0 25%, #007a3d 25% 50%, #ffffff 50% 75%, #000 75%)' },
-      { em: '🇯🇵', name: 'Tokyo',     tz: 'Asia/Tokyo',     tag: 'JST',
+      { id: 'tokyo',  name: 'Tokyo',  tz: 'Asia/Tokyo',     tag: 'JST',
         flagBg: 'radial-gradient(circle at 50% 50%, #bc002d 0 22%, #ffffff 22%)' },
-      { em: '🇮🇩', name: 'Lombok',    tz: 'Asia/Makassar',  tag: 'WITA',
-        flagBg: 'linear-gradient(180deg, #ce1126 50%, #ffffff 50%)' },
-      { em: '🇭🇰', name: 'Hong Kong', tz: 'Asia/Hong_Kong', tag: 'HKT',
-        flagBg: 'radial-gradient(ellipse at 50% 50%, #de2910, #b91e0d)' }
+      { id: 'lombok', name: 'Lombok', tz: 'Asia/Makassar',  tag: 'WITA',
+        flagBg: 'linear-gradient(180deg, #ce1126 50%, #ffffff 50%)' }
     ];
+
+    // User can add up to 2 more from this catalogue
+    const TZ_CATALOG = [
+      { id: 'hong-kong',    name: 'Hong Kong',    tz: 'Asia/Hong_Kong',  tag: 'HKT', flagBg: 'radial-gradient(ellipse at 50% 50%, #de2910, #b91e0d)' },
+      { id: 'singapore',    name: 'Singapore',    tz: 'Asia/Singapore',  tag: 'SGT', flagBg: 'linear-gradient(180deg, #ed2939 50%, #ffffff 50%)' },
+      { id: 'jakarta',      name: 'Jakarta',      tz: 'Asia/Jakarta',    tag: 'WIB', flagBg: 'linear-gradient(180deg, #ce1126 50%, #ffffff 50%)' },
+      { id: 'mumbai',       name: 'Mumbai',       tz: 'Asia/Kolkata',    tag: 'IST', flagBg: 'linear-gradient(180deg, #ff9933 0 33%, #ffffff 33% 66%, #138808 66%)' },
+      { id: 'bangkok',      name: 'Bangkok',      tz: 'Asia/Bangkok',    tag: 'ICT', flagBg: 'linear-gradient(180deg, #ed1c24 0 17%, #ffffff 17% 33%, #241d4f 33% 67%, #ffffff 67% 83%, #ed1c24 83%)' },
+      { id: 'london',       name: 'London',       tz: 'Europe/London',   tag: 'GMT', flagBg: 'linear-gradient(135deg, #012169 50%, #c8102e 50%)' },
+      { id: 'new-york',     name: 'New York',     tz: 'America/New_York', tag: 'ET',  flagBg: 'repeating-linear-gradient(180deg, #b22234 0 6%, #ffffff 6% 12%)' },
+      { id: 'paris',        name: 'Paris',        tz: 'Europe/Paris',    tag: 'CET', flagBg: 'linear-gradient(90deg, #002654 33%, #ffffff 33% 66%, #ed2939 66%)' },
+      { id: 'beijing',      name: 'Beijing',      tz: 'Asia/Shanghai',   tag: 'CST', flagBg: 'linear-gradient(135deg, #de2910, #b91e0d)' },
+      { id: 'sydney',       name: 'Sydney',       tz: 'Australia/Sydney', tag: 'AEDT', flagBg: 'linear-gradient(135deg, #012169, #c8102e)' },
+      { id: 'riyadh',       name: 'Riyadh',       tz: 'Asia/Riyadh',     tag: 'AST', flagBg: 'linear-gradient(135deg, #006c35, #003d1f)' },
+      { id: 'kuala-lumpur', name: 'Kuala Lumpur', tz: 'Asia/Kuala_Lumpur', tag: 'MYT', flagBg: 'linear-gradient(135deg, #cc0001 50%, #010066 50%)' },
+      { id: 'manila',       name: 'Manila',       tz: 'Asia/Manila',     tag: 'PHT', flagBg: 'linear-gradient(180deg, #0038a8 50%, #ce1126 50%)' },
+      { id: 'seoul',        name: 'Seoul',        tz: 'Asia/Seoul',      tag: 'KST', flagBg: 'radial-gradient(circle at 50% 50%, #c60c30 0 18%, #003478 18% 28%, #ffffff 28%)' }
+    ];
+
+    function loadCustomTZs() {
+      try { return JSON.parse(localStorage.getItem('customTZs') || '[]'); } catch { return []; }
+    }
+    function saveCustomTZs(list) {
+      try { localStorage.setItem('customTZs', JSON.stringify(list.slice(0, 2))); } catch {}
+    }
+    function getActiveTZs() {
+      return [...TZS_DEFAULT, ...loadCustomTZs()];
+    }
 
     let currentLang = 'ja';
     let currentUser = null;
@@ -1175,12 +1271,15 @@
     function renderTzList() {
       const el = document.getElementById('tzList');
       el.className = 'tz-list';
-      el.innerHTML = TZS.map(t => {
-        const safeFlag = t.flagBg.replace(/"/g, "'");
+      const active = getActiveTZs();
+      const customIds = new Set(loadCustomTZs().map(t => t.id));
+      const cards = active.map(t => {
+        const safeFlag = (t.flagBg || '').replace(/"/g, "'");
+        const isCustom = customIds.has(t.id);
         return `
         <div class="tz-card">
           <div class="tz-flag-strip" style="background:${safeFlag}"></div>
-          <div class="tz-flag-em">${t.em}</div>
+          ${isCustom ? `<button class="tz-remove" onclick="removeTZ('${t.id}')" title="Remove">×</button>` : ''}
           <div class="tz-meta">
             <div class="tz-city">${t.name}</div>
             <div class="tz-tag">${t.tag}</div>
@@ -1188,7 +1287,38 @@
           <div class="tz-time">${fmtTime(t.tz)}</div>
         </div>`;
       }).join('');
+
+      const customCount = customIds.size;
+      const canAddMore = customCount < 2;
+      const dict = I18N[currentLang];
+      const addUI = canAddMore ? `
+        <button class="tz-add" onclick="toggleTzPicker()">+ ${dict.tzAdd}</button>
+        <div class="tz-picker" id="tzPicker" style="display:none">
+          ${TZ_CATALOG.filter(c => !active.find(a => a.id === c.id)).map(c =>
+            `<button onclick="addTZ('${c.id}')">${c.name}<span class="tz-tag-mini">${c.tag}</span></button>`
+          ).join('')}
+        </div>` : '';
+      el.innerHTML = cards + addUI;
     }
+
+    window.toggleTzPicker = function() {
+      const p = document.getElementById('tzPicker');
+      if (p) p.style.display = p.style.display === 'none' ? 'flex' : 'none';
+    };
+    window.addTZ = function(id) {
+      const c = TZ_CATALOG.find(x => x.id === id);
+      if (!c) return;
+      const list = loadCustomTZs();
+      if (list.length >= 2 || list.find(x => x.id === id)) return;
+      list.push(c);
+      saveCustomTZs(list);
+      renderTzList();
+    };
+    window.removeTZ = function(id) {
+      const list = loadCustomTZs().filter(x => x.id !== id);
+      saveCustomTZs(list);
+      renderTzList();
+    };
 
     // ----- Birthdays this month -----
     let TEAM_CONFIG = null; // cached read of teamConfig/main from Firestore

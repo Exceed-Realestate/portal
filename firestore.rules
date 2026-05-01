@@ -42,6 +42,15 @@ service cloud.firestore {
       allow delete: if isAdminEmail();
     }
 
+    // ------- Deal alerts -------
+    match /dealAlerts/{alertId} {
+      allow read: if isSignedIn();
+      // For now any signed-in user can create (gating happens client-side).
+      // Tighten to isAdminEmail() or specific submitter list when registration lands.
+      allow create: if isSignedIn() && request.resource.data.createdBy == request.auth.uid;
+      allow update, delete: if isAdminEmail();
+    }
+
     // ------- Team config (org chart) -------
     // Single doc at teamConfig/main holds the full team tree.
     // Anyone signed-in can read it; only admins can write.
