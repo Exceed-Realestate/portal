@@ -317,6 +317,74 @@
     }
     .bday-empty { text-align: center; padding: 18px 8px; color: var(--muted); font-size: 12px; line-height: 1.5; border: 1px dashed var(--line); border-radius: 9px; }
 
+    /* Recent Deal Alerts card (blurred until reveal) */
+    .recent-deals-card {
+      margin-top: 16px;
+      background: linear-gradient(180deg, rgba(255,107,107,0.08), rgba(212,184,122,0.04));
+      border: 1px solid rgba(255,107,107,0.25);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+      backdrop-filter: blur(14px) saturate(160%);
+      -webkit-backdrop-filter: blur(14px) saturate(160%);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 16px 36px -16px rgba(0,0,0,.4);
+      position: relative;
+      overflow: hidden;
+    }
+    .recent-deals-card::before {
+      content: ''; position: absolute; top: -1px; left: 24px; right: 24px; height: 2px;
+      background: linear-gradient(90deg, transparent, #ff7a59, #ffd166, #ff7a59, transparent);
+      opacity: 0.6;
+    }
+    .rd-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; position: relative; }
+    .rd-eyebrow { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: #ff8a78; margin-bottom: 4px; font-family: 'Inter', sans-serif; font-weight: 700; }
+    .rd-sub { font-size: 11px; color: var(--muted); font-family: 'Inter','Noto Sans JP',sans-serif; }
+    .rd-icon { width: 36px; height: 36px; border-radius: 10px; background: rgba(255,107,107,0.15); border: 1px solid rgba(255,107,107,0.4); display: grid; place-items: center; color: #ff8a78; }
+    .rd-icon svg { width: 17px; height: 17px; }
+    .rd-body { position: relative; min-height: 80px; }
+    .rd-blur-wrap { transition: filter .35s ease, opacity .35s ease; }
+    .rd-blur-wrap:not(.revealed) { filter: blur(14px); opacity: 0.7; pointer-events: none; user-select: none; }
+    .rd-reveal-btn {
+      position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+      padding: 10px 18px;
+      background: linear-gradient(135deg, #ffd166, #ff7a59);
+      border: none;
+      color: var(--navy-0);
+      border-radius: 999px;
+      font-family: inherit;
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 12px 28px -8px rgba(255,122,89,.5);
+      transition: transform .15s, box-shadow .2s, opacity .25s;
+      z-index: 2;
+    }
+    .rd-reveal-btn:hover { transform: translate(-50%, -50%) scale(1.05); box-shadow: 0 16px 34px -8px rgba(255,122,89,.7); }
+    .rd-reveal-btn.hidden { opacity: 0; pointer-events: none; }
+    .rd-deal {
+      display: flex; align-items: center; gap: 11px;
+      padding: 10px 12px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .rd-deal:hover { background: rgba(255,209,102,0.10); border-color: rgba(255,209,102,0.4); }
+    .rd-deal-amt {
+      font-family: ui-monospace, 'SF Mono', monospace;
+      font-size: 13px; font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 0.5px;
+      min-width: 90px;
+    }
+    .rd-deal-info { flex: 1; min-width: 0; }
+    .rd-deal-name { font-size: 12px; color: var(--cream); font-weight: 600; line-height: 1.2; font-family: 'Inter','Noto Sans JP',sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .rd-deal-prop { font-size: 10px; color: var(--muted); margin-top: 2px; }
+    .rd-empty { text-align: center; padding: 18px 8px; color: var(--muted); font-size: 12px; }
+
     /* ---- LEFT column: page head ---- */
     .left-col h1 {
       font-family: 'Playfair Display', serif;
@@ -904,6 +972,26 @@
               </div>
               <ul class="bday-list" id="bdayList"></ul>
             </div>
+
+            <!-- Recent Deal Alerts (blurred until "Reveal") -->
+            <div class="recent-deals-card" id="recentDealsCard">
+              <div class="rd-head">
+                <div>
+                  <div class="rd-eyebrow" data-i18n="rdLabel">最近の成約</div>
+                  <div class="rd-sub" data-i18n="rdSub">クリックで表示</div>
+                </div>
+                <div class="rd-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                </div>
+              </div>
+              <div class="rd-body" id="recentDealsBody">
+                <div class="rd-blur-wrap" id="rdContent">
+                  <div class="rd-deal"><span class="rd-deal-amt">— —</span><div class="rd-deal-info"><div class="rd-deal-name">— — —</div><div class="rd-deal-prop">— — —</div></div></div>
+                  <div class="rd-deal"><span class="rd-deal-amt">— —</span><div class="rd-deal-info"><div class="rd-deal-name">— — —</div><div class="rd-deal-prop">— — —</div></div></div>
+                </div>
+                <button class="rd-reveal-btn" id="rdRevealBtn" onclick="revealRecentDeals()" data-i18n="rdReveal">🚨 Reveal recent deals</button>
+              </div>
+            </div>
           </section>
 
           <!-- CENTER column -->
@@ -1110,7 +1198,8 @@
         shEdit: '編集', shDone: '完了', shAdd: '行を追加', shDelete: '削除',
         shLabel: 'ラベル',
         travelingLabel: '出張中', travelingEmpty: '現在、出張中のメンバーはいません。',
-        bdayLabel: '今月の誕生日', bdayEmpty: '今月のチームメンバーの誕生日はありません。管理者がチームメンバー編集画面から日付を入力できます。'
+        bdayLabel: '今月の誕生日', bdayEmpty: '今月のチームメンバーの誕生日はありません。管理者がチームメンバー編集画面から日付を入力できます。',
+        rdLabel: '最近の成約 🚨', rdSub: 'ボタンをクリックして表示', rdReveal: '🚨 成約を表示', rdEmpty: '成約はまだありません。'
       },
       en: {
         eyebrow: 'AGENT DASHBOARD',
@@ -1144,7 +1233,8 @@
         shEdit: 'Edit', shDone: 'Done', shAdd: 'Add row', shDelete: 'Delete',
         shLabel: 'Label',
         travelingLabel: 'TRAVELING NOW', travelingEmpty: 'No teammates traveling right now.',
-        bdayLabel: 'THIS MONTH\'S BIRTHDAYS', bdayEmpty: 'No team birthdays this month yet. Admin can add dates from the Team Members → Edit Tree screen.'
+        bdayLabel: 'THIS MONTH\'S BIRTHDAYS', bdayEmpty: 'No team birthdays this month yet. Admin can add dates from the Team Members → Edit Tree screen.',
+        rdLabel: 'RECENT DEAL ALERTS 🚨', rdSub: 'Click to reveal', rdReveal: '🚨 Reveal recent deals', rdEmpty: 'No deal alerts yet — submit one from Deal Alert.'
       }
     };
     // Locked default TZs (always shown, cannot be removed)
@@ -1326,6 +1416,60 @@
       const list = loadCustomTZs().filter(x => x.id !== id);
       saveCustomTZs(list);
       renderTzList();
+    };
+
+    // ----- Recent Deal Alerts (blurred until reveal) -----
+    let RECENT_DEALS = [];
+    async function loadRecentDeals() {
+      try {
+        const { collection, query, orderBy, limit, getDocs } = await import("https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js");
+        const q = query(collection(db, 'dealAlerts'), orderBy('createdAt', 'desc'), limit(3));
+        const snap = await getDocs(q);
+        RECENT_DEALS = [];
+        snap.forEach(d => RECENT_DEALS.push({ id: d.id, ...d.data() }));
+      } catch (e) { console.warn('deal alerts load failed:', e?.message); }
+      renderRecentDeals(false);
+    }
+    function fmtDealAmount(n, cur) {
+      const num = Number(n) || 0;
+      const c = cur || 'AED';
+      if (num >= 1_000_000) return (num / 1_000_000).toFixed(num % 1_000_000 ? 1 : 0).replace(/\.0$/, '') + 'M ' + c;
+      if (num >= 1_000)     return (num / 1_000).toFixed(0) + 'k ' + c;
+      return num.toLocaleString() + ' ' + c;
+    }
+    function renderRecentDeals(revealed) {
+      const wrap = document.getElementById('rdContent');
+      const btn = document.getElementById('rdRevealBtn');
+      const dict = I18N[currentLang];
+      if (!RECENT_DEALS.length) {
+        wrap.innerHTML = `<div class="rd-empty">${dict.rdEmpty}</div>`;
+        wrap.classList.add('revealed');
+        btn.classList.add('hidden');
+        return;
+      }
+      wrap.innerHTML = RECENT_DEALS.map(d => {
+        const closers = (d.closers || []).map(c => c.name).join(' & ') || 'Team';
+        const prop = [d.propertyType, d.property].filter(Boolean).join(' — ');
+        return `<div class="rd-deal" data-id="${d.id}">
+          <span class="rd-deal-amt">${fmtDealAmount(d.amount, d.currency)}</span>
+          <div class="rd-deal-info">
+            <div class="rd-deal-name">${closers}</div>
+            <div class="rd-deal-prop">${prop || '—'}</div>
+          </div>
+        </div>`;
+      }).join('');
+      wrap.classList.toggle('revealed', revealed);
+      btn.classList.toggle('hidden', revealed);
+      // Re-bind click handlers — clicking a deal replays the celebration
+      wrap.querySelectorAll('.rd-deal').forEach(el => {
+        el.addEventListener('click', () => {
+          const d = RECENT_DEALS.find(x => x.id === el.dataset.id);
+          if (d && window.triggerCelebration) window.triggerCelebration(d);
+        });
+      });
+    }
+    window.revealRecentDeals = function() {
+      renderRecentDeals(true);
     };
 
     // ----- Birthdays this month -----
@@ -1537,6 +1681,7 @@
       renderShortcuts();
       renderTraveling();
       renderBirthdays();
+      loadRecentDeals();
       updateStats();
     }
     function positionPill() {
@@ -1592,5 +1737,6 @@
     window.addEventListener('resize', positionPill);
     setInterval(renderTzList, 60000);  // refresh times every minute
   </script>
+  <script src="celebration.js"></script>
 </body>
 </html>

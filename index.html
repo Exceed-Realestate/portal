@@ -660,6 +660,51 @@
       font-size: 11px;
     }
 
+    /* Rolling-logo login loader (tire-style) */
+    .rolling-track {
+      width: min(420px, calc(100% - 32px));
+      height: 76px;
+      background: #022c4f;
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 8px;
+      position: relative;
+      overflow: hidden;
+      margin: 22px auto 6px;
+      display: none;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 8px 24px -8px rgba(0,0,0,.5);
+    }
+    .rolling-track.active { display: block; }
+    .rolling-track::before {
+      content: '';
+      position: absolute; left: 0; right: 0; bottom: 0; height: 1px;
+      background: repeating-linear-gradient(90deg, rgba(212,184,122,0.5) 0 12px, transparent 12px 22px);
+      opacity: 0.7;
+    }
+    .rolling-logo {
+      width: 56px; height: 56px;
+      position: absolute;
+      left: 0; top: 10px;
+      border-radius: 50%;
+      object-fit: cover;
+      box-shadow: 0 6px 14px -4px rgba(0,0,0,.6);
+    }
+    .rolling-track.go .rolling-logo {
+      animation: roll 1.8s cubic-bezier(0.45, 0, 0.55, 1) forwards;
+    }
+    @keyframes roll {
+      to {
+        left: calc(100% - 56px);
+        transform: rotate(720deg);
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .rolling-track.go .rolling-logo {
+        animation: none;
+        left: calc(100% - 56px);
+        transition: none;
+      }
+    }
+
     @media (max-width: 640px) {
       .login-grid { grid-template-columns: 1fr; }
       form { grid-template-columns: 1fr; }
@@ -983,33 +1028,75 @@
       const dict = i18n[currentLang];
       const email = document.getElementById('loginEmail').value.trim().toLowerCase();
       const pwd = document.getElementById('loginPassword').value;
-      const btn = e.target.querySelector('button[type=submit]');
+      const form = e.target;
+      const btn = form.querySelector('button[type=submit]');
+
+      // Validate non-empty
+      if (!email || !pwd) { showToast(dict.toastFields || 'Please enter email and password.'); return; }
+
       btn.disabled = true;
+
+      const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const ROLL_MS = reducedMotion ? 200 : 1800;
+      const FADE_MS = 350;
+
+      // Find or build the rolling-loader inside the modal
+      let track = document.getElementById('rollingTrack');
+      if (!track) {
+        track = document.createElement('div');
+        track.id = 'rollingTrack';
+        track.className = 'rolling-track';
+        const logo = document.createElement('img');
+        logo.src = 'logo.jpg';
+        logo.alt = 'Loading';
+        logo.className = 'rolling-logo';
+        track.appendChild(logo);
+        form.parentNode.insertBefore(track, form.nextSibling);
+      }
+
+      // Fade form out
+      form.style.transition = `opacity ${FADE_MS}ms ease`;
+      form.style.opacity = '0';
+      setTimeout(() => { form.style.display = 'none'; track.classList.add('active', 'go'); }, FADE_MS);
+
+      // Animation completes after FADE_MS + ROLL_MS
+      const animDone = new Promise(r => setTimeout(r, FADE_MS + ROLL_MS));
+
+      const restoreForm = () => {
+        track.classList.remove('active', 'go');
+        form.style.display = '';
+        requestAnimationFrame(() => { form.style.opacity = '1'; });
+        btn.disabled = false;
+      };
+
       try {
         const cred = await signInWithEmailAndPassword(auth, email, pwd);
-        // Admins bypass the status gate
         if (!isAdmin(email)) {
           const snap = await getDoc(doc(db, 'agents', cred.user.uid));
           if (snap.exists()) {
             const status = snap.data().status;
             if (status === 'pending') {
               await signOut(auth);
+              await animDone; restoreForm();
               showToast(dict.toastPending);
               return;
             }
             if (status === 'suspended') {
               await signOut(auth);
+              await animDone; restoreForm();
               showToast(dict.toastSuspended);
               return;
             }
           }
         }
+        // Wait for the roll to complete, then redirect.
+        await animDone;
         showToast(dict.toastLoginSuccess);
-        setTimeout(() => { window.location.href = 'agent.html'; }, 600);
+        window.location.href = 'agent.html';
       } catch (err) {
+        await animDone;
+        restoreForm();
         showToast(mapAuthError(err.code, dict));
-      } finally {
-        btn.disabled = false;
       }
     };
 
