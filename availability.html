@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Availability Sharing — Exceed Real Estate</title>
+  <link rel="icon" type="image/jpeg" href="logo.jpg">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600&family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="liquid.css">
+  <style>
+    :root {
+      --navy-0: #051428;
+      --navy-1: #0a1f3d;
+      --navy-2: #102a4f;
+      --line: rgba(255,255,255,0.10);
+      --line-strong: rgba(255,255,255,0.18);
+      --text: #f5f7fb;
+      --muted: #9aa8c2;
+      --gold: #d4b87a;
+      --cream: #f1ead8;
+      --green: #5cc98f;
+      --radius: 14px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    html { background: var(--navy-0); }
+    body {
+      font-family: 'Noto Sans JP', 'Inter', sans-serif;
+      background:
+        radial-gradient(900px 600px at 80% -10%, rgba(212,184,122,0.08), transparent 60%),
+        radial-gradient(800px 600px at -10% 110%, rgba(23,54,99,0.6), transparent 60%),
+        var(--navy-0);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* Topbar — copied to match agent.html */
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 32px;
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(8px);
+      background: rgba(5,20,40,0.7);
+      position: sticky; top: 0; z-index: 10;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+    .brand img { width: 40px; height: 40px; border-radius: 8px; }
+    .brand-name { font-family: 'Playfair Display', serif; letter-spacing: 2px; font-weight: 600; }
+    .brand-name span { color: var(--gold); font-weight: 400; }
+    .topbar-right { display: flex; align-items: center; gap: 14px; color: var(--muted); font-size: 13px; }
+    .topbar-right strong { color: var(--cream); font-weight: 600; }
+    .icon-btn {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--line);
+      color: var(--text);
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: background .2s ease, border-color .2s ease;
+      display: inline-flex; align-items: center; gap: 8px;
+      text-decoration: none;
+    }
+    .icon-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--line-strong); }
+    .icon-btn svg { width: 14px; height: 14px; }
+    .lang-toggle { display: inline-flex; align-items: center; background: rgba(255,255,255,0.05); border: 1px solid var(--line); border-radius: 999px; padding: 4px; position: relative; }
+    .lang-toggle button { background: transparent; border: none; color: var(--muted); font-family: inherit; font-size: 12px; font-weight: 600; letter-spacing: 1px; padding: 6px 12px; border-radius: 999px; cursor: pointer; transition: color .25s ease; position: relative; z-index: 1; }
+    .lang-toggle button.active { color: var(--navy-0); }
+    .lang-toggle .pill { position: absolute; top: 4px; bottom: 4px; background: var(--cream); border-radius: 999px; transition: transform .35s cubic-bezier(.34,1.56,.64,1), width .35s ease; z-index: 0; }
+
+    /* Page header */
+    .page-head {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 32px 0;
+    }
+    .page-head .eyebrow {
+      color: var(--gold);
+      letter-spacing: 5px;
+      font-size: 11px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .page-head h1 {
+      font-family: 'Noto Serif JP', 'Playfair Display', serif;
+      font-weight: 500;
+      font-size: clamp(28px, 4vw, 40px);
+      margin: 0 0 8px;
+    }
+    .page-head .lede {
+      color: var(--muted);
+      font-size: 14px;
+      max-width: 640px;
+      margin: 0;
+      line-height: 1.6;
+    }
+
+    /* Sub-tab nav */
+    .subtabs {
+      max-width: 1200px;
+      margin: 30px auto 0;
+      padding: 0 32px;
+      display: flex;
+      gap: 4px;
+      border-bottom: 1px solid var(--line);
+    }
+    .subtab {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 14px 20px;
+      cursor: pointer;
+      position: relative;
+      transition: color .2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: 0.3px;
+    }
+    .subtab svg { width: 16px; height: 16px; }
+    .subtab:hover { color: var(--cream); }
+    .subtab.active { color: var(--gold); }
+    .subtab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px; left: 12px; right: 12px;
+      height: 2px;
+      background: var(--gold);
+      border-radius: 2px;
+    }
+
+    /* Panels */
+    .panel { display: none; max-width: 1200px; margin: 0 auto; padding: 30px 32px 80px; }
+    .panel.active { display: block; }
+
+    /* Instruction card */
+    .instructions {
+      background: linear-gradient(180deg, rgba(212,184,122,0.08), rgba(212,184,122,0.02));
+      border: 1px solid rgba(212,184,122,0.3);
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      margin-bottom: 28px;
+      position: relative;
+    }
+    .instructions::before {
+      content: '';
+      position: absolute;
+      top: -1px; left: 24px; right: 24px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      opacity: 0.5;
+    }
+    .instructions-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .instructions-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--cream);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .instructions-title svg { width: 20px; height: 20px; color: var(--gold); }
+    .instructions-dismiss {
+      background: transparent;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 11px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: color .15s, border-color .15s;
+    }
+    .instructions-dismiss:hover { color: var(--cream); border-color: var(--line-strong); }
+    .steps { margin: 0; padding: 0; list-style: none; counter-reset: step; }
+    .steps li {
+      counter-increment: step;
+      padding: 10px 0 10px 44px;
+      position: relative;
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .steps li::before {
+      content: counter(step);
+      position: absolute;
+      left: 0; top: 8px;
+      width: 28px; height: 28px;
+      background: rgba(212,184,122,0.15);
+      border: 1px solid rgba(212,184,122,0.4);
+      color: var(--gold);
+      border-radius: 50%;
+      display: grid; place-items: center;
+      font-family: 'Playfair Display', serif;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .steps li code {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid var(--line);
+      padding: 2px 7px;
+      border-radius: 5px;
+      font-family: ui-monospace, 'SF Mono', monospace;
+      font-size: 12px;
+      color: var(--cream);
+    }
+    .steps li strong { color: var(--cream); font-weight: 600; }
+    .tip {
+      margin-top: 14px;
+      padding: 12px 14px;
+      background: rgba(255,255,255,0.04);
+      border-left: 3px solid var(--gold);
+      border-radius: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+    .tip strong { color: var(--cream); }
+
+    /* Section card (the actual feature area below instructions) */
+    .feature {
+      background: linear-gradient(180deg, rgba(16,42,79,0.85), rgba(10,31,61,0.85));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 28px;
+    }
+    .feature h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      font-weight: 600;
+      margin: 0 0 18px;
+      color: var(--cream);
+    }
+    .feature .sub { color: var(--muted); font-size: 13px; margin: -12px 0 22px; }
+
+    /* Empty state with stub button */
+    .stub {
+      text-align: center;
+      padding: 48px 24px;
+      border: 1px dashed var(--line-strong);
+      border-radius: 12px;
+      color: var(--muted);
+    }
+    .stub-title { color: var(--cream); font-size: 16px; font-weight: 600; margin: 0 0 6px; }
+    .stub p { font-size: 13px; margin: 0 0 18px; line-height: 1.55; }
+    .stub-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      background: rgba(255,209,102,0.08);
+      border: 1px dashed rgba(255,209,102,0.4);
+      color: #ffd166;
+      border-radius: 999px;
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    /* Form-ish controls (Travel + Weekly Plan) */
+    .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 18px; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label { font-size: 11px; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; font-weight: 500; }
+    .field input, .field select, .field textarea {
+      background: rgba(5,20,40,0.7);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 12px 14px;
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      transition: border-color .2s, background .2s;
+    }
+    .field textarea { min-height: 110px; resize: vertical; }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      border-color: var(--gold);
+      background: rgba(5,20,40,0.95);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--cream), var(--gold));
+      color: var(--navy-0);
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      font-family: inherit;
+      transition: transform .15s, box-shadow .2s;
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 10px 24px -10px rgba(212,184,122,.5); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .country-tz {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      background: rgba(212,184,122,0.1);
+      border: 1px solid rgba(212,184,122,0.3);
+      color: var(--gold);
+      border-radius: 999px;
+      font-size: 11px;
+      font-family: ui-monospace, 'SF Mono', monospace;
+    }
+
+    /* Empty list placeholder */
+    .empty-list {
+      text-align: center;
+      color: var(--muted);
+      padding: 30px 20px;
+      font-size: 13px;
+    }
+
+    @media (max-width: 700px) {
+      .topbar { padding: 14px 18px; flex-wrap: wrap; gap: 12px; }
+      .page-head, .subtabs, .panel { padding-left: 18px; padding-right: 18px; }
+      .subtabs { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
+      .subtab { white-space: nowrap; padding: 12px 14px; }
+      .feature { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand" onclick="window.location.href='agent.html'">
+      <img src="logo.jpg" alt="Exceed" />
+      <div class="brand-name">EXCEED <span>REAL ESTATE</span></div>
+    </div>
+    <div class="topbar-right">
+      <a class="icon-btn" href="agent.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        <span data-i18n="back">ダッシュボード</span>
+      </a>
+      <span><span data-i18n="hello">こんにちは、</span><strong id="userName">—</strong></span>
+      <div class="lang-toggle" id="langToggle">
+        <span class="pill" id="langPill"></span>
+        <button data-lang="ja" class="active">日本語</button>
+        <button data-lang="en">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="page-head">
+    <div class="eyebrow" data-i18n="eyebrow">Availability Sharing</div>
+    <h1 data-i18n="title">チームの空き時間をシェア</h1>
+    <p class="lede" data-i18n="lede">Googleカレンダーと連携し、チームの空き時間・週次予定・出張をひと目で。タイムゾーンの違いを気にせずミーティングを予約できます。</p>
+  </div>
+
+  <nav class="subtabs">
+    <button class="subtab active" data-tab="availability">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+      <span data-i18n="tab1">利用可能時間</span>
+    </button>
+    <button class="subtab" data-tab="weekly">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>
+      <span data-i18n="tab2">週次プラン</span>
+    </button>
+    <button class="subtab" data-tab="travel">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
+      <span data-i18n="tab3">出張</span>
+    </button>
+  </nav>
+
+  <!-- ============ TAB 1: AVAILABILITY ============ -->
+  <section class="panel active" id="panel-availability">
+    <div class="instructions" id="ins-availability">
+      <div class="instructions-head">
+        <div class="instructions-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span data-i18n="insTitle1">使い方ガイド</span>
+        </div>
+        <button class="instructions-dismiss" onclick="dismissIns('availability')" data-i18n="hide">非表示</button>
+      </div>
+      <ol class="steps">
+        <li data-i18n-html="a-s1"><strong>「Googleカレンダーを連携」</strong>をクリックし、Googleアカウントで読み取り権限を許可してください。あなたのカレンダー情報は、空き時間の計算のみに使用されます。</li>
+        <li data-i18n-html="a-s2">期間を選択します。例: <code>来週 月〜金</code> または カスタム範囲。</li>
+        <li data-i18n-html="a-s3">予定が入っていない時間帯（=空き時間）が自動的に表示されます。</li>
+        <li data-i18n-html="a-s4"><strong>チームメンバーを選択</strong>して、その人の空き時間を確認できます。</li>
+        <li data-i18n-html="a-s5">空きスロットをクリック → <strong>「この時間で予約」</strong> でミーティング依頼を送信。相手が承認するとカレンダーに自動登録されます。</li>
+        <li data-i18n-html="a-s6">表示時間は<strong>あなたの現地時間</strong>です。相手のホームタイムゾーンも併記されるため混乱しません。</li>
+      </ol>
+      <div class="tip" data-i18n-html="a-tip"><strong>ヒント:</strong> 出張中の場合は「出張」タブで滞在国を登録してください。あなたの空き時間は自動的に滞在国のタイムゾーンに切り替わります。</div>
+    </div>
+
+    <div class="feature">
+      <h2 data-i18n="featTitle1">Googleカレンダー連携</h2>
+      <p class="sub" data-i18n="featSub1">読み取り専用の安全な連携です（書き込み権限は将来追加予定）。</p>
+
+      <div class="stub">
+        <div class="stub-title" data-i18n="stubTitle1">まだ連携されていません</div>
+        <p data-i18n="stubBody1">管理者がGoogle OAuth Client IDを設定するとこのボタンが有効になります。設定完了後、各自で「連携」ボタンを押して許可してください。</p>
+        <span class="stub-status" data-i18n="stubStatus">⚙ 管理者の設定待ち</span>
+      </div>
+
+      <div style="display:flex; gap:14px; flex-wrap:wrap; margin-top:22px;">
+        <button class="btn-primary" disabled data-i18n="btnConnect">Googleカレンダーを連携</button>
+        <button class="icon-btn" disabled data-i18n="btnPickWeek">期間を選択</button>
+        <button class="icon-btn" disabled data-i18n="btnPickPerson">チームメンバーを選択</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TAB 2: WEEKLY PLAN ============ -->
+  <section class="panel" id="panel-weekly">
+    <div class="instructions" id="ins-weekly">
+      <div class="instructions-head">
+        <div class="instructions-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span data-i18n="insTitle2">使い方ガイド</span>
+        </div>
+        <button class="instructions-dismiss" onclick="dismissIns('weekly')" data-i18n="hide">非表示</button>
+      </div>
+      <ol class="steps">
+        <li data-i18n-html="w-s1">毎週<strong>金曜日</strong>に、来週の予定・重点項目・主要ミーティングを投稿してください。</li>
+        <li data-i18n-html="w-s2">フォーマットは自由です。例: <code>月: Tiger視察 / 火: 内見3件 / 水: 役員MTG…</code></li>
+        <li data-i18n-html="w-s3">投稿はチーム全員に表示されます。コメント・リアクション可能。</li>
+        <li data-i18n-html="w-s4">他のメンバーの予定を見て、<strong>同行・コラボ・連携</strong>のアイデアを共有しましょう。</li>
+        <li data-i18n-html="w-s5">自分の投稿は<strong>編集・削除</strong>できます。</li>
+      </ol>
+      <div class="tip" data-i18n-html="w-tip"><strong>ヒント:</strong> 毎週金曜の夕方にリマインダーが届きます（設定でオフ可）。</div>
+    </div>
+
+    <div class="feature">
+      <h2 data-i18n="featTitle2">来週の予定を投稿</h2>
+      <p class="sub" id="weekRange" data-i18n="weekRange">対象週: 来週（月〜金）</p>
+
+      <div class="row">
+        <div class="field" style="grid-column: 1 / -1;">
+          <label data-i18n="planLabel">来週の重点・主要予定</label>
+          <textarea placeholder="月: Tiger Properties 視察&#10;火: クライアント内見 (Marina × 2)&#10;水: チーム戦略MTG&#10;木: フォローアップコール&#10;金: 週次レポート" disabled></textarea>
+        </div>
+      </div>
+      <button class="btn-primary" disabled data-i18n="btnPost">投稿する</button>
+
+      <h2 style="margin-top:36px;" data-i18n="feedTitle">チームフィード</h2>
+      <p class="sub" data-i18n="feedSub">最新の投稿が上に表示されます。</p>
+      <div class="empty-list" data-i18n="emptyFeed">まだ投稿はありません — 最初の投稿者になりましょう。</div>
+    </div>
+  </section>
+
+  <!-- ============ TAB 3: TRAVEL ============ -->
+  <section class="panel" id="panel-travel">
+    <div class="instructions" id="ins-travel">
+      <div class="instructions-head">
+        <div class="instructions-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span data-i18n="insTitle3">使い方ガイド</span>
+        </div>
+        <button class="instructions-dismiss" onclick="dismissIns('travel')" data-i18n="hide">非表示</button>
+      </div>
+      <ol class="steps">
+        <li data-i18n-html="t-s1"><strong>「出張を追加」</strong>をクリック</li>
+        <li data-i18n-html="t-s2">出発日・帰着日・滞在国を入力。国を選ぶと<strong>タイムゾーンが自動設定</strong>されます（例: 日本 → JST、UAE → GST、インドネシア → WIB）。</li>
+        <li data-i18n-html="t-s3">保存すると、チームのリストにあなたの名前の横に <strong>✈️</strong> アイコンと滞在地・期間が表示されます。</li>
+        <li data-i18n-html="t-s4">出張期間中、<strong>「利用可能時間」タブのあなたの空き時間は滞在国のタイムゾーンで計算</strong>されます。</li>
+        <li data-i18n-html="t-s5">予定は<strong>いつでも編集・削除</strong>できます。</li>
+      </ol>
+      <div class="tip" data-i18n-html="t-tip"><strong>対応タイムゾーン:</strong> 日本 (Asia/Tokyo · JST)、UAE (Asia/Dubai · GST)、インドネシア (Asia/Jakarta · WIB)。その他の国も追加可能です。</div>
+    </div>
+
+    <div class="feature">
+      <h2 data-i18n="featTitle3">出張を追加</h2>
+      <p class="sub" data-i18n="featSub3">出張の前にあらかじめ登録しておくと、チームがあなたの現地時間で予定を組めます。</p>
+
+      <div class="row">
+        <div class="field">
+          <label data-i18n="fromDate">出発日</label>
+          <input type="date" id="travelFrom" />
+        </div>
+        <div class="field">
+          <label data-i18n="toDate">帰着日</label>
+          <input type="date" id="travelTo" />
+        </div>
+        <div class="field">
+          <label data-i18n="country">滞在国</label>
+          <select id="travelCountry" onchange="updateTzPreview()">
+            <option value="">— <span data-i18n="selectCountry">選択</span> —</option>
+            <option value="JP" data-tz="Asia/Tokyo" data-label="JST · 日本標準時">🇯🇵 日本 / Japan</option>
+            <option value="AE" data-tz="Asia/Dubai" data-label="GST · 湾岸標準時">🇦🇪 UAE / アラブ首長国連邦</option>
+            <option value="ID" data-tz="Asia/Jakarta" data-label="WIB · 西インドネシア時間">🇮🇩 インドネシア / Indonesia</option>
+            <option value="HK" data-tz="Asia/Hong_Kong" data-label="HKT · 香港時間">🇭🇰 香港 / Hong Kong</option>
+            <option value="SG" data-tz="Asia/Singapore" data-label="SGT · シンガポール時間">🇸🇬 シンガポール / Singapore</option>
+            <option value="IN" data-tz="Asia/Kolkata" data-label="IST · インド標準時">🇮🇳 インド / India</option>
+            <option value="GB" data-tz="Europe/London" data-label="GMT/BST · 英国時間">🇬🇧 英国 / UK</option>
+            <option value="US" data-tz="America/New_York" data-label="ET · 米国東部時間">🇺🇸 米国 (東部) / USA East</option>
+            <option value="SA" data-tz="Asia/Riyadh" data-label="AST · アラビア標準時">🇸🇦 サウジアラビア / Saudi Arabia</option>
+          </select>
+        </div>
+        <div class="field">
+          <label data-i18n="tzPreview">タイムゾーン（自動）</label>
+          <div style="padding:12px 14px;"><span class="country-tz" id="tzPreview">— <span data-i18n="autoFill">国を選ぶと自動入力</span> —</span></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field" style="grid-column: 1 / -1;">
+          <label data-i18n="travelNote">メモ（任意）</label>
+          <input type="text" placeholder="例: Tiger Properties 視察 / クライアント案件" />
+        </div>
+      </div>
+      <button class="btn-primary" onclick="saveTravelStub()" data-i18n="btnAddTravel">出張を追加</button>
+
+      <h2 style="margin-top:36px;" data-i18n="travelListTitle">あなたの出張予定</h2>
+      <div class="empty-list" data-i18n="emptyTravel">登録された出張はありません。</div>
+
+      <h2 style="margin-top:36px;" data-i18n="teamTravelTitle">チームの出張予定</h2>
+      <div class="empty-list" data-i18n="emptyTeamTravel">チームメンバーの出張予定はまだありません。</div>
+    </div>
+  </section>
+
+  <script type="module">
+    import { auth, db } from './firebase-init.js';
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+    // ----- i18n -----
+    const I18N = {
+      ja: {
+        back: 'ダッシュボード', hello: 'こんにちは、',
+        eyebrow: 'Availability Sharing',
+        title: 'チームの空き時間をシェア',
+        lede: 'Googleカレンダーと連携し、チームの空き時間・週次予定・出張をひと目で。タイムゾーンの違いを気にせずミーティングを予約できます。',
+        tab1: '利用可能時間', tab2: '週次プラン', tab3: '出張',
+        insTitle1: '使い方ガイド', insTitle2: '使い方ガイド', insTitle3: '使い方ガイド',
+        hide: '非表示',
+        'a-s1': '<strong>「Googleカレンダーを連携」</strong>をクリックし、Googleアカウントで読み取り権限を許可してください。あなたのカレンダー情報は、空き時間の計算のみに使用されます。',
+        'a-s2': '期間を選択します。例: <code>来週 月〜金</code> または カスタム範囲。',
+        'a-s3': '予定が入っていない時間帯（=空き時間）が自動的に表示されます。',
+        'a-s4': '<strong>チームメンバーを選択</strong>して、その人の空き時間を確認できます。',
+        'a-s5': '空きスロットをクリック → <strong>「この時間で予約」</strong> でミーティング依頼を送信。相手が承認するとカレンダーに自動登録されます。',
+        'a-s6': '表示時間は<strong>あなたの現地時間</strong>です。相手のホームタイムゾーンも併記されるため混乱しません。',
+        'a-tip': '<strong>ヒント:</strong> 出張中の場合は「出張」タブで滞在国を登録してください。あなたの空き時間は自動的に滞在国のタイムゾーンに切り替わります。',
+        featTitle1: 'Googleカレンダー連携', featSub1: '読み取り専用の安全な連携です（書き込み権限は将来追加予定）。',
+        stubTitle1: 'まだ連携されていません',
+        stubBody1: '管理者がGoogle OAuth Client IDを設定するとこのボタンが有効になります。設定完了後、各自で「連携」ボタンを押して許可してください。',
+        stubStatus: '⚙ 管理者の設定待ち',
+        btnConnect: 'Googleカレンダーを連携', btnPickWeek: '期間を選択', btnPickPerson: 'チームメンバーを選択',
+        'w-s1': '毎週<strong>金曜日</strong>に、来週の予定・重点項目・主要ミーティングを投稿してください。',
+        'w-s2': 'フォーマットは自由です。例: <code>月: Tiger視察 / 火: 内見3件 / 水: 役員MTG…</code>',
+        'w-s3': '投稿はチーム全員に表示されます。コメント・リアクション可能。',
+        'w-s4': '他のメンバーの予定を見て、<strong>同行・コラボ・連携</strong>のアイデアを共有しましょう。',
+        'w-s5': '自分の投稿は<strong>編集・削除</strong>できます。',
+        'w-tip': '<strong>ヒント:</strong> 毎週金曜の夕方にリマインダーが届きます（設定でオフ可）。',
+        featTitle2: '来週の予定を投稿', weekRange: '対象週: 来週（月〜金）',
+        planLabel: '来週の重点・主要予定', btnPost: '投稿する',
+        feedTitle: 'チームフィード', feedSub: '最新の投稿が上に表示されます。',
+        emptyFeed: 'まだ投稿はありません — 最初の投稿者になりましょう。',
+        't-s1': '<strong>「出張を追加」</strong>をクリック',
+        't-s2': '出発日・帰着日・滞在国を入力。国を選ぶと<strong>タイムゾーンが自動設定</strong>されます（例: 日本 → JST、UAE → GST、インドネシア → WIB）。',
+        't-s3': '保存すると、チームのリストにあなたの名前の横に <strong>✈️</strong> アイコンと滞在地・期間が表示されます。',
+        't-s4': '出張期間中、<strong>「利用可能時間」タブのあなたの空き時間は滞在国のタイムゾーンで計算</strong>されます。',
+        't-s5': '予定は<strong>いつでも編集・削除</strong>できます。',
+        't-tip': '<strong>対応タイムゾーン:</strong> 日本 (Asia/Tokyo · JST)、UAE (Asia/Dubai · GST)、インドネシア (Asia/Jakarta · WIB)。その他の国も追加可能です。',
+        featTitle3: '出張を追加', featSub3: '出張の前にあらかじめ登録しておくと、チームがあなたの現地時間で予定を組めます。',
+        fromDate: '出発日', toDate: '帰着日', country: '滞在国', selectCountry: '選択',
+        tzPreview: 'タイムゾーン（自動）', autoFill: '国を選ぶと自動入力',
+        travelNote: 'メモ（任意）', btnAddTravel: '出張を追加',
+        travelListTitle: 'あなたの出張予定', emptyTravel: '登録された出張はありません。',
+        teamTravelTitle: 'チームの出張予定', emptyTeamTravel: 'チームメンバーの出張予定はまだありません。'
+      },
+      en: {
+        back: 'Dashboard', hello: 'Hi, ',
+        eyebrow: 'Availability Sharing',
+        title: 'Share your team\'s availability',
+        lede: 'Sync with Google Calendar to see team availability, weekly plans, and travel — at a glance. Schedule meetings across time zones without the back-and-forth.',
+        tab1: 'Availability', tab2: 'Weekly Plan', tab3: 'Travel',
+        insTitle1: 'How to use', insTitle2: 'How to use', insTitle3: 'How to use',
+        hide: 'Hide',
+        'a-s1': 'Click <strong>"Connect Google Calendar"</strong> and grant read-only access. Your calendar data is used <em>only</em> to compute free slots — never stored.',
+        'a-s2': 'Pick a date range. e.g. <code>Next week Mon–Fri</code> or any custom range.',
+        'a-s3': 'Your free slots (the gaps between events) appear automatically.',
+        'a-s4': 'Pick a <strong>team member</strong> to view their availability instead.',
+        'a-s5': 'Click any free slot → <strong>"Book this slot"</strong> sends a meeting request. Once they accept, it\'s added to both calendars.',
+        'a-s6': 'All times shown in <strong>your local time</strong>. The other person\'s home timezone is shown next to their name.',
+        'a-tip': '<strong>Tip:</strong> If you\'re traveling, register your trip in the Travel tab — your availability automatically switches to the destination timezone.',
+        featTitle1: 'Google Calendar', featSub1: 'Secure read-only integration (write access coming later).',
+        stubTitle1: 'Not connected yet',
+        stubBody1: 'Once an admin sets the Google OAuth Client ID, this button becomes active. Each team member then clicks "Connect" once to grant access.',
+        stubStatus: '⚙ Awaiting admin setup',
+        btnConnect: 'Connect Google Calendar', btnPickWeek: 'Pick a range', btnPickPerson: 'Pick a teammate',
+        'w-s1': 'Every <strong>Friday</strong>, post your plan for next week — focus areas and key meetings.',
+        'w-s2': 'Free-form. e.g. <code>Mon: Tiger inspection / Tue: 3 viewings / Wed: exec MTG…</code>',
+        'w-s3': 'Posts are visible to the whole team. Comment, react, riff.',
+        'w-s4': 'Read teammates\' plans to find <strong>tag-along, collab, or hand-off</strong> opportunities.',
+        'w-s5': 'Your own posts are <strong>editable and deletable</strong>.',
+        'w-tip': '<strong>Tip:</strong> a Friday-evening reminder ping nudges you to post (toggle off in Settings).',
+        featTitle2: 'Post next week\'s plan', weekRange: 'Target week: next week (Mon–Fri)',
+        planLabel: 'Next week\'s focus / key meetings', btnPost: 'Post',
+        feedTitle: 'Team feed', feedSub: 'Latest posts shown at top.',
+        emptyFeed: 'No posts yet — be the first.',
+        't-s1': 'Click <strong>"Add travel"</strong>',
+        't-s2': 'Enter departure, return, and destination country. Picking a country <strong>auto-fills the timezone</strong> (e.g. Japan → JST, UAE → GST, Indonesia → WIB).',
+        't-s3': 'Once saved, your name shows ✈️ to the team along with location & dates.',
+        't-s4': 'During the trip, your <strong>availability is calculated in the destination timezone</strong>.',
+        't-s5': '<strong>Edit or delete</strong> at any time.',
+        't-tip': '<strong>Built-in timezones:</strong> Japan (Asia/Tokyo · JST), UAE (Asia/Dubai · GST), Indonesia (Asia/Jakarta · WIB). Other countries supported too.',
+        featTitle3: 'Add travel', featSub3: 'Register your trip in advance so the team can schedule in your destination time.',
+        fromDate: 'Depart', toDate: 'Return', country: 'Country', selectCountry: 'Select',
+        tzPreview: 'Time zone (auto)', autoFill: 'Auto-filled when you pick a country',
+        travelNote: 'Note (optional)', btnAddTravel: 'Add travel',
+        travelListTitle: 'Your trips', emptyTravel: 'No trips registered.',
+        teamTravelTitle: 'Team trips', emptyTeamTravel: 'No upcoming team travel.'
+      }
+    };
+    let currentLang = 'ja';
+
+    function setLang(lang) {
+      currentLang = lang;
+      const dict = I18N[lang];
+      document.documentElement.lang = lang;
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const k = el.getAttribute('data-i18n');
+        if (dict[k]) el.textContent = dict[k];
+      });
+      document.querySelectorAll('[data-i18n-html]').forEach(el => {
+        const k = el.getAttribute('data-i18n-html');
+        if (dict[k]) el.innerHTML = dict[k];
+      });
+      document.querySelectorAll('.lang-toggle button').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+      positionPill();
+    }
+    function positionPill() {
+      const pill = document.getElementById('langPill');
+      const active = document.querySelector('.lang-toggle button.active');
+      if (!active || !pill) return;
+      const parent = active.parentElement;
+      const r = active.getBoundingClientRect();
+      const pr = parent.getBoundingClientRect();
+      pill.style.width = r.width + 'px';
+      pill.style.transform = `translateX(${r.left - pr.left - 4}px)`;
+    }
+    document.querySelectorAll('.lang-toggle button').forEach(b => b.addEventListener('click', () => setLang(b.dataset.lang)));
+
+    // ----- Tab switcher -----
+    document.querySelectorAll('.subtab').forEach(b => {
+      b.addEventListener('click', () => {
+        const target = b.dataset.tab;
+        document.querySelectorAll('.subtab').forEach(x => x.classList.toggle('active', x === b));
+        document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + target));
+        history.replaceState(null, '', '#' + target);
+      });
+    });
+    if (location.hash) {
+      const t = location.hash.replace('#', '');
+      const btn = document.querySelector(`.subtab[data-tab="${t}"]`);
+      if (btn) btn.click();
+    }
+
+    // ----- Dismiss instructions (per-tab, stored in localStorage) -----
+    window.dismissIns = function(tab) {
+      const el = document.getElementById('ins-' + tab);
+      if (el) el.style.display = 'none';
+      try { localStorage.setItem('insDismissed_' + tab, '1'); } catch (e) {}
+    };
+    ['availability','weekly','travel'].forEach(tab => {
+      try {
+        if (localStorage.getItem('insDismissed_' + tab) === '1') {
+          const el = document.getElementById('ins-' + tab);
+          if (el) el.style.display = 'none';
+        }
+      } catch (e) {}
+    });
+
+    // ----- Travel tz preview -----
+    window.updateTzPreview = function() {
+      const sel = document.getElementById('travelCountry');
+      const opt = sel.options[sel.selectedIndex];
+      const tz = opt && opt.dataset ? opt.dataset.tz : '';
+      const label = opt && opt.dataset ? opt.dataset.label : '';
+      const out = document.getElementById('tzPreview');
+      if (tz) {
+        const now = new Intl.DateTimeFormat(currentLang === 'ja' ? 'ja-JP' : 'en-GB', { timeZone: tz, hour: '2-digit', minute: '2-digit', timeZoneName: 'short' }).format(new Date());
+        out.innerHTML = `${tz} · <strong>${label || ''}</strong> · ${now}`;
+      } else {
+        out.textContent = '— ' + (I18N[currentLang].autoFill || '') + ' —';
+      }
+    };
+    window.saveTravelStub = function() {
+      alert(currentLang === 'ja'
+        ? 'Firestore連携は次のステップで実装予定です。今は入力UIのみ表示しています。'
+        : 'Firestore wiring comes in the next step. The form layout & timezone preview work — saving will write to Firestore once enabled.');
+    };
+
+    // ----- Auth gate -----
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = 'index.html'; return; }
+      let firstName = (user.displayName || '').trim().split(/\s+/)[0];
+      try {
+        const snap = await getDoc(doc(db, 'agents', user.uid));
+        if (snap.exists() && snap.data().firstName) firstName = snap.data().firstName;
+      } catch (e) {}
+      if (!firstName && user.email) {
+        const local = user.email.split('@')[0].split(/[._-]/)[0];
+        firstName = local.charAt(0).toUpperCase() + local.slice(1);
+      }
+      document.getElementById('userName').textContent = firstName || 'Agent';
+    });
+
+    // ----- Init -----
+    window.addEventListener('load', () => { setLang('ja'); });
+    window.addEventListener('resize', positionPill);
+  </script>
+</body>
+</html>
