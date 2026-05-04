@@ -816,7 +816,10 @@
           phone: '', phoneDisplay: '', email: '', photo: '' }
       ],
       // External
-      partners: [],
+      partners: [
+        { name: 'SERGIO',          nameJa: 'セルジオ',     role: 'Sobha Realty · Developer Partner', roleJa: 'Sobha Realty・デベロッパーパートナー',
+          phone: '+40749342647',   phoneDisplay: '+40 749 342 647', email: '', photo: '' }
+      ],
       // Retained for compatibility
       'way-office': [],
       marketing: [],
@@ -1033,13 +1036,34 @@
       const dict = I18N[currentLang];
       const list = TEAM[team.id] || [];
       const addBtn = `<button class="add-member-btn" onclick="openMemberAdd('${team.id}')">+ ${currentLang === 'ja' ? 'メンバー追加' : 'Add member'}</button>`;
-      // Render members as horizontal tree siblings — they appear side-by-side
-      // under their team header with connector lines, NOT stacked vertically.
-      const memberTree = list.length
-        ? `<ul>${list.map((m, i) =>
+
+      // If the team has an MD or COO, render them as a parent node with the
+      // remaining members nested beneath. Otherwise members are flat siblings.
+      const leaderIdx = list.findIndex(m => /^\s*(MD|COO)\b/i.test(m.role || ''));
+      let memberTree;
+      if (list.length === 0) {
+        memberTree = `<div class="empty-pill">${dict.empty}</div>`;
+      } else if (leaderIdx >= 0 && list.length > 1) {
+        const leader = list[leaderIdx];
+        const leaderTier = /^\s*MD\b/i.test(leader.role) ? 'tier-md' : 'tier-coo';
+        const subs = list.map((m, i) => ({ m, i })).filter(o => o.i !== leaderIdx);
+        const subsHtml = subs.map(o =>
+          `<li><div class="node-wrap member-node">${personCard(o.m, '', team.id, o.i)}</div></li>`
+        ).join('');
+        memberTree = `
+          <ul>
+            <li>
+              <div class="node-wrap">
+                ${personCard(leader, leaderTier, team.id, leaderIdx)}
+                <ul>${subsHtml}</ul>
+              </div>
+            </li>
+          </ul>`;
+      } else {
+        memberTree = `<ul>${list.map((m, i) =>
             `<li><div class="node-wrap member-node">${personCard(m, '', team.id, i)}</div></li>`
-          ).join('')}</ul>`
-        : `<div class="empty-pill">${dict.empty}</div>`;
+          ).join('')}</ul>`;
+      }
       return `
         <li>
           <div class="node-wrap">
@@ -1234,9 +1258,22 @@
       { match: 'YUKA',             target: 'japan-office', role: 'Japan Office',          roleJa: '日本オフィス' },
       { match: 'YUPON',            target: 'japan-office', role: 'Japan Office',          roleJa: '日本オフィス' }
     ];
+    // Members to ensure exist somewhere in TEAM (added to target if missing).
+    const ENSURE_MEMBERS_2026_05 = [
+      {
+        target: 'partners',
+        member: {
+          name: 'SERGIO',          nameJa: 'セルジオ',
+          role: 'Sobha Realty · Developer Partner',
+          roleJa: 'Sobha Realty・デベロッパーパートナー',
+          phone: '+40749342647',   phoneDisplay: '+40 749 342 647',
+          email: '', photo: 'team/sergio.jpg'
+        }
+      }
+    ];
 
     window.applyRestructure = async function() {
-      let moved = 0;
+      let touched = 0;
       RESTRUCTURE_2026_05.forEach(rule => {
         const matchKey = nameKey(rule.match);
         let foundSection = null, foundIdx = -1, member = null;
@@ -1252,14 +1289,26 @@
         member.roleJa = rule.roleJa;
         if (!Array.isArray(TEAM[rule.target])) TEAM[rule.target] = [];
         TEAM[rule.target].push(member);
-        moved++;
+        touched++;
       });
-      if (!moved) {
+      ENSURE_MEMBERS_2026_05.forEach(rule => {
+        const matchKey = nameKey(rule.member.name);
+        let exists = false;
+        Object.keys(TEAM).forEach(section => {
+          if (Array.isArray(TEAM[section]) && TEAM[section].some(m => nameKey(m.name) === matchKey)) exists = true;
+        });
+        if (!exists) {
+          if (!Array.isArray(TEAM[rule.target])) TEAM[rule.target] = [];
+          TEAM[rule.target].push({ ...rule.member });
+          touched++;
+        }
+      });
+      if (!touched) {
         showToast(currentLang === 'ja' ? '再配置済みです' : 'Already in place');
         return;
       }
       await saveTeamConfig();
-      showToast(currentLang === 'ja' ? `✓ ${moved}件を再配置しました` : `✓ Moved ${moved} member(s)`);
+      showToast(currentLang === 'ja' ? `✓ ${touched}件を反映しました` : `✓ Applied ${touched} change(s)`);
       renderChart(); renderAside();
     };
 
