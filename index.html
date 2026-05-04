@@ -375,6 +375,16 @@
       outline: none;
       transition: border-color .2s ease, background .2s ease, box-shadow .2s ease;
     }
+    .field select {
+      appearance: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+      padding-right: 40px;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none' stroke='%239aa8c2' stroke-width='1.5'><path d='M1 1l4 4 4-4'/></svg>");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+    }
+    .field select option { background: var(--navy-1); color: var(--text); }
     input::placeholder { color: #5d6c87; }
     input:focus, select:focus {
       border-color: var(--gold);
@@ -711,9 +721,23 @@
       .topbar { padding: 16px 18px; flex-wrap: wrap; gap: 14px; }
       .topbar-meta { display: none; }
       .register-section.open { padding: 28px 22px; }
-      .hero { padding-top: 50px; }
+      .hero { padding-top: 50px; padding-left: 18px; padding-right: 18px; }
       .stats { gap: 28px; }
       .stat-num { font-size: 26px; }
+    }
+    @media (max-width: 420px) {
+      .topbar { padding: 12px 14px; gap: 10px; }
+      .brand-logo { width: 38px; height: 38px; }
+      .brand-name { font-size: 16px; letter-spacing: 1.6px; }
+      .brand-name small { font-size: 9px; letter-spacing: 2.5px; }
+      .lang-toggle button { font-size: 11px; padding: 5px 10px; }
+      h1 { margin-bottom: 32px; }
+      .lede { font-size: 15px; }
+      .hero { padding-top: 38px; padding-bottom: 16px; }
+      .register-section.open { padding: 22px 18px; }
+      .register-cta-wrap { margin: 36px auto 56px; }
+      .submit-row .btn-primary { padding: 14px 20px; font-size: 12px; }
+      .modal { padding: 28px 22px; }
     }
   </style>
 </head>
@@ -800,6 +824,17 @@
             </div>
           </div>
           <div class="field full">
+            <label for="role" data-i18n="role">役割</label>
+            <select id="role" required>
+              <option value="agent" data-i18n="roleAgent">エージェント</option>
+              <option value="team" data-i18n="roleTeam">チームメンバー</option>
+              <option value="back_office" data-i18n="roleBackOffice">バックオフィス</option>
+              <option value="board" data-i18n="roleBoard">ボード</option>
+              <option value="md" data-i18n="roleMd">マネージング・ディレクター</option>
+              <option value="ceo" data-i18n="roleCeo">CEO</option>
+            </select>
+          </div>
+          <div class="field full">
             <label for="password" data-i18n="password">パスワード作成</label>
             <input id="password" type="password" required minlength="8" data-i18n-attr-placeholder="phPassword" placeholder="8文字以上" />
           </div>
@@ -854,7 +889,7 @@
     import {
       doc, setDoc, getDoc, serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
-    import { isAdmin } from './firebase-init.js';
+    import { isAdmin, isValidRole, DEFAULT_ROLE } from './firebase-init.js';
 
     // ----- i18n -----
     const i18n = {
@@ -871,6 +906,9 @@
         regTitle: 'エージェント登録',
         regSub: '登録は <strong>@exceed-re.ae</strong> の会社メールを持つExceedスタッフのみ可能です。',
         firstName: '名', lastName: '姓', email: '会社メール', phone: '電話番号', password: 'パスワード作成',
+        role: '役割',
+        roleCeo: 'CEO', roleMd: 'マネージング・ディレクター', roleBoard: 'ボード',
+        roleAgent: 'エージェント', roleTeam: 'チームメンバー', roleBackOffice: 'バックオフィス',
         phFirst: '例: Aisha', phLast: '例: Khan', phPassword: '8文字以上',
         phEmailLocal: 'name', phPhone: '50 123 4567',
         regLead: '新しいエージェントですか？',
@@ -910,6 +948,9 @@
         regTitle: 'Register as an Agent',
         regSub: 'Registration is restricted to Exceed staff with an <strong>@exceed-re.ae</strong> company email.',
         firstName: 'First Name', lastName: 'Last Name', email: 'Work Email', phone: 'Phone', password: 'Create Password',
+        role: 'Role',
+        roleCeo: 'CEO', roleMd: 'Managing Director', roleBoard: 'Board',
+        roleAgent: 'Agent', roleTeam: 'Team', roleBackOffice: 'Back Office',
         phFirst: 'e.g. Aisha', phLast: 'e.g. Khan', phPassword: 'Min 8 characters',
         phEmailLocal: 'name', phPhone: '50 123 4567',
         regLead: 'New to Exceed?',
@@ -1113,6 +1154,7 @@
       const firstName = form.firstName.value.trim();
       const lastName = form.lastName.value.trim();
       const phone = code + ' ' + form.phoneNumber.value.trim();
+      const role = isValidRole(form.role.value) ? form.role.value : DEFAULT_ROLE;
       const password = form.password.value;
       const submitBtn = form.querySelector('button[type=submit]');
       submitBtn.disabled = true;
@@ -1120,7 +1162,7 @@
         const cred = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(cred.user, { displayName: `${firstName} ${lastName}` });
         await setDoc(doc(db, 'agents', cred.user.uid), {
-          firstName, lastName, email, phone,
+          firstName, lastName, email, phone, role,
           uid: cred.user.uid,
           status: 'pending',
           createdAt: serverTimestamp()

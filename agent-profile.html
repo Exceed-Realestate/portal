@@ -169,6 +169,15 @@
     /* Skills radar */
     .skills-wrap { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
     @media (max-width: 600px) { .skills-wrap { flex-direction: column; align-items: stretch; } }
+    @media (max-width: 480px) {
+      .topbar { padding: 12px 14px; flex-wrap: wrap; gap: 10px; }
+      .brand img { width: 32px; height: 32px; }
+      .brand-name { font-size: 13px; letter-spacing: 1.5px; }
+      .hero { padding: 18px 14px; }
+      .hero-left { padding: 18px; }
+      .section { padding: 18px 14px; }
+      .radar { width: 200px; height: 200px; }
+    }
     .radar { width: 240px; height: 240px; flex: none; }
     .radar-grid { stroke: rgba(255,255,255,0.08); stroke-width: 1; fill: none; }
     .radar-axis { stroke: rgba(255,255,255,0.06); stroke-width: 1; }

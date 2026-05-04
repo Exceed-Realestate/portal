@@ -160,6 +160,25 @@
       backdrop-filter: blur(10px);
     }
     .toast.show { transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 720px) {
+      .container { padding: 24px 16px; }
+      .page-head { gap: 12px; }
+      .page-head h1 { font-size: 22px; }
+      .search { width: 100%; }
+      th, td { padding: 12px 12px; font-size: 13px; }
+      .hide-sm { display: none; }
+    }
+    @media (max-width: 480px) {
+      .topbar { padding: 12px 14px; flex-wrap: wrap; gap: 10px; }
+      .brand img { width: 32px; height: 32px; }
+      .brand-name { font-size: 13px; letter-spacing: 1.5px; }
+      .topbar-actions { flex-wrap: wrap; gap: 6px; }
+      .btn { padding: 7px 10px; font-size: 11px; }
+      .container { padding: 18px 12px; }
+      th, td { padding: 10px 10px; font-size: 12px; }
+      table { min-width: 560px; }
+    }
   </style>
 </head>
 <body class="dashboard-bg">

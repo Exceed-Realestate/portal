@@ -21,22 +21,26 @@ service cloud.firestore {
 
       // A user can create only their own doc, only with an @exceed-re.ae email,
       // and only with status='pending' so admins control activation.
+      // Role is optional but, if provided, must be one of the allowed values.
       allow create: if isSignedIn()
         && request.auth.uid == userId
         && request.auth.token.email.matches('.+@exceed-re[.]ae')
         && request.resource.data.email == request.auth.token.email
         && request.resource.data.firstName is string
         && request.resource.data.lastName is string
-        && request.resource.data.status == 'pending';
+        && request.resource.data.status == 'pending'
+        && (!('role' in request.resource.data) || request.resource.data.role in
+            ['ceo','md','board','agent','team','back_office']);
 
-      // Admins can change any field (mainly status).
-      // A normal user can update their own doc but cannot change email/uid/status.
+      // Admins can change any field (mainly status & role).
+      // A normal user can update their own doc but cannot change email/uid/status/role.
       allow update: if isAdminEmail()
         || (isSignedIn()
             && request.auth.uid == userId
             && request.resource.data.email == resource.data.email
             && request.resource.data.uid == resource.data.uid
-            && request.resource.data.status == resource.data.status);
+            && request.resource.data.status == resource.data.status
+            && request.resource.data.get('role', '') == resource.data.get('role', ''));
 
       // Only admins (via Firebase console / future tooling) can delete.
       allow delete: if isAdminEmail();

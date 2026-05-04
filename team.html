@@ -257,12 +257,13 @@
       --av-h: 116px;
       width: var(--av-w);
       height: var(--av-h);
-      margin: 0 auto 10px;
+      margin: 0 auto 22px;
       position: relative;
-      filter: drop-shadow(0 8px 14px rgba(0,0,0,.45)) drop-shadow(0 2px 4px rgba(0,0,0,.3));
+      filter: drop-shadow(0 6px 10px rgba(0,0,0,.4)) drop-shadow(0 1px 3px rgba(0,0,0,.25));
       transition: transform .25s;
+      pointer-events: none;
     }
-    .node:hover .avatar { transform: translateY(-3px) scale(1.04); }
+    .node:hover .avatar { transform: translateY(-2px) scale(1.02); }
     .avatar-inner {
       position: absolute; inset: 0;
       display: grid; place-items: end center;
@@ -296,9 +297,9 @@
     .avatar.has-photo .avatar-inner > span { display: none; }
 
     /* Tier-specific sizing only — no rings, no frames */
-    .node.tier-ceo .avatar { --av-w: 130px; --av-h: 150px; }
-    .node.tier-md  .avatar { --av-w: 110px; --av-h: 130px; }
-    .node.tier-coo .avatar { --av-w: 110px; --av-h: 130px; }
+    .node.tier-ceo .avatar { --av-w: 130px; --av-h: 150px; margin-bottom: 28px; }
+    .node.tier-md  .avatar { --av-w: 110px; --av-h: 130px; margin-bottom: 26px; }
+    .node.tier-coo .avatar { --av-w: 110px; --av-h: 130px; margin-bottom: 26px; }
     .member-node   .avatar { --av-w: 88px;  --av-h: 108px; }
     .node.tier-ceo .avatar-inner > span { width: 92px; height: 92px; font-size: 28px; }
     .node.tier-md  .avatar-inner > span,
@@ -453,6 +454,23 @@
       .node.tier-md { width: 180px; }
       .node.division { width: 150px; }
       .member-node .node { width: 160px; }
+    }
+    @media (max-width: 480px) {
+      .topbar { padding: 12px 14px; }
+      .brand img { width: 32px; height: 32px; }
+      .brand-name { font-size: 13px; letter-spacing: 1.5px; }
+      .btn { padding: 7px 10px; font-size: 11px; }
+      .chart-scroll { padding: 28px 14px; }
+      .aside { padding-left: 14px; padding-right: 14px; }
+      .node { width: 140px; padding: 12px 10px; }
+      .node.tier-ceo { width: 170px; }
+      .node.tier-md { width: 156px; }
+      .node.tier-coo { width: 156px; }
+      .node.division { width: 132px; }
+      .member-node .node { width: 140px; }
+      .node h3 { font-size: 12px; }
+      .node .name-ja { font-size: 10px; }
+      .node .role { font-size: 9px; }
     }
 
     /* ============ ADMIN EDIT MODE ============ */
@@ -615,6 +633,10 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
       <span id="editBtnLabel" data-i18n="editTree">ツリーを編集</span>
     </button>
+    <button class="admin-btn" id="autoLinkBtn" onclick="runAutoLink()" title="Match team members against registered agents and copy email/phone">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"/></svg>
+      <span data-i18n="autoLink">自動リンク</span>
+    </button>
   </div>
 
   <div class="chart-scroll">
@@ -722,7 +744,7 @@
   <script type="module">
     import { auth, db, isAdmin } from './firebase-init.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-    import { doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    import { doc, getDoc, setDoc, serverTimestamp, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
     // ============ TEAM DATA ============
     // To add a member: drop their photo at team/<filename>.png and append a record to the matching array.
@@ -843,6 +865,8 @@
         rosterTitle: '登録メンバー（配属待ち）',
         rosterSub: 'これらのメンバーはまだ部門に配属されていません。管理者として「ツリーを編集」ボタンから各メンバーを編集して、適切なチームに配属してください。',
         empty: 'メンバー未登録',
+        editTree: 'ツリーを編集',
+        autoLink: '自動リンク',
         addHint: '<strong>メンバー追加方法:</strong> 管理者でログインすると右上に「ツリーを編集」ボタンが表示されます。写真は <code>team/&lt;ファイル名&gt;.png</code> にアップロード後、編集画面でファイル名を指定してください。'
       },
       en: {
@@ -856,6 +880,8 @@
         rosterTitle: 'Registered Members (Unassigned)',
         rosterSub: 'These members are registered for the portal but not yet assigned to a team. Sign in as admin and use the "Edit Tree" button to move each into the correct division.',
         empty: 'No members yet',
+        editTree: 'Edit Tree',
+        autoLink: 'Auto-link',
         addHint: '<strong>How to add a member:</strong> sign in as admin to see the "Edit Tree" button. Photos go in <code>team/&lt;filename&gt;.png</code>; reference the path in the editor.'
       }
     };
@@ -937,6 +963,7 @@
     }
 
     function personCard(m, tierClass = '', section = null, index = null) {
+      m = withAgentLink(m);
       const role = currentLang === 'ja' ? (m.roleJa || m.role) : (m.role || m.roleJa);
       const editControls = (section !== null && index !== null) ? `
         <div class="edit-controls">
@@ -1106,6 +1133,102 @@
         }
       } catch (e) { console.warn('teamConfig load failed', e); }
     }
+
+    // ============ AGENTS DIRECTORY (auto-link team members <-> registered agents) ============
+    // When a member appears in both the team tree and the agents collection
+    // (matched by name), agent data fills in any missing email/phone/uid so
+    // we don't have to maintain the same info in two places. Admins can
+    // promote that merged state into teamConfig with the "Auto-link" button.
+    let AGENTS_LIST = [];
+    let AGENTS_BY_KEY = new Map(); // normalized "first last" -> agent doc
+
+    function nameKey(s) {
+      return (s || '').toString().toLowerCase()
+        .normalize('NFKD').replace(/[̀-ͯ]/g, '')
+        .replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+    }
+    function agentMatchKeys(a) {
+      const first = (a.firstName || '').trim();
+      const last = (a.lastName || '').trim();
+      const keys = new Set();
+      if (first && last) keys.add(nameKey(`${first} ${last}`));
+      if (first) keys.add(nameKey(first));
+      const dn = (a.displayName || '').trim();
+      if (dn) keys.add(nameKey(dn));
+      return [...keys];
+    }
+    function memberMatchKeys(m) {
+      const keys = new Set();
+      if (m.name) keys.add(nameKey(m.name));
+      if (m.name) {
+        const parts = m.name.trim().split(/\s+/);
+        if (parts.length > 0) keys.add(nameKey(parts[0]));
+      }
+      return [...keys];
+    }
+
+    async function loadAgentsDirectory() {
+      try {
+        const snap = await getDocs(collection(db, 'agents'));
+        AGENTS_LIST = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        AGENTS_BY_KEY.clear();
+        AGENTS_LIST.forEach(a => {
+          agentMatchKeys(a).forEach(k => {
+            if (k && !AGENTS_BY_KEY.has(k)) AGENTS_BY_KEY.set(k, a);
+          });
+        });
+      } catch (e) { console.warn('agents load failed', e); }
+    }
+
+    function findAgentForMember(m) {
+      const keys = memberMatchKeys(m);
+      for (const k of keys) {
+        const a = AGENTS_BY_KEY.get(k);
+        if (a) return a;
+      }
+      return null;
+    }
+
+    // Merge missing fields from a matching agent (read-only — does not persist).
+    function withAgentLink(m) {
+      const a = findAgentForMember(m);
+      if (!a) return m;
+      const merged = { ...m };
+      if (!merged.email && a.email) merged.email = a.email;
+      if (!merged.phone && a.phone) {
+        merged.phone = a.phone.replace(/\s+/g, '');
+        if (!merged.phoneDisplay) merged.phoneDisplay = a.phone;
+      }
+      if (!merged.uid && a.uid) merged.uid = a.uid;
+      return merged;
+    }
+
+    // Admin action: persist auto-link results into teamConfig/main.
+    window.runAutoLink = async function() {
+      let touched = 0;
+      Object.keys(TEAM).forEach(section => {
+        const list = TEAM[section];
+        if (!Array.isArray(list)) return;
+        list.forEach((m, i) => {
+          const linked = withAgentLink(m);
+          if (linked !== m) {
+            const before = JSON.stringify(m);
+            const after = JSON.stringify(linked);
+            if (before !== after) {
+              TEAM[section][i] = linked;
+              touched++;
+            }
+          }
+        });
+      });
+      if (!touched) {
+        showToast(currentLang === 'ja' ? '一致するメンバーはいません' : 'No new matches to link');
+        return;
+      }
+      await saveTeamConfig();
+      showToast(currentLang === 'ja' ? `✓ ${touched}件をリンクしました` : `✓ Linked ${touched} member(s)`);
+      renderChart(); renderAside();
+    };
     async function saveTeamConfig() {
       try {
         const payload = { ...TEAM, updatedAt: serverTimestamp() };
@@ -1226,8 +1349,9 @@
       if (isAdmin(user.email)) {
         document.getElementById('adminToolbar').classList.add('visible');
       }
-      // Load latest team config from Firestore (overrides hardcoded defaults)
-      await loadTeamConfig();
+      // Load latest team config + the registered agents directory in parallel.
+      // Display-time merge fills in any missing email/phone/uid from agent docs.
+      await Promise.all([loadTeamConfig(), loadAgentsDirectory()]);
       renderChart(); renderAside();
     });
 

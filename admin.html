@@ -105,9 +105,12 @@
       background: linear-gradient(180deg, rgba(16,42,79,0.85), rgba(10,31,61,0.85));
       border: 1px solid var(--line);
       border-radius: var(--radius);
-      overflow: hidden;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
     }
-    table { width: 100%; border-collapse: collapse; }
+    .table-wrap::-webkit-scrollbar { height: 6px; }
+    .table-wrap::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 6px; }
+    table { width: 100%; border-collapse: collapse; min-width: 640px; }
     thead {
       background: rgba(5,20,40,0.5);
     }
@@ -162,6 +165,27 @@
     .act-btn.suspend:hover:not(:disabled) { background: rgba(239, 68, 68, 0.12); }
     .act-btn.reactivate { border-color: rgba(212, 184, 122, 0.4); color: var(--gold); }
     .act-btn.reactivate:hover:not(:disabled) { background: rgba(212, 184, 122, 0.12); }
+    .role-select {
+      background: rgba(5,20,40,0.6);
+      border: 1px solid var(--line);
+      color: var(--text);
+      padding: 6px 26px 6px 10px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 12px;
+      cursor: pointer;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none' stroke='%239aa8c2' stroke-width='1.5'><path d='M1 1l4 4 4-4'/></svg>");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      transition: border-color .2s ease, background-color .2s ease;
+    }
+    .role-select:hover { border-color: var(--line-strong); }
+    .role-select:focus { border-color: var(--gold); }
+    .role-select option { background: var(--navy-1); color: var(--text); }
+    .role-select.saving { opacity: 0.5; cursor: wait; }
     .toast {
       position: fixed;
       bottom: 30px; left: 50%;
@@ -204,6 +228,18 @@
       th, td { padding: 12px 12px; font-size: 13px; }
       .hide-sm { display: none; }
     }
+    @media (max-width: 480px) {
+      .topbar { padding: 12px 14px; flex-wrap: wrap; gap: 10px; }
+      .brand img { width: 32px; height: 32px; }
+      .brand-name { font-size: 13px; letter-spacing: 1.5px; }
+      .topbar-actions { flex-wrap: wrap; gap: 6px; }
+      .btn { padding: 7px 10px; font-size: 11px; }
+      .container { padding: 18px 12px; }
+      .page-head h1 { font-size: 22px; }
+      .search { width: 100%; }
+      th, td { padding: 10px 10px; font-size: 12px; }
+      table { min-width: 560px; }
+    }
   </style>
 </head>
 <body class="dashboard-bg">
@@ -231,7 +267,7 @@
   <div class="toast" id="toast"></div>
 
   <script type="module">
-    import { auth, db, isAdmin } from './firebase-init.js';
+    import { auth, db, isAdmin, ROLES, DEFAULT_ROLE, roleLabel, isValidRole } from './firebase-init.js';
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
     import { collection, getDocs, query, orderBy, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
@@ -283,23 +319,49 @@
       );
       const tbody = rows.length ? rows.map(a => {
         const status = a.status || 'active';
+        const role = isValidRole(a.role) ? a.role : DEFAULT_ROLE;
+        const options = ROLES.map(r =>
+          `<option value="${r}"${r === role ? ' selected' : ''}>${esc(roleLabel(r, 'ja'))}</option>`
+        ).join('');
         return `
         <tr data-uid="${esc(a.uid)}">
           <td><div class="name">${esc(a.firstName)} ${esc(a.lastName)}</div></td>
           <td class="email">${esc(a.email)}</td>
           <td class="hide-sm">${esc(a.phone || '—')}</td>
+          <td><select class="role-select" data-uid="${esc(a.uid)}" aria-label="Role">${options}</select></td>
           <td class="hide-sm">${fmtDate(a.createdAt)}</td>
           <td><span class="status ${status}">${status}</span></td>
           <td><div class="row-actions">${actionsFor(a)}</div></td>
         </tr>`;
       }).join('')
-        : `<tr><td colspan="6" class="empty">該当するエージェントが見つかりません。</td></tr>`;
+        : `<tr><td colspan="7" class="empty">該当するエージェントが見つかりません。</td></tr>`;
       document.getElementById('agentRows').innerHTML = tbody;
       document.getElementById('countShown').textContent = rows.length;
-      // Wire up action buttons
       document.querySelectorAll('.act-btn').forEach(btn => {
         btn.addEventListener('click', () => handleAction(btn));
       });
+      document.querySelectorAll('.role-select').forEach(sel => {
+        sel.addEventListener('change', () => handleRoleChange(sel));
+      });
+    }
+
+    async function handleRoleChange(sel) {
+      const uid = sel.getAttribute('data-uid');
+      const newRole = sel.value;
+      if (!isValidRole(newRole)) return;
+      sel.classList.add('saving');
+      sel.disabled = true;
+      try {
+        await updateDoc(doc(db, 'agents', uid), { role: newRole });
+        const idx = allAgents.findIndex(a => a.uid === uid);
+        if (idx >= 0) allAgents[idx].role = newRole;
+        showToast('役割を更新しました。');
+      } catch (err) {
+        showToast('エラー: ' + (err.message || 'もう一度お試しください'));
+      } finally {
+        sel.classList.remove('saving');
+        sel.disabled = false;
+      }
     }
 
     async function handleAction(btn) {
@@ -342,13 +404,14 @@
                   <th>Name</th>
                   <th>Email</th>
                   <th class="hide-sm">Phone</th>
+                  <th>Role</th>
                   <th class="hide-sm">Registered</th>
                   <th>Status</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="agentRows">
-                <tr><td colspan="6" class="loading">読み込み中…</td></tr>
+                <tr><td colspan="7" class="loading">読み込み中…</td></tr>
               </tbody>
             </table>
           </div>
