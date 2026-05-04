@@ -27,11 +27,14 @@ export const isAdmin = (email) => !!email && ADMIN_EMAILS.includes(email.toLower
 
 // ----- Roles -----
 // Order matters for some UI (highest authority first).
-export const ROLES = ['ceo', 'md', 'board', 'agent', 'team', 'back_office'];
+// 'admin' is reserved for system administrators (currently just balraj@) — sits
+// above CEO since it includes platform/infra rights as well as full business access.
+export const ROLES = ['admin', 'ceo', 'md', 'board', 'agent', 'team', 'back_office'];
 export const DEFAULT_ROLE = 'agent';
 
 export const ROLE_LABELS = {
   ja: {
+    admin: 'システム管理者',
     ceo: 'CEO',
     md: 'マネージング・ディレクター',
     board: 'ボード',
@@ -40,6 +43,7 @@ export const ROLE_LABELS = {
     back_office: 'バックオフィス'
   },
   en: {
+    admin: 'System Admin',
     ceo: 'CEO',
     md: 'Managing Director',
     board: 'Board',
@@ -51,7 +55,7 @@ export const ROLE_LABELS = {
 
 // Leadership = anyone allowed to see the Monday-morning attendance briefing
 // and other leadership-only views. Admins are always treated as leadership.
-export const LEADERSHIP_ROLES = ['ceo', 'md', 'board'];
+export const LEADERSHIP_ROLES = ['admin', 'ceo', 'md', 'board'];
 
 export const isValidRole = (role) => ROLES.includes(role);
 export const roleLabel = (role, lang = 'ja') =>
@@ -64,6 +68,17 @@ export const isLeadership = (role, email) =>
 // with ACCESS_LEVELS.md (the human-readable doc) so we have one place to read
 // and one place to enforce.
 export const ROLE_CAPABILITIES = {
+  admin: {
+    summary_ja: 'プラットフォーム管理者。全ての機能・データ・設定にアクセス可能。',
+    summary_en: 'Platform owner. Full access to every feature, dataset and setting.',
+    capabilities: [
+      'Everything CEO can do',
+      'Plus: change anyone\'s access role (including own)',
+      'Plus: edit team tree, partners, and Firestore-backed config',
+      'Plus: receive system alerts and Firestore rule overrides',
+      'Reserved for the platform owner — currently balraj@exceed-re.ae'
+    ]
+  },
   ceo: {
     summary_ja: '全権限。全画面・全データ。',
     summary_en: 'Full access to every screen and every dataset.',

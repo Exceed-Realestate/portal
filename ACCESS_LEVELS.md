@@ -25,6 +25,22 @@ register — they just can't sign in until then.
 
 ---
 
+## System Admin — Platform owner
+
+**Summary:** sits above CEO. Full business access **plus** platform-level
+admin rights. Reserved for the platform owner.
+
+- Everything CEO can do
+- Plus: change anyone's access role (including own)
+- Plus: edit team tree, partners, and Firestore-backed config
+- Plus: receive system alerts and Firestore rule overrides
+- Currently held by `balraj@exceed-re.ae` only
+
+This is the role to use when the holder is also the technical operator of
+the portal — not just the business owner.
+
+---
+
 ## CEO — Full access
 
 **Summary:** every screen, every dataset, every admin action.

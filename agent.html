@@ -153,6 +153,57 @@
     .theme-btn:hover { background: rgba(212,184,122,0.12); border-color: rgba(212,184,122,0.4); color: var(--gold); }
     .theme-btn svg { width: 13px; height: 13px; }
 
+    /* ===== Access modal ===== */
+    .acc-bd { position: fixed; inset: 0; background: rgba(2,8,20,0.78); backdrop-filter: blur(6px); display: none; align-items: flex-start; justify-content: center; z-index: 1200; padding: 60px 20px; overflow-y: auto; }
+    .acc-bd.show { display: flex; }
+    .acc-modal {
+      width: 100%; max-width: 720px; background: linear-gradient(180deg, #0e2444, #08182f);
+      border: 1px solid rgba(212,184,122,0.32); border-radius: 18px;
+      padding: 28px 28px 24px; box-shadow: 0 30px 80px -20px rgba(0,0,0,.7);
+      color: var(--text);
+    }
+    .acc-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 18px; }
+    .acc-head h2 { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 600; margin: 0 0 4px; color: var(--cream); }
+    .acc-head p { font-size: 12px; color: var(--muted); margin: 0; }
+    .acc-close { background: rgba(255,255,255,0.05); color: var(--cream); border: 1px solid var(--line); border-radius: 999px; width: 32px; height: 32px; cursor: pointer; font-size: 16px; line-height: 1; display: grid; place-items: center; transition: all .15s; }
+    .acc-close:hover { background: rgba(255,107,107,0.15); color: #ff8a8a; border-color: rgba(255,107,107,0.4); }
+
+    .acc-current {
+      padding: 18px; border-radius: 14px;
+      background: linear-gradient(135deg, rgba(212,184,122,0.16), rgba(212,184,122,0.04));
+      border: 1px solid rgba(212,184,122,0.40); margin-bottom: 22px;
+    }
+    .acc-cur-eyebrow { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 700; margin-bottom: 6px; }
+    .acc-cur-name { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--cream); margin: 0 0 6px; font-weight: 600; }
+    .acc-cur-sum { font-size: 13px; color: var(--text); line-height: 1.55; margin: 0 0 12px; }
+    .acc-cur-caps { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+    .acc-cur-caps li { font-size: 12px; color: var(--text); line-height: 1.5; padding-left: 18px; position: relative; }
+    .acc-cur-caps li::before { content: '✓'; position: absolute; left: 0; color: var(--gold); font-weight: 700; }
+    .acc-pending {
+      padding: 14px 16px; border-radius: 12px; background: rgba(5,20,40,0.6);
+      border: 1px dashed var(--line); color: var(--muted); font-size: 13px; line-height: 1.5;
+    }
+
+    .acc-list-title { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); font-weight: 700; margin: 4px 0 12px; }
+    .acc-roles { display: grid; gap: 10px; }
+    .acc-role {
+      padding: 14px 16px; border-radius: 12px;
+      background: rgba(5,20,40,0.5); border: 1px solid var(--line);
+      transition: border-color .15s, background .15s;
+    }
+    .acc-role.is-current { border-color: rgba(212,184,122,0.45); background: rgba(212,184,122,0.06); }
+    .acc-role-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
+    .acc-role-name { font-family: 'Playfair Display', serif; font-size: 15px; color: var(--cream); font-weight: 600; }
+    .acc-role-key { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+    .acc-role.is-current .acc-role-key { color: var(--gold); }
+    .acc-role-sum { font-size: 12px; color: var(--muted); line-height: 1.55; margin: 0; }
+
+    @media (max-width: 600px) {
+      .acc-bd { padding: 24px 12px; }
+      .acc-modal { padding: 22px 18px 18px; border-radius: 14px; }
+      .acc-cur-name { font-size: 18px; }
+    }
+
     .lang-toggle { display: inline-flex; align-items: center; background: rgba(255,255,255,0.04); border: 1px solid var(--line); border-radius: 999px; padding: 3px; position: relative; }
     .lang-toggle button { background: transparent; border: none; color: var(--muted); font-family: inherit; font-size: 11px; font-weight: 600; letter-spacing: 1px; padding: 5px 10px; border-radius: 999px; cursor: pointer; transition: color .25s; position: relative; z-index: 1; }
     .lang-toggle button.active { color: var(--navy-0); }
@@ -1069,6 +1120,10 @@
           <input type="text" placeholder="検索..." id="searchInput" />
         </div>
         <div class="topbar-meta">
+          <button class="theme-btn" id="accessBtn" onclick="openAccessModal()" title="My access role">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <span id="accessBtnLabel">アクセス</span>
+          </button>
           <button class="theme-btn" id="themeBtn" onclick="cycleTheme()" title="Switch theme">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
             <span id="themeLabel">Manor</span>
@@ -1226,9 +1281,9 @@
   </div>
 
   <script type="module">
-    import { auth, db, isAdmin } from './firebase-init.js';
+    import { auth, db, isAdmin, ROLES, ROLE_LABELS, ROLE_CAPABILITIES, roleLabel, roleSummary, roleCapabilities, isValidRole } from './firebase-init.js';
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
     // Tool catalogue — single source of truth, drives both left list and center grid
     const TOOLS = [
@@ -1444,6 +1499,7 @@
     let currentLang = 'ja';
     let currentUser = null;
     let isAdminUser = false;
+    let currentUserRole = null;   // role string from agents/{uid} doc; null = unassigned
 
     function visibleTools() {
       const list = TOOLS.filter(t => !t.adminOnly || isAdminUser);
@@ -1877,6 +1933,8 @@
       });
       document.getElementById('searchInput').placeholder = dict.searchPh;
       document.querySelectorAll('.lang-toggle button').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+      const accBtn = document.getElementById('accessBtnLabel');
+      if (accBtn) accBtn.textContent = lang === 'ja' ? 'アクセス' : 'Access';
       positionPill();
       renderTileGrid();
       renderTzList();
@@ -2057,15 +2115,33 @@
       if (!user) { window.location.href = 'index.html'; return; }
       currentUser = user;
       let firstName = (user.displayName || '').trim().split(/\s+/)[0];
+      let agentDocRole = null;
       try {
         const snap = await getDoc(doc(db, 'agents', user.uid));
-        if (snap.exists() && snap.data().firstName) firstName = snap.data().firstName;
+        if (snap.exists()) {
+          const data = snap.data();
+          if (data.firstName) firstName = data.firstName;
+          agentDocRole = data.role || null;
+        }
       } catch (e) {}
       if (!firstName && user.email) {
         const local = user.email.split('@')[0].split(/[._-]/)[0];
         firstName = local.charAt(0).toUpperCase() + local.slice(1);
       }
       isAdminUser = isAdmin(user.email);
+      currentUserRole = agentDocRole;
+
+      // Auto-promote the platform admin (balraj@) to the 'admin' role on first
+      // load if their agents/{uid} doc has anything else. One-time, idempotent.
+      if (isAdminUser && agentDocRole !== 'admin') {
+        try {
+          await updateDoc(doc(db, 'agents', user.uid), { role: 'admin' });
+          currentUserRole = 'admin';
+        } catch (e) {
+          console.warn('admin role self-promote failed (doc may not exist yet)', e);
+        }
+      }
+
       document.getElementById('userName').textContent = firstName;
       document.getElementById('userAvatar').textContent = firstName.charAt(0).toUpperCase();
       const wn = document.getElementById('welcomeName');
@@ -2076,11 +2152,94 @@
       updateStats();
     });
 
+    // ----- Access modal -----
+    window.openAccessModal = function() {
+      renderAccessModal();
+      document.getElementById('accBd').classList.add('show');
+    };
+    window.closeAccessModal = function() {
+      document.getElementById('accBd').classList.remove('show');
+    };
+    function renderAccessModal() {
+      const lang = currentLang;
+      // Localize the chrome
+      document.getElementById('accTitle').textContent = lang === 'ja' ? 'アクセス権限' : 'My access';
+      document.getElementById('accSubtitle').textContent = lang === 'ja'
+        ? 'あなたのポータル権限と全ロールの一覧'
+        : 'Your portal access and the full list of roles';
+      document.getElementById('accAllTitle').textContent = lang === 'ja' ? '全アクセスレベル' : 'All access levels';
+      document.getElementById('accessBtnLabel').textContent = lang === 'ja' ? 'アクセス' : 'Access';
+
+      const cur = document.getElementById('accCurrent');
+      const role = currentUserRole && isValidRole(currentUserRole) ? currentUserRole : null;
+      if (role) {
+        const caps = roleCapabilities(role).map(c => `<li>${escapeHtml(c)}</li>`).join('');
+        cur.innerHTML = `
+          <div class="acc-current">
+            <div class="acc-cur-eyebrow">${lang === 'ja' ? '現在の権限' : 'Your role'}</div>
+            <h3 class="acc-cur-name">${escapeHtml(roleLabel(role, lang))}</h3>
+            <p class="acc-cur-sum">${escapeHtml(roleSummary(role, lang))}</p>
+            <ul class="acc-cur-caps">${caps}</ul>
+          </div>`;
+      } else {
+        cur.innerHTML = `
+          <div class="acc-pending">
+            ${lang === 'ja'
+              ? '管理者があなたの権限を割り当てるとここに表示されます。割り当て前は一部のツールがロックされる場合があります。'
+              : 'Once an admin assigns your access role it will appear here. Some tools may be locked until then.'}
+          </div>`;
+      }
+
+      // Full list, with the user's role highlighted at top
+      const orderedRoles = ROLES.slice();
+      if (role) {
+        orderedRoles.splice(orderedRoles.indexOf(role), 1);
+        orderedRoles.unshift(role);
+      }
+      document.getElementById('accRoles').innerHTML = orderedRoles.map(r => {
+        const isMine = r === role;
+        return `
+          <div class="acc-role ${isMine ? 'is-current' : ''}">
+            <div class="acc-role-head">
+              <div class="acc-role-name">${escapeHtml(roleLabel(r, lang))}</div>
+              <div class="acc-role-key">${isMine ? (lang === 'ja' ? '現在' : 'CURRENT') : r.toUpperCase()}</div>
+            </div>
+            <p class="acc-role-sum">${escapeHtml(roleSummary(r, lang))}</p>
+          </div>`;
+      }).join('');
+    }
+    function escapeHtml(s) {
+      return (s == null ? '' : String(s))
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && document.getElementById('accBd').classList.contains('show')) {
+        closeAccessModal();
+      }
+    });
+
     // Init
     window.addEventListener('load', () => { setLang('ja'); });
     window.addEventListener('resize', positionPill);
     setInterval(renderTzList, 60000);  // refresh times every minute
   </script>
+  <!-- Access role modal -->
+  <div class="acc-bd" id="accBd" onclick="if(event.target===this)closeAccessModal()">
+    <div class="acc-modal" role="dialog" aria-labelledby="accTitle">
+      <div class="acc-head">
+        <div>
+          <h2 id="accTitle">アクセス権限</h2>
+          <p id="accSubtitle">あなたのポータル権限と全ロールの一覧</p>
+        </div>
+        <button class="acc-close" onclick="closeAccessModal()" aria-label="Close">×</button>
+      </div>
+      <div id="accCurrent"></div>
+      <div class="acc-list-title" id="accAllTitle">全アクセスレベル</div>
+      <div class="acc-roles" id="accRoles"></div>
+    </div>
+  </div>
+
   <!-- Onboarding wizard -->
   <div class="ob-bd" id="obBd" onclick="if(event.target===this)closeOnboarding()">
     <div class="ob-modal">
