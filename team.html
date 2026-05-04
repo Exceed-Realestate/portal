@@ -622,6 +622,40 @@
     .modal .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     @media (max-width: 500px) { .modal .field-row { grid-template-columns: 1fr; } }
 
+    .access-block {
+      margin-top: 22px;
+      padding: 16px 16px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(212,184,122,0.22);
+      background: linear-gradient(180deg, rgba(212,184,122,0.05), rgba(5,20,40,0.4));
+    }
+    .access-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+    .access-title { font-family: 'Playfair Display', serif; font-size: 15px; color: var(--cream); margin-bottom: 2px; }
+    .access-sub { font-size: 11px; color: var(--muted); line-height: 1.5; }
+    .access-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 10px; border-radius: 999px;
+      background: rgba(212,184,122,0.14); color: var(--gold);
+      font-size: 10px; letter-spacing: 1px; text-transform: uppercase; font-weight: 600;
+      border: 1px solid rgba(212,184,122,0.35); white-space: nowrap;
+    }
+    .access-pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--gold); }
+    .access-summary {
+      padding: 12px 14px; border-radius: 8px;
+      background: rgba(5,20,40,0.6); border: 1px solid var(--line);
+      color: var(--text); font-size: 13px; line-height: 1.5; min-height: 44px;
+    }
+    .access-caps { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 6px; }
+    .access-caps li {
+      font-size: 12px; color: var(--muted); line-height: 1.5;
+      padding-left: 18px; position: relative;
+    }
+    .access-caps li::before {
+      content: '✓'; position: absolute; left: 0; top: 0;
+      color: var(--gold); font-weight: 700; font-size: 11px;
+    }
+    .access-caps li:empty { display: none; }
+
     .toast {
       position: fixed; bottom: 30px; left: 50%;
       transform: translateX(-50%) translateY(120%);
@@ -773,6 +807,36 @@
           <div class="field"><label data-i18n="fBdayDay">日</label><input id="m-bdayDay" type="number" min="1" max="31" placeholder="15" /></div>
         </div>
         <div class="field"><label data-i18n="fPhoto">写真パス</label><input id="m-photo" type="text" placeholder="team/yuta-nagatoshi.png または https://..." /></div>
+
+        <div class="access-block" id="accessBlock">
+          <div class="access-head">
+            <div>
+              <div class="access-title" data-i18n="fAccess">アクセス権限</div>
+              <div class="access-sub" data-i18n="fAccessSub">このメンバーがポータルでできる操作の範囲を選びます。</div>
+            </div>
+            <span class="access-pill" id="accessLinkBadge" hidden></span>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label data-i18n="fAccessRole">役割（アクセス）</label>
+              <select id="m-accessRole">
+                <option value="">— なし / No portal access —</option>
+                <option value="ceo">CEO — 全権限</option>
+                <option value="md">Managing Director — 運用全般</option>
+                <option value="board">Board — 閲覧中心</option>
+                <option value="agent">Agent — 営業ツール</option>
+                <option value="team">Team — 共通ツール</option>
+                <option value="back_office">Back Office — 内部処理</option>
+              </select>
+            </div>
+            <div class="field">
+              <label data-i18n="fAccessSummary">この権限の概要</label>
+              <div class="access-summary" id="accessSummary">—</div>
+            </div>
+          </div>
+          <ul class="access-caps" id="accessCaps"></ul>
+        </div>
+
         <div class="modal-actions">
           <button type="submit" class="save" data-i18n="save">保存</button>
           <button type="button" class="cancel" onclick="closeModal()" data-i18n="cancel">キャンセル</button>
@@ -785,9 +849,9 @@
   <div class="toast" id="toast"></div>
 
   <script type="module">
-    import { auth, db, isAdmin } from './firebase-init.js';
+    import { auth, db, isAdmin, ROLE_CAPABILITIES, roleSummary, roleCapabilities, isValidRole } from './firebase-init.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-    import { doc, getDoc, setDoc, serverTimestamp, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    import { doc, getDoc, setDoc, updateDoc, serverTimestamp, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
     // ============ TEAM DATA ============
     // To add a member: drop their photo at team/<filename>.png and append a record to the matching array.
@@ -1419,9 +1483,11 @@
     };
 
     window.openMemberEditor = function(section, index) {
-      const m = (TEAM[section] || [])[index];
-      if (!m) return;
-      editingState = { section, index };
+      const raw = (TEAM[section] || [])[index];
+      if (!raw) return;
+      // Surface live-merged uid/email/phone so admins see what's about to be saved.
+      const m = withAgentLink(raw);
+      editingState = { section, index, linkedAgent: findAgentForMember(raw) };
       document.getElementById('m-name').value = m.name || '';
       document.getElementById('m-nameJa').value = m.nameJa || '';
       document.getElementById('m-role').value = m.role || '';
@@ -1433,18 +1499,55 @@
       document.getElementById('m-bdayMonth').value = m.bdayMonth || '';
       document.getElementById('m-bdayDay').value = m.bdayDay || '';
       document.getElementById('m-photo').value = m.photo || '';
+      // Pre-fill access role: prefer the linked agent's saved role, else stored team accessRole.
+      const linked = editingState.linkedAgent;
+      const accessRole = (linked && linked.role) || raw.accessRole || '';
+      document.getElementById('m-accessRole').value = isValidRole(accessRole) ? accessRole : '';
+      updateAccessPreview();
+      const badge = document.getElementById('accessLinkBadge');
+      if (linked) {
+        badge.hidden = false;
+        badge.textContent = currentLang === 'ja'
+          ? `登録済 · ${linked.email || linked.phone || ''}`
+          : `Linked · ${linked.email || linked.phone || ''}`;
+      } else {
+        badge.hidden = true;
+      }
       document.getElementById('deleteBtn').style.display = '';
       document.getElementById('modalTitle').textContent = currentLang === 'ja' ? 'メンバー編集' : 'Edit member';
       document.getElementById('modalBd').classList.add('show');
     };
     window.openMemberAdd = function(section) {
-      editingState = { section, index: -1 };
+      editingState = { section, index: -1, linkedAgent: null };
       ['m-name','m-nameJa','m-role','m-roleJa','m-phone','m-phoneDisp','m-email','m-photo'].forEach(id => document.getElementById(id).value = '');
       document.getElementById('m-section').value = section;
+      document.getElementById('m-accessRole').value = '';
+      document.getElementById('accessLinkBadge').hidden = true;
+      updateAccessPreview();
       document.getElementById('deleteBtn').style.display = 'none';
       document.getElementById('modalTitle').textContent = currentLang === 'ja' ? 'メンバー追加' : 'Add member';
       document.getElementById('modalBd').classList.add('show');
     };
+
+    function updateAccessPreview() {
+      const sel = document.getElementById('m-accessRole');
+      const role = sel ? sel.value : '';
+      const summaryEl = document.getElementById('accessSummary');
+      const capsEl = document.getElementById('accessCaps');
+      if (!role) {
+        summaryEl.textContent = currentLang === 'ja'
+          ? 'ポータルにログインできません。'
+          : 'No login access to the portal.';
+        capsEl.innerHTML = '';
+        return;
+      }
+      summaryEl.textContent = roleSummary(role, currentLang) || '—';
+      capsEl.innerHTML = roleCapabilities(role)
+        .map(c => `<li>${c}</li>`).join('');
+    }
+    document.addEventListener('change', (e) => {
+      if (e.target && e.target.id === 'm-accessRole') updateAccessPreview();
+    });
     window.closeModal = function() {
       document.getElementById('modalBd').classList.remove('show');
       editingState = null;
@@ -1453,6 +1556,7 @@
       if (!editingState) return;
       const bm = parseInt(document.getElementById('m-bdayMonth').value, 10);
       const bd = parseInt(document.getElementById('m-bdayDay').value, 10);
+      const accessRole = document.getElementById('m-accessRole').value.trim();
       const m = {
         name: document.getElementById('m-name').value.trim(),
         nameJa: document.getElementById('m-nameJa').value.trim(),
@@ -1465,6 +1569,7 @@
         bdayDay:   Number.isInteger(bd) && bd >= 1 && bd <= 31 ? bd : null,
         photo: document.getElementById('m-photo').value.trim()
       };
+      if (accessRole) m.accessRole = accessRole;
       if (!m.name) { showToast(currentLang === 'ja' ? '名前は必須です' : 'Name is required'); return; }
       const newSection = document.getElementById('m-section').value;
       if (editingState.index >= 0) {
@@ -1472,7 +1577,30 @@
       }
       if (!TEAM[newSection]) TEAM[newSection] = [];
       TEAM[newSection].push(m);
+
+      // If this member is linked to a registered agent and admin set an access role,
+      // write the role onto agents/{uid} so it actually gates portal features.
+      const linked = editingState.linkedAgent;
+      let agentRoleWritten = false;
+      if (linked && linked.id && accessRole && isValidRole(accessRole) && linked.role !== accessRole) {
+        try {
+          await updateDoc(doc(db, 'agents', linked.id), { role: accessRole });
+          agentRoleWritten = true;
+        } catch (e) {
+          console.error('agent role update failed', e);
+          showToast((currentLang === 'ja' ? '権限の保存に失敗: ' : 'Role save failed: ') + (e.message || e.code || 'unknown'));
+          return;
+        }
+      }
+
       await saveTeamConfig();
+      if (agentRoleWritten) {
+        showToast(currentLang === 'ja'
+          ? `✓ ${m.name} に「${accessRole}」権限を付与`
+          : `✓ ${m.name} now has ${accessRole} access`);
+        // Refresh local agents cache so subsequent edits see the new role.
+        await loadAgentsDirectory();
+      }
       closeModal();
       renderChart(); renderAside();
     };
