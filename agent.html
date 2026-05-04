@@ -1898,25 +1898,25 @@
     document.querySelectorAll('.lang-toggle button').forEach(b => b.addEventListener('click', () => setLang(b.dataset.lang)));
 
     // Theme switcher — saved in localStorage. Two themes:
-    // "manor"  = current dark navy + gold luxury (default)
-    // "atrium" = light Tabela-inspired modern dashboard (coming soon — toast for now)
-    const THEMES = ['manor', 'atrium'];
-    const THEME_LABELS = { manor: 'Manor', atrium: 'Atrium' };
-    let CURRENT_THEME = 'manor';
+    // "atrium" = current dark navy + gold luxury (default, active)
+    // "manor"  = light Tabela-inspired modern dashboard (queued — toast for now)
+    const THEMES = ['atrium', 'manor'];
+    const THEME_LABELS = { atrium: 'Atrium', manor: 'Manor' };
+    let CURRENT_THEME = 'atrium';
     function applyTheme(name) {
       CURRENT_THEME = name;
       document.body.setAttribute('data-theme', name);
       const lbl = document.getElementById('themeLabel');
-      if (lbl) lbl.textContent = THEME_LABELS[name] || 'Manor';
+      if (lbl) lbl.textContent = THEME_LABELS[name] || 'Atrium';
       try { localStorage.setItem('theme', name); } catch {}
     }
     window.cycleTheme = function() {
       const idx = THEMES.indexOf(CURRENT_THEME);
       const next = THEMES[(idx + 1) % THEMES.length];
-      if (next === 'atrium') {
-        // Atrium light theme is queued — show a teaser toast and stay on Manor.
+      if (next === 'manor') {
+        // Manor light theme is queued — show a teaser toast and stay on Atrium.
         const t = document.createElement('div');
-        t.textContent = '✦ Atrium (light) theme — coming soon. Manor stays active.';
+        t.textContent = '✦ Manor (light) theme — coming soon. Atrium stays active.';
         t.style.cssText = 'position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:rgba(16,42,79,.95);border:1px solid var(--gold);color:var(--cream);padding:14px 22px;border-radius:10px;font-size:13px;backdrop-filter:blur(10px);z-index:300;font-family:Inter,sans-serif;letter-spacing:0.3px;';
         document.body.appendChild(t);
         setTimeout(() => t.remove(), 2800);
@@ -1926,7 +1926,9 @@
     };
     try {
       const saved = localStorage.getItem('theme');
-      if (saved && THEMES.includes(saved)) applyTheme(saved);
+      // Old value migration: previously the dark theme was stored as "manor".
+      const migrated = saved === 'manor' ? 'atrium' : saved;
+      if (migrated && THEMES.includes(migrated)) applyTheme(migrated);
     } catch {}
 
     // ----- Onboarding wizard -----
