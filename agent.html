@@ -679,6 +679,23 @@
     }
     .tile:hover { transform: translateY(-3px); border-color: rgba(212,184,122,0.45); box-shadow: 0 22px 50px -22px rgba(0,0,0,.5); }
     .tile:hover::after { opacity: 1; }
+    /* Subtle gold arrow appearing top-right on hover, replaces the lost status row. */
+    .tile-hover-arrow {
+      position: absolute;
+      top: 18px; right: 14px;
+      width: 22px; height: 22px;
+      display: grid; place-items: center;
+      color: var(--gold);
+      opacity: 0;
+      transform: translateX(-6px);
+      transition: opacity .25s, transform .25s;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .tile-hover-arrow svg { width: 14px; height: 14px; }
+    .tile:not(.disabled):hover .tile-hover-arrow { opacity: 1; transform: translateX(0); }
+    /* Hide arrow when the corner badge occupies the same spot, so we don't double-stack. */
+    .tile.has-corner-badge .tile-hover-arrow { display: none; }
     .tile.active {
       background: linear-gradient(180deg, rgba(212,184,122,0.12), rgba(212,184,122,0.04));
       border-color: rgba(212,184,122,0.5);
@@ -1508,9 +1525,10 @@
         //   - otherwise nothing (active tools speak for themselves)
         const badgeKey = t.action === 'soon' ? 'soon' : (t.badge || '');
         const art = TILE_ART[t.key] || '';
-        return `<a class="tile ${dis} ${i === 0 ? 'active' : ''}" data-key="${t.key}" href="#">
+        return `<a class="tile ${dis} ${i === 0 ? 'active' : ''} ${badgeKey ? 'has-corner-badge' : ''}" data-key="${t.key}" href="#">
           ${art ? `<div class="tile-art">${art}</div>` : ''}
           ${badgeKey ? `<span class="tile-corner-badge ${badgeKey}">${lang[badgeKey] || badgeKey.toUpperCase()}</span>` : ''}
+          <span class="tile-hover-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></span>
           <div class="tile-icon-wrap">${t.icon}</div>
           <h3>${label}</h3>
         </a>`;
