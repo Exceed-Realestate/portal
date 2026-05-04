@@ -673,22 +673,22 @@ input, select, textarea { min-width: 0; max-width: 100%; }
 /* =====================================================================
    MANOR THEME — daytime version of the whole portal.
    Cream / ivory background, deep-navy text, gold accents preserved.
-   Activated via body[data-theme="manor"]. Atrium = default dark.
+   Activated via [data-theme="manor"]. Atrium = default dark.
    This block is shared across every page that links liquid.css.
    ===================================================================== */
 
 /* Body backdrop & ambient layers */
-body[data-theme="manor"] {
+[data-theme="manor"] {
   background:
     radial-gradient(1100px 600px at 80% -10%, rgba(212,184,122,0.16), transparent 60%),
     radial-gradient(900px 700px at -10% 110%, rgba(247,239,219,0.7), transparent 60%),
     #f6f0e2 !important;
   color: #1a2640 !important;
 }
-body[data-theme="manor"] .bg-skyline {
+[data-theme="manor"] .bg-skyline {
   filter: blur(40px) brightness(1.5) saturate(0.4) opacity(0.18) !important;
 }
-body[data-theme="manor"] .bg-overlay {
+[data-theme="manor"] .bg-overlay {
   background:
     radial-gradient(80% 50% at 50% 30%, transparent 0%, rgba(247,239,219,0.55) 100%),
     linear-gradient(180deg, rgba(247,239,219,0.55) 0%, rgba(247,239,219,0.30) 35%, rgba(247,239,219,0.75) 100%) !important;
@@ -696,244 +696,244 @@ body[data-theme="manor"] .bg-overlay {
 body.dashboard-bg[data-theme="manor"] .bg-skyline,
 body.dashboard-bg[data-theme="manor"] .bg-overlay { /* same as above, override the .dashboard-bg variant */
 }
-body[data-theme="manor"] .ambient,
-body[data-theme="manor"] .scene-clouds,
-body[data-theme="manor"] .scene-overlay { display: none; }
-body[data-theme="manor"] .scene-bg {
+[data-theme="manor"] .ambient,
+[data-theme="manor"] .scene-clouds,
+[data-theme="manor"] .scene-overlay { display: none; }
+[data-theme="manor"] .scene-bg {
   background: linear-gradient(180deg, #faf6ec 0%, #f6f0e2 60%, #ede5cc 100%) !important;
 }
-body[data-theme="manor"] .scene-plane { opacity: 0.18; filter: drop-shadow(0 8px 14px rgba(0,0,0,0.15)); }
+[data-theme="manor"] .scene-plane { opacity: 0.18; filter: drop-shadow(0 8px 14px rgba(0,0,0,0.15)); }
 
 /* Topbar variants — the !important on liquid.css's .topbar wins, so we reuse it */
-body[data-theme="manor"] .topbar {
+[data-theme="manor"] .topbar {
   background: rgba(255,253,247,0.78) !important;
   border-bottom: 1px solid rgba(0,0,0,0.08) !important;
   box-shadow: 0 1px 0 rgba(255,255,255,0.6), 0 4px 18px rgba(0,0,0,0.04) !important;
   color: #1a2640;
 }
-body[data-theme="manor"] .brand-name,
-body[data-theme="manor"] .brand-name span,
-body[data-theme="manor"] .brand-name small { color: #1a2640 !important; }
-body[data-theme="manor"] .brand-name span { color: #b89757 !important; }
-body[data-theme="manor"] .topbar-meta,
-body[data-theme="manor"] .topbar-right,
-body[data-theme="manor"] .topbar-right strong { color: #1a2640 !important; }
-body[data-theme="manor"] .topbar-meta strong { color: #b89757 !important; }
+[data-theme="manor"] .brand-name,
+[data-theme="manor"] .brand-name span,
+[data-theme="manor"] .brand-name small { color: #1a2640 !important; }
+[data-theme="manor"] .brand-name span { color: #b89757 !important; }
+[data-theme="manor"] .topbar-meta,
+[data-theme="manor"] .topbar-right,
+[data-theme="manor"] .topbar-right strong { color: #1a2640 !important; }
+[data-theme="manor"] .topbar-meta strong { color: #b89757 !important; }
 
 /* Lang toggle — invert pill */
-body[data-theme="manor"] .lang-toggle {
+[data-theme="manor"] .lang-toggle {
   background: rgba(255,255,255,0.55) !important;
   border-color: rgba(0,0,0,0.08) !important;
   box-shadow: 0 1px 0 rgba(255,255,255,0.7), 0 4px 12px rgba(20,30,60,0.06) !important;
 }
-body[data-theme="manor"] .lang-toggle button { color: #5a6885 !important; }
-body[data-theme="manor"] .lang-toggle button.active { color: #f6f0e2 !important; }
-body[data-theme="manor"] .lang-toggle .pill {
+[data-theme="manor"] .lang-toggle button { color: #5a6885 !important; }
+[data-theme="manor"] .lang-toggle button.active { color: #f6f0e2 !important; }
+[data-theme="manor"] .lang-toggle .pill {
   background: linear-gradient(180deg, #1f2c4a, #142039) !important;
   box-shadow: 0 4px 10px rgba(20,30,60,0.25) !important;
 }
 
 /* Generic buttons */
-body[data-theme="manor"] .btn,
-body[data-theme="manor"] .icon-btn,
-body[data-theme="manor"] .theme-btn {
+[data-theme="manor"] .btn,
+[data-theme="manor"] .icon-btn,
+[data-theme="manor"] .theme-btn {
   background: rgba(255,255,255,0.65) !important;
   border-color: rgba(0,0,0,0.08) !important;
   color: #1a2640 !important;
 }
-body[data-theme="manor"] .btn:hover,
-body[data-theme="manor"] .icon-btn:hover,
-body[data-theme="manor"] .theme-btn:hover {
+[data-theme="manor"] .btn:hover,
+[data-theme="manor"] .icon-btn:hover,
+[data-theme="manor"] .theme-btn:hover {
   background: rgba(255,255,255,0.85) !important;
   border-color: rgba(212,184,122,0.5) !important;
   color: #b89757 !important;
 }
-body[data-theme="manor"] .theme-btn { color: #b89757 !important; border-color: rgba(212,184,122,0.4) !important; }
-body[data-theme="manor"] .btn-primary {
+[data-theme="manor"] .theme-btn { color: #b89757 !important; border-color: rgba(212,184,122,0.4) !important; }
+[data-theme="manor"] .btn-primary {
   background: linear-gradient(135deg, #ffe9b0, #d4b87a) !important;
   color: #1a2640 !important;
   box-shadow: 0 8px 22px -8px rgba(184,151,87,0.45) !important;
 }
 
 /* Rail (agent.html sidebar) */
-body[data-theme="manor"] .rail {
+[data-theme="manor"] .rail {
   background: rgba(255,253,247,0.85) !important;
   border-right: 1px solid rgba(0,0,0,0.06) !important;
 }
-body[data-theme="manor"] .rail-logo { color: #1a2640 !important; }
-body[data-theme="manor"] .rail-icon { color: #5a6885 !important; }
-body[data-theme="manor"] .rail-icon:hover { color: #1a2640 !important; background: rgba(0,0,0,0.04) !important; }
-body[data-theme="manor"] .rail-icon.active { color: #b89757 !important; background: rgba(212,184,122,0.14) !important; }
+[data-theme="manor"] .rail-logo { color: #1a2640 !important; }
+[data-theme="manor"] .rail-icon { color: #5a6885 !important; }
+[data-theme="manor"] .rail-icon:hover { color: #1a2640 !important; background: rgba(0,0,0,0.04) !important; }
+[data-theme="manor"] .rail-icon.active { color: #b89757 !important; background: rgba(212,184,122,0.14) !important; }
 
-body[data-theme="manor"] .search,
-body[data-theme="manor"] input,
-body[data-theme="manor"] select,
-body[data-theme="manor"] textarea {
+[data-theme="manor"] .search,
+[data-theme="manor"] input,
+[data-theme="manor"] select,
+[data-theme="manor"] textarea {
   background: rgba(255,255,255,0.7) !important;
   border-color: rgba(0,0,0,0.10) !important;
   color: #1a2640 !important;
 }
-body[data-theme="manor"] input::placeholder,
-body[data-theme="manor"] textarea::placeholder,
-body[data-theme="manor"] .search input::placeholder { color: #98a3bb !important; }
-body[data-theme="manor"] input:focus,
-body[data-theme="manor"] select:focus,
-body[data-theme="manor"] textarea:focus,
-body[data-theme="manor"] .search:focus-within {
+[data-theme="manor"] input::placeholder,
+[data-theme="manor"] textarea::placeholder,
+[data-theme="manor"] .search input::placeholder { color: #98a3bb !important; }
+[data-theme="manor"] input:focus,
+[data-theme="manor"] select:focus,
+[data-theme="manor"] textarea:focus,
+[data-theme="manor"] .search:focus-within {
   border-color: #b89757 !important;
   background: rgba(255,255,255,0.95) !important;
   box-shadow: 0 0 0 3px rgba(212,184,122,0.18);
 }
 
 /* User chip (dashboard) */
-body[data-theme="manor"] .user-chip {
+[data-theme="manor"] .user-chip {
   background: rgba(255,255,255,0.65) !important;
   border-color: rgba(0,0,0,0.08) !important;
 }
-body[data-theme="manor"] .user-chip-name { color: #1a2640 !important; }
+[data-theme="manor"] .user-chip-name { color: #1a2640 !important; }
 
 /* Page heads (most pages share this pattern) */
-body[data-theme="manor"] .page-head h1,
-body[data-theme="manor"] .left-col h1,
-body[data-theme="manor"] .left-col h1 #welcomeName { color: #1a2640 !important; }
-body[data-theme="manor"] .page-head .eyebrow,
-body[data-theme="manor"] .left-col .page-sub,
-body[data-theme="manor"] .center-col-head h2 { color: #b89757 !important; }
-body[data-theme="manor"] .page-head .lede,
-body[data-theme="manor"] .page-head p { color: #5a6885 !important; }
+[data-theme="manor"] .page-head h1,
+[data-theme="manor"] .left-col h1,
+[data-theme="manor"] .left-col h1 #welcomeName { color: #1a2640 !important; }
+[data-theme="manor"] .page-head .eyebrow,
+[data-theme="manor"] .left-col .page-sub,
+[data-theme="manor"] .center-col-head h2 { color: #b89757 !important; }
+[data-theme="manor"] .page-head .lede,
+[data-theme="manor"] .page-head p { color: #5a6885 !important; }
 
 /* Generic cards & panels (used across attendance, travel, deal-alert, etc.) */
-body[data-theme="manor"] .card,
-body[data-theme="manor"] .panel,
-body[data-theme="manor"] .feature,
-body[data-theme="manor"] .table-wrap,
-body[data-theme="manor"] .schedule-card,
-body[data-theme="manor"] .birthday-card,
-body[data-theme="manor"] .recent-deals-card,
-body[data-theme="manor"] .right-col,
-body[data-theme="manor"] .stat-card,
-body[data-theme="manor"] .section,
-body[data-theme="manor"] .hero-left {
+[data-theme="manor"] .card,
+[data-theme="manor"] .panel,
+[data-theme="manor"] .feature,
+[data-theme="manor"] .table-wrap,
+[data-theme="manor"] .schedule-card,
+[data-theme="manor"] .birthday-card,
+[data-theme="manor"] .recent-deals-card,
+[data-theme="manor"] .right-col,
+[data-theme="manor"] .stat-card,
+[data-theme="manor"] .section,
+[data-theme="manor"] .hero-left {
   background: rgba(255,253,247,0.88) !important;
   border-color: rgba(0,0,0,0.06) !important;
   box-shadow: 0 18px 40px -22px rgba(20,30,60,0.12);
 }
-body[data-theme="manor"] .panel h2,
-body[data-theme="manor"] .feature h2,
-body[data-theme="manor"] .section h2,
-body[data-theme="manor"] .right-col h3 { color: #1a2640 !important; }
-body[data-theme="manor"] .panel .sub,
-body[data-theme="manor"] .feature .sub,
-body[data-theme="manor"] .section .sub,
-body[data-theme="manor"] .right-col .panel-sub,
-body[data-theme="manor"] .info-label,
-body[data-theme="manor"] .schedule-eyebrow,
-body[data-theme="manor"] .bday-eyebrow,
-body[data-theme="manor"] .rd-eyebrow { color: #98a3bb !important; }
+[data-theme="manor"] .panel h2,
+[data-theme="manor"] .feature h2,
+[data-theme="manor"] .section h2,
+[data-theme="manor"] .right-col h3 { color: #1a2640 !important; }
+[data-theme="manor"] .panel .sub,
+[data-theme="manor"] .feature .sub,
+[data-theme="manor"] .section .sub,
+[data-theme="manor"] .right-col .panel-sub,
+[data-theme="manor"] .info-label,
+[data-theme="manor"] .schedule-eyebrow,
+[data-theme="manor"] .bday-eyebrow,
+[data-theme="manor"] .rd-eyebrow { color: #98a3bb !important; }
 
-body[data-theme="manor"] .schedule-empty,
-body[data-theme="manor"] .schedule-empty-title,
-body[data-theme="manor"] .schedule-empty p,
-body[data-theme="manor"] .traveling-empty,
-body[data-theme="manor"] .empty-list,
-body[data-theme="manor"] .empty { color: #5a6885 !important; }
+[data-theme="manor"] .schedule-empty,
+[data-theme="manor"] .schedule-empty-title,
+[data-theme="manor"] .schedule-empty p,
+[data-theme="manor"] .traveling-empty,
+[data-theme="manor"] .empty-list,
+[data-theme="manor"] .empty { color: #5a6885 !important; }
 
 /* Tiles (dashboard) */
-body[data-theme="manor"] .tile {
+[data-theme="manor"] .tile {
   background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(247,239,219,0.85)) !important;
   border-color: rgba(0,0,0,0.08) !important;
   color: #1a2640 !important;
   box-shadow: 0 10px 24px -16px rgba(20,30,60,0.18) !important;
 }
-body[data-theme="manor"] .tile h3 { color: #1a2640 !important; }
-body[data-theme="manor"] .tile-icon-wrap {
+[data-theme="manor"] .tile h3 { color: #1a2640 !important; }
+[data-theme="manor"] .tile-icon-wrap {
   background: linear-gradient(135deg, rgba(212,184,122,0.20), rgba(212,184,122,0.04)) !important;
   border-color: rgba(212,184,122,0.4) !important;
   color: #b89757 !important;
 }
-body[data-theme="manor"] .tile-art { color: #b89757 !important; opacity: 0.14 !important; }
-body[data-theme="manor"] .tile:hover { border-color: rgba(212,184,122,0.6) !important; box-shadow: 0 22px 40px -22px rgba(20,30,60,0.25) !important; }
-body[data-theme="manor"] .tile.active {
+[data-theme="manor"] .tile-art { color: #b89757 !important; opacity: 0.14 !important; }
+[data-theme="manor"] .tile:hover { border-color: rgba(212,184,122,0.6) !important; box-shadow: 0 22px 40px -22px rgba(20,30,60,0.25) !important; }
+[data-theme="manor"] .tile.active {
   background: linear-gradient(180deg, rgba(212,184,122,0.22), rgba(212,184,122,0.08)) !important;
   border-color: rgba(212,184,122,0.55) !important;
 }
-body[data-theme="manor"] .tile-corner-badge { backdrop-filter: blur(8px); }
-body[data-theme="manor"] .tile-corner-badge.admin { background: rgba(212,184,122,0.18) !important; color: #6b5520 !important; border-color: rgba(184,151,87,0.45) !important; }
-body[data-theme="manor"] .tile-corner-badge:not(.admin):not(.soon) { background: rgba(92,201,143,0.15) !important; color: #1f7a4a !important; border-color: rgba(92,201,143,0.4) !important; }
-body[data-theme="manor"] .tile-corner-badge.soon { background: rgba(0,0,0,0.04) !important; color: #6b7896 !important; border-color: rgba(0,0,0,0.12) !important; }
-body[data-theme="manor"] .tile-hover-arrow { color: #b89757 !important; }
+[data-theme="manor"] .tile-corner-badge { backdrop-filter: blur(8px); }
+[data-theme="manor"] .tile-corner-badge.admin { background: rgba(212,184,122,0.18) !important; color: #6b5520 !important; border-color: rgba(184,151,87,0.45) !important; }
+[data-theme="manor"] .tile-corner-badge:not(.admin):not(.soon) { background: rgba(92,201,143,0.15) !important; color: #1f7a4a !important; border-color: rgba(92,201,143,0.4) !important; }
+[data-theme="manor"] .tile-corner-badge.soon { background: rgba(0,0,0,0.04) !important; color: #6b7896 !important; border-color: rgba(0,0,0,0.12) !important; }
+[data-theme="manor"] .tile-hover-arrow { color: #b89757 !important; }
 
 /* TZ cards (dashboard right column) */
-body[data-theme="manor"] .tz-card {
+[data-theme="manor"] .tz-card {
   background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(247,239,219,0.65)) !important;
   border-color: rgba(0,0,0,0.07) !important;
 }
-body[data-theme="manor"] .tz-card .tz-city { color: #1a2640 !important; }
-body[data-theme="manor"] .tz-card .tz-tag { color: #98a3bb !important; }
-body[data-theme="manor"] .tz-card .tz-time { color: #b89757 !important; text-shadow: none !important; }
+[data-theme="manor"] .tz-card .tz-city { color: #1a2640 !important; }
+[data-theme="manor"] .tz-card .tz-tag { color: #98a3bb !important; }
+[data-theme="manor"] .tz-card .tz-time { color: #b89757 !important; text-shadow: none !important; }
 
 /* Tables (admin pages) */
-body[data-theme="manor"] th { color: #98a3bb !important; border-bottom-color: rgba(0,0,0,0.08) !important; }
-body[data-theme="manor"] td { color: #1a2640 !important; border-bottom-color: rgba(0,0,0,0.06) !important; }
-body[data-theme="manor"] tbody tr:hover { background: rgba(212,184,122,0.06) !important; }
-body[data-theme="manor"] thead { background: rgba(0,0,0,0.02) !important; }
-body[data-theme="manor"] .name { color: #1a2640 !important; }
-body[data-theme="manor"] .email { color: #5a6885 !important; }
+[data-theme="manor"] th { color: #98a3bb !important; border-bottom-color: rgba(0,0,0,0.08) !important; }
+[data-theme="manor"] td { color: #1a2640 !important; border-bottom-color: rgba(0,0,0,0.06) !important; }
+[data-theme="manor"] tbody tr:hover { background: rgba(212,184,122,0.06) !important; }
+[data-theme="manor"] thead { background: rgba(0,0,0,0.02) !important; }
+[data-theme="manor"] .name { color: #1a2640 !important; }
+[data-theme="manor"] .email { color: #5a6885 !important; }
 
 /* Team tree node text */
-body[data-theme="manor"] .node h3,
-body[data-theme="manor"] .node h4 { color: #1a2640 !important; }
-body[data-theme="manor"] .node .name-ja { color: #5a6885 !important; }
-body[data-theme="manor"] .node .role { color: #b89757 !important; }
-body[data-theme="manor"] .node.company { background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(247,239,219,0.75)) !important; }
-body[data-theme="manor"] .node.board-band { background: linear-gradient(135deg, rgba(212,184,122,0.16), rgba(212,184,122,0.04)) !important; }
-body[data-theme="manor"] .node.division .div-icon {
+[data-theme="manor"] .node h3,
+[data-theme="manor"] .node h4 { color: #1a2640 !important; }
+[data-theme="manor"] .node .name-ja { color: #5a6885 !important; }
+[data-theme="manor"] .node .role { color: #b89757 !important; }
+[data-theme="manor"] .node.company { background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(247,239,219,0.75)) !important; }
+[data-theme="manor"] .node.board-band { background: linear-gradient(135deg, rgba(212,184,122,0.16), rgba(212,184,122,0.04)) !important; }
+[data-theme="manor"] .node.division .div-icon {
   background: rgba(212,184,122,0.18) !important;
   border-color: rgba(212,184,122,0.45) !important;
   color: #b89757 !important;
 }
-body[data-theme="manor"] .add-member-btn,
-body[data-theme="manor"] .board-add-btn {
+[data-theme="manor"] .add-member-btn,
+[data-theme="manor"] .board-add-btn {
   background: rgba(212,184,122,0.10) !important;
   color: #b89757 !important;
   border-color: rgba(212,184,122,0.4) !important;
 }
-body[data-theme="manor"] .admin-btn {
+[data-theme="manor"] .admin-btn {
   background: rgba(212,184,122,0.10) !important;
   color: #b89757 !important;
   border-color: rgba(212,184,122,0.4) !important;
 }
 
 /* Status pills (admin tables) */
-body[data-theme="manor"] .status.active   { background: rgba(92,201,143,0.14) !important; color: #1f7a4a !important; border-color: rgba(92,201,143,0.4) !important; }
-body[data-theme="manor"] .status.pending  { background: rgba(255,184,74,0.14) !important; color: #8a5a14 !important; border-color: rgba(255,184,74,0.4) !important; }
-body[data-theme="manor"] .status.suspended{ background: rgba(255,107,107,0.14) !important; color: #a32424 !important; border-color: rgba(255,107,107,0.4) !important; }
+[data-theme="manor"] .status.active   { background: rgba(92,201,143,0.14) !important; color: #1f7a4a !important; border-color: rgba(92,201,143,0.4) !important; }
+[data-theme="manor"] .status.pending  { background: rgba(255,184,74,0.14) !important; color: #8a5a14 !important; border-color: rgba(255,184,74,0.4) !important; }
+[data-theme="manor"] .status.suspended{ background: rgba(255,107,107,0.14) !important; color: #a32424 !important; border-color: rgba(255,107,107,0.4) !important; }
 
 /* Modals + toast */
-body[data-theme="manor"] .modal,
-body[data-theme="manor"] .modal-bd .modal {
+[data-theme="manor"] .modal,
+[data-theme="manor"] .modal-bd .modal {
   background: linear-gradient(180deg, #ffffff, #f6f0e2) !important;
   border-color: rgba(0,0,0,0.10) !important;
   color: #1a2640;
 }
-body[data-theme="manor"] .modal h3 { color: #1a2640 !important; }
-body[data-theme="manor"] .modal-sub { color: #5a6885 !important; }
-body[data-theme="manor"] .toast {
+[data-theme="manor"] .modal h3 { color: #1a2640 !important; }
+[data-theme="manor"] .modal-sub { color: #5a6885 !important; }
+[data-theme="manor"] .toast {
   background: rgba(255,253,247,0.95) !important;
   border-color: rgba(184,151,87,0.5) !important;
   color: #1a2640 !important;
 }
 
 /* Iframe view bar (when launching IRR Sim, etc.) */
-body[data-theme="manor"] .iframe-bar {
+[data-theme="manor"] .iframe-bar {
   background: rgba(255,253,247,0.92) !important;
   border-bottom: 1px solid rgba(0,0,0,0.08) !important;
 }
-body[data-theme="manor"] .iframe-title { color: #1a2640 !important; }
+[data-theme="manor"] .iframe-title { color: #1a2640 !important; }
 
 /* Adjust the global gold/cream tokens so any consumer that uses var(--gold)
    or var(--cream) gets light-theme-appropriate values. */
-body[data-theme="manor"] {
+[data-theme="manor"] {
   --gold: #b89757;
   --cream: #1a2640;
   --text: #1a2640;
