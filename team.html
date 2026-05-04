@@ -270,13 +270,18 @@
     }
     .avatar-inner img {
       max-width: 100%;
-      max-height: 100%;
+      max-height: 88%;
       width: auto;
-      height: 100%;
+      height: 88%;
       object-fit: contain;
       object-position: bottom center;
       display: block;
     }
+    /* Photos anchor to TOP so any extra space lives at the bottom of the
+       avatar — guarantees clearance to the name regardless of how tightly
+       each source PNG is cropped. */
+    .avatar.has-photo .avatar-inner { place-items: start center; }
+    .avatar.has-photo .avatar-inner img { object-position: top center; }
     /* Initials fallback when no photo — small clean circle */
     .avatar-inner > span {
       display: grid; place-items: center;
@@ -637,6 +642,10 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"/></svg>
       <span data-i18n="autoLink">自動リンク</span>
     </button>
+    <button class="admin-btn" id="applyRestructureBtn" onclick="applyRestructure()" title="Apply the latest org restructure: move members into Japan Sales / Dubai Sales / Dubai Office / Japan Office">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>
+      <span data-i18n="applyRestructure">配置を反映</span>
+    </button>
   </div>
 
   <div class="chart-scroll">
@@ -761,9 +770,11 @@
           phone: '', phoneDisplay: '', email: '', photo: 'team/shoya-hosoyama.png' },
         { name: 'ASUKA ITO',       nameJa: '伊藤 明日香', role: 'Japan Sales',              roleJa: '日本営業',
           phone: '', phoneDisplay: '', email: '', photo: '' },
-        { name: 'HIRA',            nameJa: '',           role: 'Japan Sales',              roleJa: '日本営業',
-          phone: '', phoneDisplay: '', email: '', photo: '' },
         { name: 'KATSUYA',         nameJa: '',           role: 'Japan Sales',              roleJa: '日本営業',
+          phone: '', phoneDisplay: '', email: '', photo: '' },
+        { name: 'HIROSHI WATANABE', nameJa: '渡辺 浩',    role: 'Japan Sales',              roleJa: '日本営業',
+          phone: '', phoneDisplay: '', email: '', photo: '' },
+        { name: 'YOSHIMI SUGIURA',  nameJa: '杉浦 ヨシミ', role: 'Japan Sales',              roleJa: '日本営業',
           phone: '', phoneDisplay: '', email: '', photo: '' }
       ],
       'dubai-sales': [
@@ -772,10 +783,22 @@
         { name: 'ALINA',           nameJa: '',           role: 'Dubai Sales',              roleJa: 'ドバイ営業',
           phone: '+971568880055',  phoneDisplay: '+971 56 888 0055', email: '', photo: '' },
         { name: 'KATRIN ONELL',    nameJa: '',           role: 'Dubai Sales',              roleJa: 'ドバイ営業',
-          phone: '+971558664700',  phoneDisplay: '+971 55 866 4700', email: '', photo: '' }
+          phone: '+971558664700',  phoneDisplay: '+971 55 866 4700', email: '', photo: '' },
+        { name: 'HAYA',            nameJa: '',           role: 'Dubai Sales',              roleJa: 'ドバイ営業',
+          phone: '', phoneDisplay: '', email: '', photo: '' }
       ],
-      'dubai-office': [],
-      'japan-office': [],
+      'dubai-office': [
+        { name: 'HIRA',            nameJa: '',           role: 'Dubai Office',             roleJa: 'ドバイオフィス',
+          phone: '', phoneDisplay: '', email: '', photo: '' },
+        { name: 'MOUAD',           nameJa: '',           role: 'Dubai Office · Admin',     roleJa: 'ドバイオフィス・管理者',
+          phone: '', phoneDisplay: '', email: '', photo: '' }
+      ],
+      'japan-office': [
+        { name: 'YUKA',            nameJa: '',           role: 'Japan Office',             roleJa: '日本オフィス',
+          phone: '', phoneDisplay: '', email: '', photo: '' },
+        { name: 'YUPON',           nameJa: '',           role: 'Japan Office',             roleJa: '日本オフィス',
+          phone: '+971585608166',  phoneDisplay: '+971 58 560 8166', email: '', photo: '' }
+      ],
       lombok: [
         { name: 'YUTA NAGATOSHI',  nameJa: '長利 ユウタ', role: 'Lombok Project', roleJa: 'ロンボクプロジェクト',
           phone: '+817084548230', phoneDisplay: '+81 70 8454 8230', email: '', photo: 'team/yuta-nagatoshi.png' }
@@ -801,16 +824,10 @@
       // Admin moves them into the proper division using the Edit Tree button.
       roster: [
         { name: 'HAMZA',            nameJa: '',          role: 'Admin · Exceed',     roleJa: 'Admin · Exceed', phone: '',          phoneDisplay: '',                  email: '', photo: '' },
-        { name: 'HAYA',             nameJa: '',          role: 'Pending assignment', roleJa: '配属待ち', phone: '',               phoneDisplay: '',                  email: '', photo: '' },
-        { name: 'HIROSHI WATANABE', nameJa: '渡辺 浩',    role: 'Pending assignment', roleJa: '配属待ち', phone: '',               phoneDisplay: '',                  email: '', photo: '' },
         { name: 'KUNIYASU TOIZUMI', nameJa: '戸泉 邦泰',   role: 'Pending assignment', roleJa: '配属待ち', phone: '+818066410007',  phoneDisplay: '+81 80 6641 0007', email: '', photo: '' },
         { name: 'LAITH',            nameJa: '',          role: 'Pending assignment', roleJa: '配属待ち', phone: '',               phoneDisplay: '',                  email: '', photo: '' },
         { name: 'LU',               nameJa: '',          role: 'Pending assignment', roleJa: '配属待ち', phone: '+971555328787',  phoneDisplay: '+971 55 532 8787', email: '', photo: '' },
-        { name: 'MOUAD',            nameJa: '',          role: 'Admin',              roleJa: '管理者',   phone: '',               phoneDisplay: '',                  email: '', photo: '' },
         { name: 'TATSUO',           nameJa: '',          role: 'Pending assignment', roleJa: '配属待ち', phone: '+819055481390',  phoneDisplay: '+81 90 5548 1390', email: '', photo: '' },
-        { name: 'YOSHIMI SUGIURA',  nameJa: '杉浦 ヨシミ', role: 'Pending assignment', roleJa: '配属待ち', phone: '',               phoneDisplay: '',                  email: '', photo: '' },
-        { name: 'YUKA',             nameJa: '',          role: 'Exceed Japan',       roleJa: 'Exceed Japan', phone: '',           phoneDisplay: '',                  email: '', photo: '' },
-        { name: 'YUPON',            nameJa: '',          role: 'Pending assignment', roleJa: '配属待ち', phone: '+971585608166',  phoneDisplay: '+971 58 560 8166', email: '', photo: '' },
         { name: 'MANSOOR',          nameJa: '',          role: 'Driver',             roleJa: 'ドライバー', phone: '+971566118712',  phoneDisplay: '+971 56 611 8712', email: '', photo: '' }
       ]
     };
@@ -867,6 +884,7 @@
         empty: 'メンバー未登録',
         editTree: 'ツリーを編集',
         autoLink: '自動リンク',
+        applyRestructure: '配置を反映',
         addHint: '<strong>メンバー追加方法:</strong> 管理者でログインすると右上に「ツリーを編集」ボタンが表示されます。写真は <code>team/&lt;ファイル名&gt;.png</code> にアップロード後、編集画面でファイル名を指定してください。'
       },
       en: {
@@ -882,6 +900,7 @@
         empty: 'No members yet',
         editTree: 'Edit Tree',
         autoLink: 'Auto-link',
+        applyRestructure: 'Apply structure',
         addHint: '<strong>How to add a member:</strong> sign in as admin to see the "Edit Tree" button. Photos go in <code>team/&lt;filename&gt;.png</code>; reference the path in the editor.'
       }
     };
@@ -1202,6 +1221,47 @@
       if (!merged.uid && a.uid) merged.uid = a.uid;
       return merged;
     }
+
+    // One-shot org restructure (May 2026). Click-to-apply via admin button —
+    // moves named members between sections without losing their existing
+    // phone/email/photo data, even if those were edited via Edit Tree.
+    const RESTRUCTURE_2026_05 = [
+      { match: 'HIROSHI WATANABE', target: 'japan-sales',  role: 'Japan Sales',           roleJa: '日本営業' },
+      { match: 'YOSHIMI SUGIURA',  target: 'japan-sales',  role: 'Japan Sales',           roleJa: '日本営業' },
+      { match: 'HAYA',             target: 'dubai-sales',  role: 'Dubai Sales',           roleJa: 'ドバイ営業' },
+      { match: 'HIRA',             target: 'dubai-office', role: 'Dubai Office',          roleJa: 'ドバイオフィス' },
+      { match: 'MOUAD',            target: 'dubai-office', role: 'Dubai Office · Admin', roleJa: 'ドバイオフィス・管理者' },
+      { match: 'YUKA',             target: 'japan-office', role: 'Japan Office',          roleJa: '日本オフィス' },
+      { match: 'YUPON',            target: 'japan-office', role: 'Japan Office',          roleJa: '日本オフィス' }
+    ];
+
+    window.applyRestructure = async function() {
+      let moved = 0;
+      RESTRUCTURE_2026_05.forEach(rule => {
+        const matchKey = nameKey(rule.match);
+        let foundSection = null, foundIdx = -1, member = null;
+        Object.keys(TEAM).forEach(section => {
+          if (!Array.isArray(TEAM[section])) return;
+          const idx = TEAM[section].findIndex(m => nameKey(m.name) === matchKey);
+          if (idx >= 0) { foundSection = section; foundIdx = idx; member = TEAM[section][idx]; }
+        });
+        if (!member) return;
+        if (foundSection === rule.target) return; // already in target
+        TEAM[foundSection].splice(foundIdx, 1);
+        member.role = rule.role;
+        member.roleJa = rule.roleJa;
+        if (!Array.isArray(TEAM[rule.target])) TEAM[rule.target] = [];
+        TEAM[rule.target].push(member);
+        moved++;
+      });
+      if (!moved) {
+        showToast(currentLang === 'ja' ? '再配置済みです' : 'Already in place');
+        return;
+      }
+      await saveTeamConfig();
+      showToast(currentLang === 'ja' ? `✓ ${moved}件を再配置しました` : `✓ Moved ${moved} member(s)`);
+      renderChart(); renderAside();
+    };
 
     // Admin action: persist auto-link results into teamConfig/main.
     window.runAutoLink = async function() {
