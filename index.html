@@ -670,49 +670,78 @@
       font-size: 11px;
     }
 
-    /* Rolling-logo login loader (tire-style) */
+    /* Rolling-logo login loader — transparent track, the logo rolls along
+       a thin gold guideline while a glow fills behind it. */
     .rolling-track {
       width: min(420px, calc(100% - 32px));
-      height: 76px;
-      background: #022c4f;
-      border: 1px solid rgba(255,255,255,0.10);
-      border-radius: 8px;
+      height: 72px;
+      background: transparent;
+      border: none;
+      border-radius: 0;
       position: relative;
-      overflow: hidden;
-      margin: 22px auto 6px;
+      overflow: visible;
+      margin: 28px auto 10px;
       display: none;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 8px 24px -8px rgba(0,0,0,.5);
     }
     .rolling-track.active { display: block; }
+    /* Faint baseline the logo "rolls" along */
     .rolling-track::before {
       content: '';
-      position: absolute; left: 0; right: 0; bottom: 0; height: 1px;
-      background: repeating-linear-gradient(90deg, rgba(212,184,122,0.5) 0 12px, transparent 12px 22px);
-      opacity: 0.7;
+      position: absolute;
+      left: 6px; right: 6px;
+      bottom: 8px;
+      height: 1px;
+      background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(212,184,122,0.12) 8%,
+        rgba(212,184,122,0.55) 50%,
+        rgba(212,184,122,0.12) 92%,
+        transparent 100%);
+    }
+    /* Filled progress that grows in sync with the rolling logo */
+    .rolling-track::after {
+      content: '';
+      position: absolute;
+      left: 6px;
+      bottom: 8px;
+      width: 0;
+      height: 1px;
+      background: linear-gradient(90deg, var(--cream), var(--gold));
+      box-shadow: 0 0 10px rgba(212,184,122,0.6);
+    }
+    .rolling-track.go::after {
+      animation: rollFill 1.8s cubic-bezier(.5,.05,.25,1) forwards;
     }
     .rolling-logo {
       width: 56px; height: 56px;
       position: absolute;
-      left: 0; top: 10px;
+      left: 0; top: 6px;
       border-radius: 50%;
       object-fit: cover;
-      box-shadow: 0 6px 14px -4px rgba(0,0,0,.6);
+      box-shadow: 0 8px 22px -8px rgba(0,0,0,.65), 0 0 0 1px rgba(212,184,122,0.35);
+    }
+    /* Soft gold glow that travels under the logo */
+    .rolling-logo::after {
+      /* (kept here in case glow becomes its own element later) */
     }
     .rolling-track.go .rolling-logo {
-      animation: roll 1.8s cubic-bezier(0.45, 0, 0.55, 1) forwards;
+      animation: roll 1.8s cubic-bezier(.5,.05,.25,1) forwards;
     }
     @keyframes roll {
-      to {
-        left: calc(100% - 56px);
-        transform: rotate(720deg);
-      }
+      from { left: 0; transform: rotate(0deg); }
+      to   { left: calc(100% - 56px); transform: rotate(720deg); }
+    }
+    @keyframes rollFill {
+      from { width: 0; }
+      to   { width: calc(100% - 12px); }
     }
     @media (prefers-reduced-motion: reduce) {
-      .rolling-track.go .rolling-logo {
+      .rolling-track.go .rolling-logo,
+      .rolling-track.go::after {
         animation: none;
-        left: calc(100% - 56px);
-        transition: none;
       }
+      .rolling-track.go .rolling-logo { left: calc(100% - 56px); }
+      .rolling-track.go::after { width: calc(100% - 12px); }
     }
 
     @media (max-width: 640px) {

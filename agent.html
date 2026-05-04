@@ -668,41 +668,41 @@
     .tile.disabled { opacity: 0.5; cursor: not-allowed; border-style: dashed; }
     .tile.disabled:hover { transform: none; box-shadow: none; }
     .tile-icon-wrap {
-      width: 48px; height: 48px;
+      width: 46px; height: 46px;
       border-radius: 12px;
-      background: linear-gradient(135deg, rgba(212,184,122,0.25), rgba(212,184,122,0.08));
-      border: 1px solid rgba(212,184,122,0.4);
+      background: linear-gradient(135deg, rgba(212,184,122,0.22), rgba(212,184,122,0.06));
+      border: 1px solid rgba(212,184,122,0.35);
       display: grid; place-items: center;
       color: var(--gold);
-      margin-bottom: 18px;
+      margin-bottom: 14px;
     }
     .tile-icon-wrap svg { width: 22px; height: 22px; }
     .tile.disabled .tile-icon-wrap { background: rgba(255,255,255,0.04); border-color: var(--line); color: var(--muted); }
     .tile h3 {
       font-family: 'Playfair Display', serif;
-      font-size: 18px;
+      font-size: 22px;
       font-weight: 600;
-      margin: 0 0 4px;
-      letter-spacing: 0.2px;
+      margin: 0;
+      letter-spacing: 0.1px;
+      line-height: 1.2;
       color: var(--cream);
     }
-    html[lang="ja"] .tile h3 { font-family: 'Noto Serif JP', serif; }
-    .tile .status {
-      font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
-      color: var(--gold);
-      margin-bottom: 0;
-      font-weight: 600;
+    html[lang="ja"] .tile h3 {
+      font-family: 'Noto Serif JP', serif;
+      font-size: 19px;
+      letter-spacing: 0.5px;
     }
-    .tile.disabled .status { color: var(--muted); }
+    /* Status row removed in favour of the corner badge to avoid double-labelling. */
     .tile-corner-badge {
       position: absolute;
       top: 14px; right: 14px;
-      font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase;
-      padding: 3px 8px; border-radius: 999px;
-      background: rgba(92,201,143,0.12); color: var(--green); border: 1px solid rgba(92,201,143,0.4);
+      font-size: 9px; letter-spacing: 1.6px; text-transform: uppercase;
+      padding: 3px 9px; border-radius: 999px;
+      background: rgba(92,201,143,0.10); color: var(--green); border: 1px solid rgba(92,201,143,0.35);
       font-weight: 600;
+      backdrop-filter: blur(8px);
     }
-    .tile-corner-badge.admin { background: rgba(212,184,122,0.15); color: var(--gold); border-color: rgba(212,184,122,0.4); }
+    .tile-corner-badge.admin { background: rgba(212,184,122,0.14); color: var(--gold); border-color: rgba(212,184,122,0.4); }
     .tile-corner-badge.soon { background: rgba(255,255,255,0.04); color: var(--muted); border-color: var(--line-strong); }
 
     /* ---- RIGHT column: quick info panel ---- */
@@ -1483,15 +1483,17 @@
       grid.innerHTML = list.map((t, i) => {
         const label = currentLang === 'ja' ? t.label : (t.labelEn || t.label);
         const dis   = t.action === 'soon' ? 'disabled' : '';
-        const status = t.action === 'soon' ? lang.soon : (t.badge ? (lang[t.badge] || t.badge.toUpperCase()) : lang.active);
-        const badgeKey = t.badge || '';
+        // Decide a single corner badge:
+        //   - "soon" when the tool is unreleased
+        //   - the tool's explicit badge (e.g. "admin", "new")
+        //   - otherwise nothing (active tools speak for themselves)
+        const badgeKey = t.action === 'soon' ? 'soon' : (t.badge || '');
         const art = TILE_ART[t.key] || '';
         return `<a class="tile ${dis} ${i === 0 ? 'active' : ''}" data-key="${t.key}" href="#">
           ${art ? `<div class="tile-art">${art}</div>` : ''}
           ${badgeKey ? `<span class="tile-corner-badge ${badgeKey}">${lang[badgeKey] || badgeKey.toUpperCase()}</span>` : ''}
           <div class="tile-icon-wrap">${t.icon}</div>
           <h3>${label}</h3>
-          <div class="status">${status}</div>
         </a>`;
       }).join('');
       document.getElementById('tileCount').textContent = (currentLang === 'ja' ? list.length + ' ツール' : list.length + ' tools');
