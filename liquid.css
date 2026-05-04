@@ -655,6 +655,21 @@ html {
   text-rendering: optimizeLegibility;
 }
 
+/* Prevent stray words from blowing out card widths.
+   Long emails and URLs are the main offenders. */
+body {
+  overflow-wrap: anywhere;
+  word-break: normal;
+  hyphens: none;
+}
+/* Monospace strings (emails, phones, codes) wrap on character boundaries
+   only as a last resort — we set the wrap mode on body but pre-formatted
+   monospace runs should keep their visual integrity. */
+code, pre, .email, [class*="phone"] { overflow-wrap: break-word; }
+
+/* Inputs / selects: never let placeholder + value overflow the field */
+input, select, textarea { min-width: 0; max-width: 100%; }
+
 /* =====================================================================
    Subtle animated noise to add organic texture (optional, very faint)
    ===================================================================== */
