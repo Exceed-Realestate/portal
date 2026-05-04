@@ -154,54 +154,212 @@
     .theme-btn svg { width: 13px; height: 13px; }
 
     /* ===== Access modal ===== */
-    .acc-bd { position: fixed; inset: 0; background: rgba(2,8,20,0.78); backdrop-filter: blur(6px); display: none; align-items: flex-start; justify-content: center; z-index: 1200; padding: 60px 20px; overflow-y: auto; }
-    .acc-bd.show { display: flex; }
+    /* Per-role accent palette — each role owns one tasteful colour that
+       drives the rail, icon glow, badge and hover state. Kept low-saturation
+       so it complements gold/cream rather than competing. */
     .acc-modal {
-      width: 100%; max-width: 720px; background: linear-gradient(180deg, #0e2444, #08182f);
-      border: 1px solid rgba(212,184,122,0.32); border-radius: 18px;
-      padding: 28px 28px 24px; box-shadow: 0 30px 80px -20px rgba(0,0,0,.7);
+      --r-admin:        #c66a6a; --r-admin-soft:        rgba(198,106,106,0.16);
+      --r-ceo:          #d4b87a; --r-ceo-soft:          rgba(212,184,122,0.18);
+      --r-md:           #c89870; --r-md-soft:           rgba(200,152,112,0.16);
+      --r-board:        #a9b4c5; --r-board-soft:        rgba(169,180,197,0.14);
+      --r-manager:      #87b39d; --r-manager-soft:      rgba(135,179,157,0.14);
+      --r-agent:        #e3d3a3; --r-agent-soft:        rgba(227,211,163,0.14);
+      --r-back_office:  #8a99ad; --r-back_office-soft:  rgba(138,153,173,0.14);
+    }
+
+    .acc-bd {
+      position: fixed; inset: 0;
+      background: radial-gradient(circle at 50% 0%, rgba(20,40,80,0.55), rgba(2,8,20,0.85) 70%);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      display: none; align-items: flex-start; justify-content: center;
+      z-index: 1200; padding: 60px 20px; overflow-y: auto;
+      animation: acc-fade .25s ease;
+    }
+    .acc-bd.show { display: flex; }
+    @keyframes acc-fade { from { opacity: 0; } to { opacity: 1; } }
+
+    .acc-modal {
+      width: 100%; max-width: 760px;
+      background:
+        radial-gradient(circle at 0% 0%, rgba(212,184,122,0.10), transparent 50%),
+        radial-gradient(circle at 100% 100%, rgba(67,93,140,0.20), transparent 55%),
+        linear-gradient(180deg, #102a4f 0%, #07172d 100%);
+      border: 1px solid rgba(212,184,122,0.28); border-radius: 22px;
+      padding: 28px 30px 26px;
+      box-shadow:
+        0 40px 100px -30px rgba(0,0,0,.85),
+        inset 0 1px 0 rgba(255,255,255,0.05);
       color: var(--text);
+      animation: acc-rise .35s cubic-bezier(.2,.8,.25,1);
     }
-    .acc-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 18px; }
-    .acc-head h2 { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 600; margin: 0 0 4px; color: var(--cream); }
+    @keyframes acc-rise { from { transform: translateY(14px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+    .acc-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 22px; }
+    .acc-head-text { display: flex; align-items: center; gap: 14px; }
+    .acc-head-icon {
+      width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center;
+      background: linear-gradient(135deg, rgba(212,184,122,0.22), rgba(212,184,122,0.05));
+      border: 1px solid rgba(212,184,122,0.35); color: var(--gold);
+      box-shadow: 0 8px 22px -10px rgba(212,184,122,0.45);
+    }
+    .acc-head-icon svg { width: 22px; height: 22px; }
+    .acc-head h2 { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 600; margin: 0 0 2px; color: var(--cream); letter-spacing: 0.3px; }
     .acc-head p { font-size: 12px; color: var(--muted); margin: 0; }
-    .acc-close { background: rgba(255,255,255,0.05); color: var(--cream); border: 1px solid var(--line); border-radius: 999px; width: 32px; height: 32px; cursor: pointer; font-size: 16px; line-height: 1; display: grid; place-items: center; transition: all .15s; }
-    .acc-close:hover { background: rgba(255,107,107,0.15); color: #ff8a8a; border-color: rgba(255,107,107,0.4); }
+    .acc-close {
+      background: rgba(255,255,255,0.04); color: var(--muted);
+      border: 1px solid var(--line); border-radius: 999px;
+      width: 34px; height: 34px; cursor: pointer; font-size: 18px; line-height: 1;
+      display: grid; place-items: center; transition: all .2s; flex-shrink: 0;
+    }
+    .acc-close:hover { background: rgba(255,107,107,0.14); color: #ff9a9a; border-color: rgba(255,107,107,0.4); transform: rotate(90deg); }
 
+    /* ===== Hero card (current user's role) ===== */
     .acc-current {
-      padding: 18px; border-radius: 14px;
-      background: linear-gradient(135deg, rgba(212,184,122,0.16), rgba(212,184,122,0.04));
-      border: 1px solid rgba(212,184,122,0.40); margin-bottom: 22px;
+      position: relative; overflow: hidden;
+      padding: 22px 22px 20px 26px;
+      border-radius: 18px;
+      background:
+        radial-gradient(circle at 100% 0%, var(--accent-soft, rgba(212,184,122,0.20)), transparent 55%),
+        linear-gradient(135deg, rgba(8,22,42,0.85), rgba(5,15,30,0.95));
+      border: 1px solid rgba(212,184,122,0.28);
+      margin-bottom: 26px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
     }
-    .acc-cur-eyebrow { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 700; margin-bottom: 6px; }
-    .acc-cur-name { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--cream); margin: 0 0 6px; font-weight: 600; }
-    .acc-cur-sum { font-size: 13px; color: var(--text); line-height: 1.55; margin: 0 0 12px; }
-    .acc-cur-caps { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
-    .acc-cur-caps li { font-size: 12px; color: var(--text); line-height: 1.5; padding-left: 18px; position: relative; }
-    .acc-cur-caps li::before { content: '✓'; position: absolute; left: 0; color: var(--gold); font-weight: 700; }
-    .acc-pending {
-      padding: 14px 16px; border-radius: 12px; background: rgba(5,20,40,0.6);
-      border: 1px dashed var(--line); color: var(--muted); font-size: 13px; line-height: 1.5;
+    .acc-current::before {
+      content: ''; position: absolute; inset: 0 auto 0 0; width: 4px;
+      background: linear-gradient(180deg, var(--accent, var(--gold)), transparent);
+      border-radius: 18px 0 0 18px;
+    }
+    .acc-cur-grid { display: grid; grid-template-columns: 56px 1fr; gap: 18px; align-items: flex-start; }
+    .acc-cur-icon {
+      width: 56px; height: 56px; border-radius: 14px; display: grid; place-items: center;
+      background: linear-gradient(135deg, var(--accent-soft, rgba(212,184,122,0.20)), rgba(5,15,30,0.4));
+      border: 1px solid var(--accent, rgba(212,184,122,0.4));
+      color: var(--accent, var(--gold));
+      box-shadow: 0 12px 30px -12px var(--accent, rgba(212,184,122,0.5));
+    }
+    .acc-cur-icon svg { width: 28px; height: 28px; }
+    .acc-cur-eyebrow {
+      font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase;
+      color: var(--accent, var(--gold)); font-weight: 700; margin-bottom: 4px;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .acc-cur-eyebrow::after {
+      content: ''; width: 24px; height: 1px; background: currentColor; opacity: 0.5;
+    }
+    .acc-cur-name { font-family: 'Playfair Display', serif; font-size: 24px; color: var(--cream); margin: 0 0 8px; font-weight: 600; letter-spacing: 0.3px; }
+    .acc-cur-sum { font-size: 13.5px; color: rgba(241,234,216,0.85); line-height: 1.6; margin: 0 0 16px; }
+    .acc-cur-divider {
+      height: 1px; background: linear-gradient(90deg, var(--accent, var(--gold)) 0%, transparent 80%);
+      opacity: 0.35; margin: 0 0 14px;
+    }
+    .acc-cur-caps { list-style: none; padding: 0; margin: 0; display: grid; gap: 9px; }
+    .acc-cur-caps li {
+      font-size: 12.5px; color: rgba(241,234,216,0.92); line-height: 1.55;
+      padding-left: 22px; position: relative;
+    }
+    .acc-cur-caps li::before {
+      content: ''; position: absolute; left: 0; top: 7px;
+      width: 14px; height: 14px; border-radius: 50%;
+      background: var(--accent-soft, rgba(212,184,122,0.18));
+      border: 1px solid var(--accent, rgba(212,184,122,0.5));
+    }
+    .acc-cur-caps li::after {
+      content: ''; position: absolute; left: 4px; top: 10px;
+      width: 5px; height: 8px; border: solid var(--accent, var(--gold));
+      border-width: 0 1.5px 1.5px 0; transform: rotate(45deg);
     }
 
-    .acc-list-title { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); font-weight: 700; margin: 4px 0 12px; }
+    .acc-pending {
+      padding: 22px; border-radius: 14px;
+      background: rgba(5,20,40,0.55);
+      border: 1px dashed rgba(212,184,122,0.30);
+      color: var(--muted); font-size: 13px; line-height: 1.55;
+      text-align: center; margin-bottom: 26px;
+    }
+    .acc-pending strong { color: var(--gold); display: block; margin-bottom: 6px; font-size: 14px; }
+
+    /* ===== Section heading ===== */
+    .acc-list-head {
+      display: flex; align-items: center; gap: 12px;
+      margin: 4px 0 14px;
+    }
+    .acc-list-title {
+      font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase;
+      color: var(--muted); font-weight: 700; flex-shrink: 0;
+    }
+    .acc-list-rule { flex: 1; height: 1px; background: linear-gradient(90deg, rgba(212,184,122,0.25), transparent); }
+
+    /* ===== Role list cards ===== */
     .acc-roles { display: grid; gap: 10px; }
     .acc-role {
-      padding: 14px 16px; border-radius: 12px;
-      background: rgba(5,20,40,0.5); border: 1px solid var(--line);
-      transition: border-color .15s, background .15s;
+      position: relative; overflow: hidden;
+      display: grid; grid-template-columns: 38px 1fr auto; gap: 14px; align-items: center;
+      padding: 14px 16px 14px 22px; border-radius: 12px;
+      background: rgba(5,20,40,0.55);
+      border: 1px solid var(--line);
+      transition: transform .2s ease, border-color .2s, background .2s, box-shadow .25s;
     }
-    .acc-role.is-current { border-color: rgba(212,184,122,0.45); background: rgba(212,184,122,0.06); }
-    .acc-role-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
-    .acc-role-name { font-family: 'Playfair Display', serif; font-size: 15px; color: var(--cream); font-weight: 600; }
-    .acc-role-key { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); font-weight: 600; }
-    .acc-role.is-current .acc-role-key { color: var(--gold); }
-    .acc-role-sum { font-size: 12px; color: var(--muted); line-height: 1.55; margin: 0; }
+    .acc-role::before {
+      content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+      background: var(--accent, var(--gold)); opacity: 0.55;
+      transition: opacity .2s, width .2s;
+    }
+    .acc-role:hover {
+      border-color: var(--accent, rgba(212,184,122,0.4));
+      background: rgba(8,28,55,0.7);
+      transform: translateX(2px);
+      box-shadow: 0 12px 28px -16px var(--accent, rgba(212,184,122,0.6));
+    }
+    .acc-role:hover::before { width: 4px; opacity: 1; }
+    .acc-role.is-current {
+      border-color: var(--accent, rgba(212,184,122,0.55));
+      background:
+        linear-gradient(90deg, var(--accent-soft, rgba(212,184,122,0.10)), rgba(5,20,40,0.45) 60%);
+    }
+    .acc-role.is-current::before { width: 4px; opacity: 1; }
+
+    .acc-role-icon {
+      width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center;
+      background: var(--accent-soft, rgba(212,184,122,0.14));
+      border: 1px solid var(--accent, rgba(212,184,122,0.35));
+      color: var(--accent, var(--gold));
+    }
+    .acc-role-icon svg { width: 18px; height: 18px; }
+    .acc-role-body { min-width: 0; }
+    .acc-role-name {
+      font-family: 'Playfair Display', serif; font-size: 15px;
+      color: var(--cream); font-weight: 600; margin-bottom: 2px;
+      letter-spacing: 0.2px;
+    }
+    .acc-role-sum {
+      font-size: 12px; color: rgba(180,194,214,0.85); line-height: 1.5; margin: 0;
+    }
+    .acc-role-tier {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 24px; height: 24px; padding: 0 8px;
+      border-radius: 999px;
+      background: rgba(5,15,30,0.6);
+      border: 1px solid var(--accent, rgba(212,184,122,0.4));
+      color: var(--accent, var(--gold));
+      font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+      flex-shrink: 0;
+    }
+    .acc-role.is-current .acc-role-tier::before {
+      content: '✓ '; margin-right: 2px;
+    }
 
     @media (max-width: 600px) {
       .acc-bd { padding: 24px 12px; }
-      .acc-modal { padding: 22px 18px 18px; border-radius: 14px; }
-      .acc-cur-name { font-size: 18px; }
+      .acc-modal { padding: 22px 18px 18px; border-radius: 16px; }
+      .acc-head h2 { font-size: 18px; }
+      .acc-head-icon { width: 38px; height: 38px; }
+      .acc-cur-grid { grid-template-columns: 1fr; gap: 14px; }
+      .acc-cur-icon { width: 48px; height: 48px; }
+      .acc-cur-name { font-size: 19px; }
+      .acc-role { grid-template-columns: 32px 1fr; gap: 12px; padding-left: 18px; }
+      .acc-role-tier { display: none; }
+      .acc-role-icon { width: 32px; height: 32px; }
     }
 
     .lang-toggle { display: inline-flex; align-items: center; background: rgba(255,255,255,0.04); border: 1px solid var(--line); border-radius: 999px; padding: 3px; position: relative; }
@@ -2160,9 +2318,23 @@
     window.closeAccessModal = function() {
       document.getElementById('accBd').classList.remove('show');
     };
+    // Per-role inline SVG icons. Stroked, currentColor, 24×24 viewBox.
+    const ROLE_ICON = {
+      admin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10l4 4 6-9 6 9 4-4-2 11H4z"/><path d="M5 18h14"/></svg>',
+      ceo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 14.4 7.2 17l.9-5.4L4.2 7.7l5.4-.8z"/></svg>',
+      md: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M3 13h18"/></svg>',
+      board: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M5 8l7-3 7 3"/><path d="M3 14l4-6 4 6a4 4 0 0 1-8 0z"/><path d="M13 14l4-6 4 6a4 4 0 0 1-8 0z"/></svg>',
+      manager: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M2 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"/><circle cx="17" cy="9" r="2"/><path d="M22 19v-1a3 3 0 0 0-3-3h-1"/></svg>',
+      agent: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21l3-3 3 3"/><path d="M6 18V9"/><circle cx="6" cy="6" r="3"/><path d="M14 8h7"/><path d="M14 13h7"/><path d="M14 18h5"/></svg>',
+      back_office: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="6" width="16" height="14" rx="2"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M8 12h8"/><path d="M8 16h5"/></svg>'
+    };
+    const TIER_LABEL = {
+      admin: 'T0', ceo: 'T1', md: 'T2', board: 'T3', manager: 'T4', agent: 'T5', back_office: 'T6'
+    };
+
     function renderAccessModal() {
       const lang = currentLang;
-      // Localize the chrome
+      // Localize chrome
       document.getElementById('accTitle').textContent = lang === 'ja' ? 'アクセス権限' : 'My access';
       document.getElementById('accSubtitle').textContent = lang === 'ja'
         ? 'あなたのポータル権限と全ロールの一覧'
@@ -2172,25 +2344,35 @@
 
       const cur = document.getElementById('accCurrent');
       const role = currentUserRole && isValidRole(currentUserRole) ? currentUserRole : null;
+
       if (role) {
         const caps = roleCapabilities(role).map(c => `<li>${escapeHtml(c)}</li>`).join('');
+        const accent = `var(--r-${role})`;
+        const accentSoft = `var(--r-${role}-soft)`;
         cur.innerHTML = `
-          <div class="acc-current">
-            <div class="acc-cur-eyebrow">${lang === 'ja' ? '現在の権限' : 'Your role'}</div>
-            <h3 class="acc-cur-name">${escapeHtml(roleLabel(role, lang))}</h3>
-            <p class="acc-cur-sum">${escapeHtml(roleSummary(role, lang))}</p>
-            <ul class="acc-cur-caps">${caps}</ul>
+          <div class="acc-current" style="--accent:${accent};--accent-soft:${accentSoft}">
+            <div class="acc-cur-grid">
+              <div class="acc-cur-icon">${ROLE_ICON[role] || ROLE_ICON.agent}</div>
+              <div>
+                <div class="acc-cur-eyebrow">${lang === 'ja' ? '現在の権限' : 'Your role'}</div>
+                <h3 class="acc-cur-name">${escapeHtml(roleLabel(role, lang))}</h3>
+                <p class="acc-cur-sum">${escapeHtml(roleSummary(role, lang))}</p>
+                <div class="acc-cur-divider"></div>
+                <ul class="acc-cur-caps">${caps}</ul>
+              </div>
+            </div>
           </div>`;
       } else {
         cur.innerHTML = `
           <div class="acc-pending">
+            <strong>${lang === 'ja' ? '権限割り当て待ち' : 'Awaiting access'}</strong>
             ${lang === 'ja'
               ? '管理者があなたの権限を割り当てるとここに表示されます。割り当て前は一部のツールがロックされる場合があります。'
               : 'Once an admin assigns your access role it will appear here. Some tools may be locked until then.'}
           </div>`;
       }
 
-      // Full list, with the user's role highlighted at top
+      // Full list — user's role pinned to the top, others in declared order
       const orderedRoles = ROLES.slice();
       if (role) {
         orderedRoles.splice(orderedRoles.indexOf(role), 1);
@@ -2198,13 +2380,17 @@
       }
       document.getElementById('accRoles').innerHTML = orderedRoles.map(r => {
         const isMine = r === role;
+        const accent = `var(--r-${r})`;
+        const accentSoft = `var(--r-${r}-soft)`;
+        const tier = TIER_LABEL[r] || '';
         return `
-          <div class="acc-role ${isMine ? 'is-current' : ''}">
-            <div class="acc-role-head">
+          <div class="acc-role ${isMine ? 'is-current' : ''}" style="--accent:${accent};--accent-soft:${accentSoft}">
+            <div class="acc-role-icon">${ROLE_ICON[r] || ''}</div>
+            <div class="acc-role-body">
               <div class="acc-role-name">${escapeHtml(roleLabel(r, lang))}</div>
-              <div class="acc-role-key">${isMine ? (lang === 'ja' ? '現在' : 'CURRENT') : r.toUpperCase()}</div>
+              <p class="acc-role-sum">${escapeHtml(roleSummary(r, lang))}</p>
             </div>
-            <p class="acc-role-sum">${escapeHtml(roleSummary(r, lang))}</p>
+            <div class="acc-role-tier">${isMine ? (lang === 'ja' ? '現在' : 'YOU') : tier}</div>
           </div>`;
       }).join('');
     }
@@ -2228,14 +2414,22 @@
   <div class="acc-bd" id="accBd" onclick="if(event.target===this)closeAccessModal()">
     <div class="acc-modal" role="dialog" aria-labelledby="accTitle">
       <div class="acc-head">
-        <div>
-          <h2 id="accTitle">アクセス権限</h2>
-          <p id="accSubtitle">あなたのポータル権限と全ロールの一覧</p>
+        <div class="acc-head-text">
+          <div class="acc-head-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+          </div>
+          <div>
+            <h2 id="accTitle">アクセス権限</h2>
+            <p id="accSubtitle">あなたのポータル権限と全ロールの一覧</p>
+          </div>
         </div>
         <button class="acc-close" onclick="closeAccessModal()" aria-label="Close">×</button>
       </div>
       <div id="accCurrent"></div>
-      <div class="acc-list-title" id="accAllTitle">全アクセスレベル</div>
+      <div class="acc-list-head">
+        <div class="acc-list-title" id="accAllTitle">全アクセスレベル</div>
+        <div class="acc-list-rule"></div>
+      </div>
       <div class="acc-roles" id="accRoles"></div>
     </div>
   </div>

@@ -29,26 +29,26 @@ export const isAdmin = (email) => !!email && ADMIN_EMAILS.includes(email.toLower
 // Order matters for some UI (highest authority first).
 // 'admin' is reserved for system administrators (currently just balraj@) — sits
 // above CEO since it includes platform/infra rights as well as full business access.
-export const ROLES = ['admin', 'ceo', 'md', 'board', 'agent', 'team', 'back_office'];
+export const ROLES = ['admin', 'ceo', 'md', 'board', 'manager', 'agent', 'back_office'];
 export const DEFAULT_ROLE = 'agent';
 
 export const ROLE_LABELS = {
   ja: {
     admin: 'システム管理者',
     ceo: 'CEO',
-    md: 'マネージング・ディレクター',
-    board: 'ボード',
+    md: 'MD（マネージング・ディレクター）',
+    board: '役員クラス',
+    manager: 'マネージャー',
     agent: 'エージェント',
-    team: 'チームメンバー',
     back_office: 'バックオフィス'
   },
   en: {
     admin: 'System Admin',
     ceo: 'CEO',
     md: 'Managing Director',
-    board: 'Board',
+    board: 'Board / Executive',
+    manager: 'Manager',
     agent: 'Agent',
-    team: 'Team',
     back_office: 'Back Office'
   }
 };
@@ -103,13 +103,24 @@ export const ROLE_CAPABILITIES = {
     ]
   },
   board: {
-    summary_ja: '主に閲覧用。経営判断のための全社ダッシュボード。',
-    summary_en: 'View-mostly. Company-wide dashboard for governance.',
+    summary_ja: '役員クラス。閲覧中心の全社ダッシュボードと経営判断用ビュー。',
+    summary_en: 'Board / executive class. Read-mostly company-wide dashboard for governance.',
     capabilities: [
       'View leadership attendance briefing',
       'View all agents and customers (read only)',
       'View IRR Simulator and Listings',
       'Cannot approve agents or edit team structure'
+    ]
+  },
+  manager: {
+    summary_ja: 'チームを統括するマネージャー。エージェントの全機能 + 配下の顧客閲覧。',
+    summary_en: 'Sales manager. Everything an agent does plus visibility into their team.',
+    capabilities: [
+      'Everything an Agent can do',
+      'Plus: view customers of agents they manage',
+      'Plus: view their team\'s attendance',
+      'Plus: receive deal alerts',
+      'Cannot approve agents or change roles'
     ]
   },
   agent: {
@@ -120,16 +131,6 @@ export const ROLE_CAPABILITIES = {
       'Use IRR Simulator, Listings, Deal Alert, Travel and Car Booking',
       'Mark daily attendance',
       'Cannot view other agents\' customers'
-    ]
-  },
-  team: {
-    summary_ja: 'バック営業/サポート。基本ツールへのアクセス。',
-    summary_en: 'Support team. Basic tool access without customer ownership.',
-    capabilities: [
-      'View team tree, listings and shared resources',
-      'Mark daily attendance',
-      'Use Travel and Car Booking',
-      'No customer registration or deal alerts'
     ]
   },
   back_office: {

@@ -30,7 +30,7 @@ service cloud.firestore {
         && request.resource.data.lastName is string
         && request.resource.data.status == 'pending'
         && (!('role' in request.resource.data) || request.resource.data.role in
-            ['admin','ceo','md','board','agent','team','back_office']);
+            ['admin','ceo','md','board','manager','agent','back_office']);
 
       // Admins can change any field (mainly status & role).
       // A normal user can update their own doc but cannot change email/uid/status/role.

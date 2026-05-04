@@ -70,7 +70,7 @@ Right level for Shoya (Japan) and Malik (Dubai).
 
 ---
 
-## Board — Governance / read-mostly
+## Board / Executive (役員クラス) — Governance, read-mostly
 
 **Summary:** company-wide visibility for governance, no operational levers.
 
@@ -79,12 +79,28 @@ Right level for Shoya (Japan) and Malik (Dubai).
 - View IRR Simulator and Listings
 - Cannot approve agents or edit team structure
 
-Right level for board members who need to see the full picture but
+Right level for executives who need to see the full picture but
 shouldn't be flipping switches.
 
 ---
 
-## Agent — Sales agent (default)
+## Manager (マネージャー) — Sales manager / team lead
+
+**Summary:** everything an Agent does, plus visibility into the agents
+they manage. Sits between Agent and MD.
+
+- Everything an Agent can do
+- Plus: view customers of agents they manage
+- Plus: view their team's attendance
+- Plus: receive deal alerts
+- Cannot approve agents or change roles
+
+Right level for sales managers / team leads who need to coach a small
+group without full operational authority.
+
+---
+
+## Agent (エージェント) — Sales agent (default)
 
 **Summary:** the standard sales-agent toolkit. This is the default role
 applied at registration.
@@ -98,21 +114,7 @@ Anyone selling property to clients should sit here.
 
 ---
 
-## Team — Support / shared tools
-
-**Summary:** support team without customer ownership.
-
-- View team tree, listings and shared resources
-- Mark daily attendance
-- Use Travel and Car Booking
-- No customer registration or deal alerts
-
-Right level for non-sales team members who still use the portal to
-coordinate.
-
----
-
-## Back Office — Admin support
+## Back Office (バックオフィス) — Admin support
 
 **Summary:** internal-tools-only. Lightest role.
 
@@ -141,5 +143,5 @@ developer reps from Sobha) who shouldn't sign in.
   controls Edit Tree, Auto-link, Apply Structure, role-changing dropdowns
   in the agents table.
 - **Firestore rules:** `firestore.rules` validates that `role` is one of
-  `['ceo', 'md', 'board', 'agent', 'team', 'back_office']` on create, and
-  forbids non-admins from changing their own role on update.
+  `['admin', 'ceo', 'md', 'board', 'manager', 'agent', 'back_office']` on
+  create, and forbids non-admins from changing their own role on update.
