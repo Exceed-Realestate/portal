@@ -341,16 +341,17 @@
       font-weight: 600;
     }
 
-    /* Optional company tag (e.g. "Sobha Realty" for developer partners). */
+    /* Optional company tag (e.g. SOBHA REALTY for developer partners).
+       When a logo image exists, render the logo prominently and skip the
+       text label — the logo carries the brand. Text-only fallback otherwise. */
     .company-tag {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      margin-top: 8px;
-      padding: 4px 10px 4px 6px;
-      background: rgba(255,255,255,0.92);
-      border: 1px solid rgba(255,255,255,0.25);
-      border-radius: 999px;
+      margin-top: 10px;
+      padding: 6px 12px;
+      background: rgba(255,255,255,0.95);
+      border-radius: 6px;
       color: var(--navy-0);
       font-family: 'Inter', sans-serif;
       font-size: 9px;
@@ -360,11 +361,15 @@
       box-shadow: 0 4px 10px -4px rgba(0,0,0,.45);
     }
     .company-tag img {
-      width: 16px; height: 16px;
+      height: 22px;
+      width: auto;
+      max-width: 90px;
       object-fit: contain;
       flex: none;
+      display: block;
     }
-    .company-tag.no-logo { padding: 4px 10px; }
+    .company-tag.has-logo { padding: 5px 12px; }
+    .company-tag.has-logo .company-name { display: none; }
 
     .actions { display: flex; gap: 6px; margin-top: 10px; justify-content: center; opacity: 0.85; transition: opacity .15s; }
     .node:hover .actions { opacity: 1; }
@@ -1023,10 +1028,10 @@
           </button>
         </div>` : '';
       const hasPhoto = !!m.photo;
-      const companyTag = m.company ? `
-          <div class="company-tag${m.companyLogo ? '' : ' no-logo'}">
-            ${m.companyLogo ? `<img src="${m.companyLogo}" alt="" onerror="this.remove()"/>` : ''}
-            <span>${m.company}</span>
+      const companyTag = (m.company || m.companyLogo) ? `
+          <div class="company-tag${m.companyLogo ? ' has-logo' : ''}">
+            ${m.companyLogo ? `<img src="${m.companyLogo}" alt="${m.company || ''}" onerror="this.parentElement.classList.remove('has-logo'); this.remove();"/>` : ''}
+            <span class="company-name">${m.company || ''}</span>
           </div>` : '';
       return `
         <div class="node ${tierClass}">
