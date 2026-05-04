@@ -341,6 +341,31 @@
       font-weight: 600;
     }
 
+    /* Optional company tag (e.g. "Sobha Realty" for developer partners). */
+    .company-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      padding: 4px 10px 4px 6px;
+      background: rgba(255,255,255,0.92);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 999px;
+      color: var(--navy-0);
+      font-family: 'Inter', sans-serif;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1.3px;
+      text-transform: uppercase;
+      box-shadow: 0 4px 10px -4px rgba(0,0,0,.45);
+    }
+    .company-tag img {
+      width: 16px; height: 16px;
+      object-fit: contain;
+      flex: none;
+    }
+    .company-tag.no-logo { padding: 4px 10px; }
+
     .actions { display: flex; gap: 6px; margin-top: 10px; justify-content: center; opacity: 0.85; transition: opacity .15s; }
     .node:hover .actions { opacity: 1; }
     .action {
@@ -817,8 +842,9 @@
       ],
       // External
       partners: [
-        { name: 'SERGIO',          nameJa: 'セルジオ',     role: 'Sobha Realty · Developer Partner', roleJa: 'Sobha Realty・デベロッパーパートナー',
-          phone: '+40749342647',   phoneDisplay: '+40 749 342 647', email: '', photo: '' }
+        { name: 'SERGIO',          nameJa: 'セルジオ',     role: 'Developer Partner',                roleJa: 'デベロッパーパートナー',
+          company: 'Sobha Realty', companyLogo: 'team/logos/sobha.png',
+          phone: '+40749342647',   phoneDisplay: '+40 749 342 647', email: '', photo: 'team/sergio.jpg' }
       ],
       // Retained for compatibility
       'way-office': [],
@@ -997,6 +1023,11 @@
           </button>
         </div>` : '';
       const hasPhoto = !!m.photo;
+      const companyTag = m.company ? `
+          <div class="company-tag${m.companyLogo ? '' : ' no-logo'}">
+            ${m.companyLogo ? `<img src="${m.companyLogo}" alt="" onerror="this.remove()"/>` : ''}
+            <span>${m.company}</span>
+          </div>` : '';
       return `
         <div class="node ${tierClass}">
           <div class="avatar ${hasPhoto ? 'has-photo' : ''}">
@@ -1009,6 +1040,7 @@
           <h3>${m.name}</h3>
           ${m.nameJa ? `<div class="name-ja">${m.nameJa}</div>` : ''}
           ${role ? `<div class="role">${role}</div>` : ''}
+          ${companyTag}
           ${actionBtns(m)}
           ${editControls}
         </div>`;
@@ -1264,8 +1296,10 @@
         target: 'partners',
         member: {
           name: 'SERGIO',          nameJa: 'セルジオ',
-          role: 'Sobha Realty · Developer Partner',
-          roleJa: 'Sobha Realty・デベロッパーパートナー',
+          role: 'Developer Partner',
+          roleJa: 'デベロッパーパートナー',
+          company: 'Sobha Realty',
+          companyLogo: 'team/logos/sobha.png',
           phone: '+40749342647',   phoneDisplay: '+40 749 342 647',
           email: '', photo: 'team/sergio.jpg'
         }
@@ -1293,11 +1327,18 @@
       });
       ENSURE_MEMBERS_2026_05.forEach(rule => {
         const matchKey = nameKey(rule.member.name);
-        let exists = false;
+        let foundSection = null, foundIdx = -1;
         Object.keys(TEAM).forEach(section => {
-          if (Array.isArray(TEAM[section]) && TEAM[section].some(m => nameKey(m.name) === matchKey)) exists = true;
+          if (!Array.isArray(TEAM[section])) return;
+          const idx = TEAM[section].findIndex(m => nameKey(m.name) === matchKey);
+          if (idx >= 0) { foundSection = section; foundIdx = idx; }
         });
-        if (!exists) {
+        if (foundSection) {
+          // Merge migration fields into the existing entry (overwrite).
+          const before = JSON.stringify(TEAM[foundSection][foundIdx]);
+          Object.assign(TEAM[foundSection][foundIdx], rule.member);
+          if (JSON.stringify(TEAM[foundSection][foundIdx]) !== before) touched++;
+        } else {
           if (!Array.isArray(TEAM[rule.target])) TEAM[rule.target] = [];
           TEAM[rule.target].push({ ...rule.member });
           touched++;
