@@ -599,6 +599,63 @@ tbody tr:hover { background: rgba(255,255,255,0.04) !important; }
 }
 
 /* =====================================================================
+   GLOBAL POLISH — applied across every page via this shared sheet
+   ===================================================================== */
+
+/* Smoother text selection, on-brand */
+::selection { background: rgba(212, 184, 122, 0.35); color: #fff; }
+::-moz-selection { background: rgba(212, 184, 122, 0.35); color: #fff; }
+
+/* Custom scrollbars: thin, subtle, matches palette. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(212, 184, 122, 0.30) transparent;
+}
+*::-webkit-scrollbar { width: 8px; height: 8px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+  background: rgba(212, 184, 122, 0.25);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 184, 122, 0.50);
+  background-clip: padding-box;
+}
+
+/* Honest focus rings — visible to keyboard users, invisible to mouse users.
+   :focus-visible only matches when the element was reached via keyboard. */
+:focus { outline: none; }
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid rgba(212, 184, 122, 0.65);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Default link colour: gold on hover, never the browser default blue */
+a { color: inherit; }
+a:hover { text-decoration: none; }
+
+/* Disabled fields read as muted, never the browser grey */
+input:disabled, select:disabled, textarea:disabled, button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Smooth font rendering across the app */
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* =====================================================================
    Subtle animated noise to add organic texture (optional, very faint)
    ===================================================================== */
 .glass-noise::after {
