@@ -341,35 +341,38 @@
       font-weight: 600;
     }
 
-    /* Optional company tag (e.g. SOBHA REALTY for developer partners).
-       When a logo image exists, render the logo prominently and skip the
-       text label — the logo carries the brand. Text-only fallback otherwise. */
+    /* Company tag for partner cards — when a logo image exists, the logo
+       is the badge: large, white pill, dominant. Text fallback otherwise. */
     .company-tag {
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 6px;
-      margin-top: 10px;
-      padding: 6px 12px;
-      background: rgba(255,255,255,0.95);
-      border-radius: 6px;
+      margin-top: 12px;
+      padding: 8px 14px;
+      background: #fff;
+      border-radius: 8px;
       color: var(--navy-0);
       font-family: 'Inter', sans-serif;
-      font-size: 9px;
+      font-size: 10px;
       font-weight: 700;
-      letter-spacing: 1.3px;
+      letter-spacing: 1.4px;
       text-transform: uppercase;
-      box-shadow: 0 4px 10px -4px rgba(0,0,0,.45);
+      box-shadow: 0 6px 14px -4px rgba(0,0,0,.55);
+      max-width: 100%;
     }
     .company-tag img {
-      height: 22px;
+      height: 30px;
       width: auto;
-      max-width: 90px;
+      max-width: 140px;
       object-fit: contain;
       flex: none;
       display: block;
     }
-    .company-tag.has-logo { padding: 5px 12px; }
+    .company-tag.has-logo { padding: 7px 14px; }
     .company-tag.has-logo .company-name { display: none; }
+    /* Member-node members get a slightly smaller logo to fit their narrower card. */
+    .member-node .company-tag img { height: 26px; max-width: 120px; }
 
     .actions { display: flex; gap: 6px; margin-top: 10px; justify-content: center; opacity: 0.85; transition: opacity .15s; }
     .node:hover .actions { opacity: 1; }
