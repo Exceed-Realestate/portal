@@ -1087,11 +1087,20 @@ body::after {
    lighter Playfair display with more breathing room — magazine cover
    line rather than a heading. */
 .left-col h1 {
-  font-size: clamp(38px, 4.6vw, 56px) !important;
+  font-size: clamp(32px, 3.6vw, 46px) !important;
   font-weight: 500 !important;
   line-height: 1.02 !important;
-  letter-spacing: -0.8px !important;
+  letter-spacing: -0.6px !important;
   margin-bottom: 14px !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Japanese characters are visually wider, so step the size down a notch
+   to keep "ようこそ、◯◯さん" on a single line in the narrow left column. */
+html[lang="ja"] .left-col h1 {
+  font-size: clamp(26px, 2.8vw, 36px) !important;
+  letter-spacing: -0.2px !important;
 }
 .left-col h1 #welcomeName {
   font-style: italic;
