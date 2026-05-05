@@ -1319,7 +1319,8 @@ html[lang="ja"] .left-col h1 {
 [data-theme="nexus"] .schedule-card { border-left: 3px solid var(--gold) !important; }
 [data-theme="nexus"] .birthday-card { border-left: 3px solid var(--nexus-amber) !important; }
 [data-theme="nexus"] .recent-deals-card { border-left: 3px solid var(--nexus-green) !important; }
-[data-theme="nexus"] .info-block { border-left: 3px solid var(--nexus-blue) !important; }
+/* Right-column info blocks intentionally have NO accent rail —
+   keeps the right rail visually quieter so the eye stays on the left/center. */
 
 /* Modals — colder, tighter */
 [data-theme="nexus"] .modal,
