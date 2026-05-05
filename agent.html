@@ -2131,11 +2131,12 @@
     }
     document.querySelectorAll('.lang-toggle button').forEach(b => b.addEventListener('click', () => setLang(b.dataset.lang)));
 
-    // Theme switcher — saved in localStorage. Two themes:
-    // "atrium" = current dark navy + gold luxury (default, active)
-    // "manor"  = light Tabela-inspired modern dashboard (queued — toast for now)
-    const THEMES = ['atrium', 'manor'];
-    const THEME_LABELS = { atrium: 'Atrium', manor: 'Manor' };
+    // Theme switcher — saved in localStorage. Three themes:
+    // "atrium" = dark navy + gold luxury hospitality (default)
+    // "manor"  = light editorial day-mode
+    // "nexus"  = data/command-center mode (Space Grotesk + cool surfaces + glow)
+    const THEMES = ['atrium', 'manor', 'nexus'];
+    const THEME_LABELS = { atrium: 'Atrium', manor: 'Manor', nexus: 'Nexus' };
     let CURRENT_THEME = 'atrium';
     function applyTheme(name) {
       CURRENT_THEME = name;

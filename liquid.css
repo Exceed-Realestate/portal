@@ -1140,3 +1140,265 @@ body::after {
   .tile, .modal-actions .save, .add-btn, .theme-btn { transition: none !important; }
   .tile:hover, .modal-actions .save:hover, .add-btn:hover { transform: none !important; }
 }
+
+/* =====================================================================
+   NEXUS THEME — data / command-center mode
+   Same brand (gold accent, navy base) but with a cooler, more technical
+   surface treatment: Space Grotesk for UI, blue glow accents for status
+   indicators, color-coded left rails on stat cards, sharper borders.
+   Everything else (logic, layout) stays the same — this is purely visual.
+   ===================================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+[data-theme="nexus"] {
+  --navy-0: #0c1322;
+  --navy-1: #151b2b;
+  --navy-2: #191f2f;
+  --gold: #d4b87a;        /* keep brand gold */
+  --cream: #dce2f8;       /* cooler white */
+  --text:  #dce2f8;
+  --muted: #8b90a0;
+  --line:        rgba(255,255,255,0.06);
+  --line-strong: rgba(255,255,255,0.12);
+
+  /* Cool accents — used sparingly for "data" indicators only */
+  --nexus-blue:  #4b8eff;
+  --nexus-cyan:  #6dd1ff;
+  --nexus-green: #42ee7f;
+  --nexus-amber: #ffb868;
+
+  /* Typography */
+  --font-ui: 'Space Grotesk', 'Inter', -apple-system, sans-serif;
+}
+
+/* Body background: slightly cooler than atrium, with darker bottom for
+   a vertical fade. The skyline image dampened further. */
+[data-theme="nexus"] html,
+[data-theme="nexus"] body {
+  background: #0c1322 !important;
+  font-family: var(--font-ui) !important;
+}
+[data-theme="nexus"] body.dashboard-bg .bg-skyline {
+  filter: blur(40px) brightness(0.32) saturate(0.6) !important;
+}
+[data-theme="nexus"] body.dashboard-bg .bg-overlay {
+  background:
+    radial-gradient(80% 50% at 50% 30%, rgba(75,142,255,0.06) 0%, transparent 60%),
+    linear-gradient(180deg, rgba(12,19,34,0.85) 0%, rgba(7,14,29,0.95) 100%) !important;
+}
+
+/* Keep the hero welcome line on Playfair (it's the editorial moment) but
+   send everything else to Space Grotesk. */
+[data-theme="nexus"] body,
+[data-theme="nexus"] input,
+[data-theme="nexus"] select,
+[data-theme="nexus"] button,
+[data-theme="nexus"] textarea {
+  font-family: var(--font-ui) !important;
+}
+[data-theme="nexus"] .left-col h1,
+[data-theme="nexus"] .left-col h1 #welcomeName {
+  font-family: var(--font-ui) !important;
+  font-weight: 600 !important;
+  font-style: normal !important;
+  letter-spacing: -1px !important;
+  background: none !important;
+  -webkit-text-fill-color: initial !important;
+  color: var(--cream) !important;
+}
+/* Italic accent moves to a thin subline of slate text rather than the name */
+[data-theme="nexus"] .left-col h1 #welcomeName {
+  color: var(--gold) !important;
+  font-weight: 700 !important;
+}
+
+/* Topbar — flatter, cooler, with hairline border */
+[data-theme="nexus"] .topbar {
+  background: rgba(11,18,33,0.72) !important;
+  backdrop-filter: blur(28px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(160%) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+  box-shadow:
+    inset 0 -1px 0 rgba(255,255,255,0.03),
+    0 4px 24px rgba(0,0,0,0.30) !important;
+}
+
+/* Sidebar nav (left rail) — active item gets the EcoSync-style indicator:
+   right-edge bar + soft inner glow */
+[data-theme="nexus"] .sidebar,
+[data-theme="nexus"] aside.sidebar {
+  background: rgba(11,18,33,0.65) !important;
+  border-right: 1px solid rgba(255,255,255,0.05) !important;
+}
+[data-theme="nexus"] .nav-link.active,
+[data-theme="nexus"] .nav-item.active,
+[data-theme="nexus"] .menu-item.active {
+  background: linear-gradient(90deg, rgba(212,184,122,0.10) 0%, transparent 100%) !important;
+  color: var(--gold) !important;
+  border-right: 2px solid var(--gold) !important;
+  box-shadow: inset 4px 0 0 transparent, 0 0 24px -8px rgba(212,184,122,0.30) !important;
+}
+
+/* Theme/language pills — sharper with a faint glow */
+[data-theme="nexus"] .theme-btn,
+[data-theme="nexus"] .pill-btn,
+[data-theme="nexus"] .lang-toggle {
+  background: rgba(25,31,47,0.70) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  border-radius: 8px !important;
+  font-family: var(--font-ui) !important;
+  letter-spacing: 1.2px !important;
+}
+[data-theme="nexus"] .lang-toggle .pill {
+  background: linear-gradient(180deg, var(--gold), #b89757) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 0 16px rgba(212,184,122,0.40) !important;
+}
+
+/* Tile cards — sharper edges, mono-data treatment, color-coded left rail */
+[data-theme="nexus"] .tile {
+  background: linear-gradient(180deg, rgba(25,31,47,0.85), rgba(11,18,33,0.85)) !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+  border-radius: 12px !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.04),
+    0 12px 32px -16px rgba(0,0,0,0.6) !important;
+}
+[data-theme="nexus"] .tile::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 2px;
+  background: linear-gradient(180deg, var(--gold), transparent);
+  opacity: 0.7;
+}
+[data-theme="nexus"] .tile:hover {
+  border-color: rgba(212,184,122,0.35) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.06),
+    0 0 32px -8px rgba(212,184,122,0.25),
+    0 16px 40px -16px rgba(0,0,0,0.7) !important;
+}
+[data-theme="nexus"] .tile-icon-wrap {
+  background: linear-gradient(180deg, rgba(212,184,122,0.18) 0%, rgba(212,184,122,0.04) 100%) !important;
+  border: 1px solid rgba(212,184,122,0.30) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 0 18px -6px rgba(212,184,122,0.35) !important;
+}
+[data-theme="nexus"] .tile h3 {
+  font-family: var(--font-ui) !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.3px !important;
+}
+[data-theme="nexus"] .tile-corner-badge {
+  font-family: var(--font-ui) !important;
+  font-weight: 700 !important;
+  letter-spacing: 1.5px !important;
+  border-radius: 4px !important;
+}
+
+/* Schedule / info / birthday cards — flatter, with color-coded left rail */
+[data-theme="nexus"] .schedule-card,
+[data-theme="nexus"] .birthday-card,
+[data-theme="nexus"] .recent-deals-card,
+[data-theme="nexus"] .info-block {
+  background: rgba(25,31,47,0.65) !important;
+  border: 1px solid rgba(255,255,255,0.05) !important;
+  border-radius: 10px !important;
+  position: relative;
+  overflow: hidden;
+}
+[data-theme="nexus"] .schedule-card { border-left: 3px solid var(--gold) !important; }
+[data-theme="nexus"] .birthday-card { border-left: 3px solid var(--nexus-amber) !important; }
+[data-theme="nexus"] .recent-deals-card { border-left: 3px solid var(--nexus-green) !important; }
+[data-theme="nexus"] .info-block { border-left: 3px solid var(--nexus-blue) !important; }
+
+/* Modals — colder, tighter */
+[data-theme="nexus"] .modal,
+[data-theme="nexus"] .modal-bd .modal,
+[data-theme="nexus"] .acc-modal {
+  background: linear-gradient(180deg, #191f2f, #0c1322) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  border-radius: 12px !important;
+  font-family: var(--font-ui) !important;
+}
+[data-theme="nexus"] .modal h3,
+[data-theme="nexus"] .acc-modal h2 {
+  font-family: var(--font-ui) !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.4px !important;
+  color: var(--cream) !important;
+}
+[data-theme="nexus"] .modal-actions .save {
+  background: linear-gradient(180deg, var(--gold), #b89757) !important;
+  border-radius: 6px !important;
+  letter-spacing: 1.2px !important;
+  box-shadow: 0 0 24px -6px rgba(212,184,122,0.45) !important;
+}
+[data-theme="nexus"] .modal-actions .cancel {
+  border-radius: 6px !important;
+  letter-spacing: 1.2px !important;
+}
+
+/* Form inputs — flatter, more technical */
+[data-theme="nexus"] .modal input,
+[data-theme="nexus"] .modal select,
+[data-theme="nexus"] input[type="text"],
+[data-theme="nexus"] input[type="email"],
+[data-theme="nexus"] input[type="tel"],
+[data-theme="nexus"] select {
+  background: rgba(11,18,33,0.85) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  border-radius: 6px !important;
+  font-family: var(--font-ui) !important;
+}
+[data-theme="nexus"] .modal input:focus,
+[data-theme="nexus"] .modal select:focus,
+[data-theme="nexus"] input:focus,
+[data-theme="nexus"] select:focus {
+  border-color: var(--gold) !important;
+  box-shadow: 0 0 0 1px rgba(212,184,122,0.25), 0 0 16px -4px rgba(212,184,122,0.30) !important;
+}
+
+/* Mono-data treatment for stat numbers — applied wherever .num lives */
+[data-theme="nexus"] .num,
+[data-theme="nexus"] .stat-num,
+[data-theme="nexus"] .info-row .num {
+  font-family: 'Space Grotesk', monospace !important;
+  font-feature-settings: 'tnum';
+  letter-spacing: 0.5px !important;
+}
+
+/* Toast — sharper, monochrome */
+[data-theme="nexus"] .toast {
+  background: rgba(25,31,47,0.95) !important;
+  border: 1px solid rgba(212,184,122,0.40) !important;
+  border-radius: 6px !important;
+  font-family: var(--font-ui) !important;
+  letter-spacing: 0.5px !important;
+}
+
+/* Status pills — sharper, mono, color-coded glow */
+[data-theme="nexus"] .status,
+[data-theme="nexus"] .status-pill {
+  font-family: var(--font-ui) !important;
+  letter-spacing: 1px !important;
+  border-radius: 4px !important;
+  font-weight: 700 !important;
+}
+[data-theme="nexus"] .status.active,
+[data-theme="nexus"] .status-pill.active {
+  background: rgba(66,238,127,0.12) !important;
+  color: var(--nexus-green) !important;
+  border: 1px solid rgba(66,238,127,0.35) !important;
+  box-shadow: 0 0 12px -4px rgba(66,238,127,0.30) !important;
+}
+
+/* User chip — squarer */
+[data-theme="nexus"] .user-chip {
+  border-radius: 6px !important;
+  font-family: var(--font-ui) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+}
+
+/* Manor's noise overlay we already disabled is the right call; nexus
+   keeps it ON because the cooler palette benefits from texture too. */

@@ -3,3 +3,7 @@
 .idea/
 node_modules/
 *.log
+components-after.png
+nexus-preview.png
+components-full.png
+components-part-*.png
