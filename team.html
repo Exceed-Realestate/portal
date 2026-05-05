@@ -629,6 +629,13 @@
       border: 1px solid rgba(212,184,122,0.22);
       background: linear-gradient(180deg, rgba(212,184,122,0.05), rgba(5,20,40,0.4));
     }
+    .access-block.readonly { opacity: 0.9; }
+    .access-block.readonly select { cursor: not-allowed; opacity: 0.7; }
+    .access-block .readonly-note {
+      display: none; margin-top: 10px;
+      font-size: 11px; color: var(--muted); letter-spacing: 0.5px;
+    }
+    .access-block.readonly .readonly-note { display: block; }
     .access-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
     .access-title { font-family: 'Playfair Display', serif; font-size: 15px; color: var(--cream); margin-bottom: 2px; }
     .access-sub { font-size: 11px; color: var(--muted); line-height: 1.5; }
@@ -836,6 +843,7 @@
             </div>
           </div>
           <ul class="access-caps" id="accessCaps"></ul>
+          <div class="readonly-note">🔒 アクセス権限の変更はシステム管理者のみ可能です。 / Only the system admin can change access roles.</div>
         </div>
 
         <div class="modal-actions">
@@ -850,7 +858,7 @@
   <div class="toast" id="toast"></div>
 
   <script type="module">
-    import { auth, db, isAdmin, ROLE_CAPABILITIES, roleSummary, roleCapabilities, isValidRole } from './firebase-init.js';
+    import { auth, db, isAdmin, can, ROLE_CAPABILITIES, roleSummary, roleCapabilities, isValidRole } from './firebase-init.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
     import { doc, getDoc, setDoc, updateDoc, serverTimestamp, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
@@ -1503,7 +1511,12 @@
       // Pre-fill access role: prefer the linked agent's saved role, else stored team accessRole.
       const linked = editingState.linkedAgent;
       const accessRole = (linked && linked.role) || raw.accessRole || '';
-      document.getElementById('m-accessRole').value = isValidRole(accessRole) ? accessRole : '';
+      const accessSel = document.getElementById('m-accessRole');
+      accessSel.value = isValidRole(accessRole) ? accessRole : '';
+      // Only system admin can flip access roles. Editors who can edit the tree
+      // but not change roles see the field disabled with the value pre-filled.
+      accessSel.disabled = !window._canChangeRoles;
+      document.getElementById('accessBlock').classList.toggle('readonly', !window._canChangeRoles);
       updateAccessPreview();
       const badge = document.getElementById('accessLinkBadge');
       if (linked) {
@@ -1583,7 +1596,7 @@
       // write the role onto agents/{uid} so it actually gates portal features.
       const linked = editingState.linkedAgent;
       let agentRoleWritten = false;
-      if (linked && linked.id && accessRole && isValidRole(accessRole) && linked.role !== accessRole) {
+      if (window._canChangeRoles && linked && linked.id && accessRole && isValidRole(accessRole) && linked.role !== accessRole) {
         try {
           await updateDoc(doc(db, 'agents', linked.id), { role: accessRole });
           agentRoleWritten = true;
@@ -1635,10 +1648,17 @@
         firstName = local.charAt(0).toUpperCase() + local.slice(1);
       }
       document.getElementById('userName').textContent = firstName || 'Agent';
-      // Show admin toolbar only to admins
-      if (isAdmin(user.email)) {
+      // Show edit-tree toolbar to anyone with the editTeamTree capability.
+      let editorRole = null;
+      try {
+        const docSnap = await getDoc(doc(db, 'agents', user.uid));
+        if (docSnap.exists()) editorRole = docSnap.data().role || null;
+      } catch (e) {}
+      if (can(editorRole, 'editTeamTree', user.email)) {
         document.getElementById('adminToolbar').classList.add('visible');
       }
+      // changeRoles is a stricter check — only admin can flip access roles.
+      window._canChangeRoles = can(editorRole, 'changeRoles', user.email);
       // Load latest team config + the registered agents directory in parallel.
       // Display-time merge fills in any missing email/phone/uid from agent docs.
       await Promise.all([loadTeamConfig(), loadAgentsDirectory()]);

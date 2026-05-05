@@ -186,6 +186,8 @@
     .role-select:focus { border-color: var(--gold); }
     .role-select option { background: var(--navy-1); color: var(--text); }
     .role-select.saving { opacity: 0.5; cursor: wait; }
+    .role-static { font-size: 12px; color: var(--text); padding: 4px 0; display: inline-block; }
+    .muted { color: var(--muted); }
     .toast {
       position: fixed;
       bottom: 30px; left: 50%;
@@ -268,9 +270,15 @@
   <div class="toast" id="toast"></div>
 
   <script type="module">
-    import { auth, db, isAdmin, ROLES, DEFAULT_ROLE, roleLabel, isValidRole } from './firebase-init.js';
+    import { auth, db, isAdmin, can, ROLES, DEFAULT_ROLE, roleLabel, isValidRole } from './firebase-init.js';
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-    import { collection, getDocs, query, orderBy, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    import { collection, getDocs, query, orderBy, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+    // Set in the auth gate; drives whether buttons render and whether the
+    // role dropdown is interactive. canChangeRoles is the strongest of the
+    // three — only system admin can flip roles.
+    let canApprove = false;
+    let canChangeRoles = false;
 
     const content = document.getElementById('content');
     function showToast(msg) {
@@ -302,6 +310,7 @@
     let allAgents = [];
 
     function actionsFor(a) {
+      if (!canApprove) return '<span class="muted">—</span>';
       const s = a.status || 'active';
       if (s === 'pending') return `
         <button class="act-btn approve" data-uid="${esc(a.uid)}" data-action="approve">承認</button>
@@ -321,15 +330,19 @@
       const tbody = rows.length ? rows.map(a => {
         const status = a.status || 'active';
         const role = isValidRole(a.role) ? a.role : DEFAULT_ROLE;
-        const options = ROLES.map(r =>
-          `<option value="${r}"${r === role ? ' selected' : ''}>${esc(roleLabel(r, 'ja'))}</option>`
-        ).join('');
+        const roleCell = canChangeRoles
+          ? `<select class="role-select" data-uid="${esc(a.uid)}" aria-label="Role">${
+              ROLES.map(r =>
+                `<option value="${r}"${r === role ? ' selected' : ''}>${esc(roleLabel(r, 'ja'))}</option>`
+              ).join('')
+            }</select>`
+          : `<span class="role-static">${esc(roleLabel(role, 'ja'))}</span>`;
         return `
         <tr data-uid="${esc(a.uid)}">
           <td><div class="name">${esc(a.firstName)} ${esc(a.lastName)}</div></td>
           <td class="email">${esc(a.email)}</td>
           <td class="hide-sm">${esc(a.phone || '—')}</td>
-          <td><select class="role-select" data-uid="${esc(a.uid)}" aria-label="Role">${options}</select></td>
+          <td>${roleCell}</td>
           <td class="hide-sm">${fmtDate(a.createdAt)}</td>
           <td><span class="status ${status}">${status}</span></td>
           <td><div class="row-actions">${actionsFor(a)}</div></td>
@@ -432,7 +445,14 @@
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) { window.location.href = 'index.html'; return; }
-      if (!isAdmin(user.email)) { renderDenied(); return; }
+      let role = null;
+      try {
+        const snap = await getDoc(doc(db, 'agents', user.uid));
+        if (snap.exists()) role = snap.data().role || null;
+      } catch (e) {}
+      if (!can(role, 'viewAllAgents', user.email)) { renderDenied(); return; }
+      canApprove      = can(role, 'approveAgents', user.email);
+      canChangeRoles  = can(role, 'changeRoles',   user.email);
       renderLoading();
       loadAgents();
     });

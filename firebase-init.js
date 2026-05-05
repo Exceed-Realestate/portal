@@ -153,3 +153,46 @@ export const roleSummary = (role, lang = 'ja') => {
   if (!entry) return '';
   return lang === 'en' ? entry.summary_en : entry.summary_ja;
 };
+
+// ----- Capability flags (the part the runtime checks) -----
+// Each capability maps to the set of roles that hold it. Keep this list short
+// and named after what the user is trying to *do*, not what page they're on.
+// Pages use can(role, capability, email) to decide whether to render or gate.
+export const CAPABILITIES = {
+  // Customers
+  registerCustomer:   ['admin', 'ceo', 'md', 'manager', 'agent'],
+  viewAllCustomers:   ['admin', 'ceo', 'md', 'board'],
+  editAllCustomers:   ['admin', 'ceo', 'md'],
+
+  // Agents directory (the admin.html screen)
+  viewAllAgents:      ['admin', 'ceo', 'md', 'board'],
+  approveAgents:      ['admin', 'ceo', 'md'],
+  changeRoles:        ['admin'],
+
+  // Team tree (the org chart)
+  editTeamTree:       ['admin', 'ceo', 'md'],
+
+  // Deal flow
+  createDealAlert:    ['admin', 'ceo', 'md', 'manager', 'agent'],
+  receiveDealAlerts:  ['admin', 'ceo', 'md', 'board', 'manager'],
+
+  // Operations
+  viewLeadership:     ['admin', 'ceo', 'md', 'board'],
+  viewDatabase:       ['admin', 'ceo', 'md', 'board', 'manager', 'agent', 'back_office'],
+  bookCar:            ['admin', 'ceo', 'md', 'board', 'manager', 'agent', 'back_office'],
+  useTravel:          ['admin', 'ceo', 'md', 'board', 'manager', 'agent'],
+  useIRR:             ['admin', 'ceo', 'md', 'board', 'manager', 'agent'],
+  useListings:        ['admin', 'ceo', 'md', 'board', 'manager', 'agent', 'back_office']
+};
+
+// can(role, capability, email?) — central capability check.
+// `email` is optional and gives the legacy hard-coded ADMIN_EMAILS list a way in
+// even if the user's role hasn't been written to Firestore yet (cold-start case
+// for the platform owner). Past first dashboard load, role === 'admin' is what
+// drives the decision and email is unnecessary.
+export const can = (role, capability, email) => {
+  if (email && isAdmin(email)) return true;
+  if (!role || !capability) return false;
+  const allowed = CAPABILITIES[capability];
+  return Array.isArray(allowed) && allowed.includes(role);
+};
