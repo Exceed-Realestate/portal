@@ -2420,6 +2420,11 @@
       if (e.key === 'Escape' && document.getElementById('accBd').classList.contains('show')) {
         closeAccessModal();
       }
+      // ⌘E / Ctrl+E — toggle language
+      if ((e.metaKey || e.ctrlKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'e') {
+        e.preventDefault();
+        setLang(currentLang === 'ja' ? 'en' : 'ja');
+      }
     });
 
     // Init

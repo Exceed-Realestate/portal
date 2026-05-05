@@ -1224,9 +1224,13 @@
     };
     const toggleRegister = window.toggleRegister;
 
-    // Close modal on ESC
+    // Close modal on ESC, ⌘E / Ctrl+E to toggle language
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape') closeLogin();
+      if ((e.metaKey || e.ctrlKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'e') {
+        e.preventDefault();
+        setLang(currentLang === 'ja' ? 'en' : 'ja');
+      }
     });
 
     function showToast(msg) {

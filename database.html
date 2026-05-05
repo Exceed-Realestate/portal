@@ -528,6 +528,12 @@
 
     window.addEventListener('load', () => { setLang('ja'); });
     window.addEventListener('resize', positionPill);
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'e') {
+        e.preventDefault();
+        setLang(currentLang === 'ja' ? 'en' : 'ja');
+      }
+    });
   </script>
 </body>
 </html>
