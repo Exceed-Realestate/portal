@@ -959,3 +959,184 @@ body.dashboard-bg[data-theme="manor"] .bg-overlay { /* same as above, override t
   opacity: 0.4;
   mix-blend-mode: overlay;
 }
+
+/* =====================================================================
+   PREMIUM LAYER — finishing details that AI tools tend to skip.
+   Layers on top of the existing design system. Remove this section to
+   roll back without touching anything else.
+   ===================================================================== */
+
+/* ---- 1. Global film grain ----
+   A faint SVG noise plate fixed across the viewport so every surface
+   reads as having organic texture. Without this everything feels plastic.
+   Disabled on Manor (light) — grain on white reads as dirt. */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.06 0'/></filter><rect width='100%' height='100%' filter='url(%23g)'/></svg>");
+  opacity: 0.55;
+  mix-blend-mode: overlay;
+}
+[data-theme="manor"] body::after { display: none; }
+
+/* ---- 2. Brushed-metal gold ----
+   Replaces flat gold gradients on every primary CTA. 4-stop gradient with
+   a faint specular highlight band — reads as polished metal under light. */
+:root {
+  --gold-metal:
+    linear-gradient(135deg,
+      #f3e7c3 0%,
+      #e6cc94 20%,
+      #d4b87a 45%,
+      #c5a565 70%,
+      #d4b87a 100%);
+  --gold-metal-hover:
+    linear-gradient(135deg,
+      #fbf3d4 0%,
+      #f0d9a5 20%,
+      #e3c787 45%,
+      #cfb172 70%,
+      #e3c787 100%);
+  --gold-specular:
+    inset 0 1px 0 rgba(255, 252, 235, 0.65),
+    inset 0 -1px 0 rgba(120, 88, 36, 0.35),
+    inset 0 0 0 1px rgba(241, 234, 216, 0.18),
+    0 14px 36px -12px rgba(212, 184, 122, 0.55);
+  --gold-specular-hover:
+    inset 0 1px 0 rgba(255, 254, 246, 0.85),
+    inset 0 -1px 0 rgba(120, 88, 36, 0.30),
+    inset 0 0 0 1px rgba(241, 234, 216, 0.30),
+    0 22px 48px -14px rgba(212, 184, 122, 0.70);
+  --surface-specular:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.20),
+    0 24px 60px -28px rgba(0, 0, 0, 0.65),
+    0 8px 22px -14px rgba(0, 0, 0, 0.35);
+}
+
+.modal-actions .save,
+.add-btn,
+.lang-toggle .pill {
+  background: var(--gold-metal) !important;
+  box-shadow: var(--gold-specular) !important;
+  color: var(--navy-0) !important;
+  position: relative;
+  isolation: isolate;
+}
+.modal-actions .save:hover,
+.add-btn:hover {
+  background: var(--gold-metal-hover) !important;
+  box-shadow: var(--gold-specular-hover) !important;
+  transform: translateY(-1px);
+}
+
+/* ---- 3. Refined tile depth & rim-light hover ----
+   Inner specular highlight on every tile (reads as a physical card under
+   light) plus a soft gold rim-light glow on hover instead of a generic
+   translateY shift. */
+.tile {
+  box-shadow: var(--surface-specular) !important;
+}
+.tile::before {
+  content: '';
+  position: absolute; inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    radial-gradient(120% 60% at 0% 0%, rgba(255,255,255,0.06), transparent 55%),
+    radial-gradient(80% 40% at 100% 100%, rgba(212,184,122,0.04), transparent 60%);
+  opacity: 0.85;
+  z-index: 0;
+  transition: opacity .35s;
+}
+.tile:hover::before { opacity: 1; }
+.tile:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.10),
+    inset 0 0 0 1px rgba(212,184,122,0.30),
+    0 28px 70px -28px rgba(0,0,0,0.7),
+    0 0 40px -8px rgba(212,184,122,0.18) !important;
+}
+
+/* ---- 4. Tile icon wrap — slight metallic treatment ---- */
+.tile-icon-wrap {
+  background: linear-gradient(160deg,
+    rgba(241,234,216,0.18) 0%,
+    rgba(212,184,122,0.18) 35%,
+    rgba(212,184,122,0.06) 100%) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.20),
+    inset 0 -1px 0 rgba(120,88,36,0.20),
+    0 6px 16px -8px rgba(212,184,122,0.30) !important;
+}
+
+/* ---- 5. Schedule / info / birthday cards — refined elevation ---- */
+.schedule-card,
+.birthday-card,
+.recent-deals-card,
+.info-block {
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.06),
+    0 18px 44px -22px rgba(0,0,0,0.55) !important;
+}
+
+/* ---- 6. Editorial type ramp — bigger welcome line ----
+   The dashboard welcome is the editorial moment of the page. Bigger,
+   lighter Playfair display with more breathing room — magazine cover
+   line rather than a heading. */
+.left-col h1 {
+  font-size: clamp(38px, 4.6vw, 56px) !important;
+  font-weight: 500 !important;
+  line-height: 1.02 !important;
+  letter-spacing: -0.8px !important;
+  margin-bottom: 14px !important;
+}
+.left-col h1 #welcomeName {
+  font-style: italic;
+  font-weight: 600;
+  background: linear-gradient(135deg, #f6ecc8 0%, #d4b87a 60%, #b89757 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.left-col .page-sub {
+  letter-spacing: 5px !important;
+  font-size: 10.5px !important;
+  margin-bottom: 18px !important;
+}
+[data-theme="manor"] .left-col h1 #welcomeName {
+  background: none;
+  -webkit-text-fill-color: initial;
+  color: var(--gold) !important;
+}
+
+/* ---- 7. Topbar pills — ambient gold rim-light on hover ---- */
+.theme-btn:hover,
+.theme-btn:focus-visible {
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.10),
+    0 0 24px -6px rgba(212,184,122,0.40);
+}
+
+/* ---- 8. Tile corner badge — frosted refinement ---- */
+.tile-corner-badge {
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 4px 12px -4px rgba(0,0,0,0.35) !important;
+}
+
+/* ---- 9. Editorial divider — hair-thin gold-fading rule ---- */
+.rule {
+  height: 1px;
+  background: linear-gradient(90deg, rgba(212,184,122,0.45) 0%, rgba(212,184,122,0) 80%);
+  border: none;
+  margin: 14px 0;
+}
+
+/* ---- 10. Reduce-motion safety ---- */
+@media (prefers-reduced-motion: reduce) {
+  .tile, .modal-actions .save, .add-btn, .theme-btn { transition: none !important; }
+  .tile:hover, .modal-actions .save:hover, .add-btn:hover { transform: none !important; }
+}
