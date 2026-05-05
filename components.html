@@ -1,0 +1,694 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1280" />
+<title>Exceed Portal — Design System</title>
+<script src="theme-init.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="liquid.css">
+<style>
+  :root {
+    --navy-0:  #051428;
+    --navy-1:  #0a1f3d;
+    --navy-2:  #102a4f;
+    --gold:    #d4b87a;
+    --cream:   #f1ead8;
+    --text:    #e7eef9;
+    --muted:   #94a4be;
+    --line:        rgba(255,255,255,0.10);
+    --line-strong: rgba(255,255,255,0.18);
+    --gold-soft: rgba(212,184,122,0.18);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  /* -------- Page chrome -------- */
+  .page {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 60px 56px 96px;
+  }
+
+  .page-head {
+    margin-bottom: 56px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--line);
+  }
+  .page-eyebrow {
+    font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--gold); font-weight: 700; margin-bottom: 14px;
+  }
+  .page-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 48px; font-weight: 600; line-height: 1.05;
+    color: var(--cream); margin: 0 0 12px;
+    letter-spacing: -0.5px;
+  }
+  .page-lede {
+    font-size: 14px; color: var(--muted); max-width: 720px; margin: 0;
+  }
+
+  /* -------- Section -------- */
+  .sec {
+    margin-bottom: 56px;
+    padding: 32px;
+    border-radius: 20px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(5,20,40,0.5));
+    border: 1px solid var(--line);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+  }
+  .sec-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 28px; gap: 24px;
+  }
+  .sec-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px; font-weight: 600; color: var(--cream); margin: 0;
+  }
+  .sec-sub { font-size: 12px; color: var(--muted); }
+
+  /* -------- Item grid: each component in a labeled box -------- */
+  .grid { display: grid; gap: 18px; }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+  .grid-6 { grid-template-columns: repeat(6, 1fr); }
+
+  .item {
+    padding: 22px 18px 16px;
+    border-radius: 14px;
+    background: rgba(5,15,30,0.4);
+    border: 1px solid var(--line);
+    display: flex; flex-direction: column;
+    align-items: flex-start; gap: 14px;
+    min-height: 110px;
+  }
+  .item.center { align-items: center; justify-content: center; }
+  .item-label {
+    font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--muted); font-weight: 600;
+    margin-top: auto;
+  }
+  .item-state {
+    color: var(--gold);
+  }
+
+  /* ====================================================================
+     COMPONENTS — copied verbatim from each page so the gallery matches
+     production. Edit one place if renaming, but keep names stable so
+     Stitch reads cleanly.
+     ==================================================================== */
+
+  /* Buttons — primary / secondary / destructive (modal-actions style) */
+  .btn { font-family: inherit; padding: 11px 22px; border-radius: 8px; cursor: pointer;
+         font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600;
+         border: none; transition: transform .15s, box-shadow .2s; }
+  .btn-primary { background: linear-gradient(135deg, var(--cream), var(--gold)); color: var(--navy-0); }
+  .btn-primary.is-hover { transform: translateY(-1px); box-shadow: 0 10px 24px -10px rgba(212,184,122,.5); }
+  .btn-secondary { background: rgba(255,255,255,0.05); color: var(--text); border: 1px solid var(--line); }
+  .btn-secondary.is-hover { background: rgba(255,255,255,0.10); }
+  .btn-destructive { background: rgba(255,107,107,0.12); color: #ff8a8a; border: 1px solid rgba(255,107,107,0.35); }
+  .btn-destructive.is-hover { background: rgba(255,107,107,0.22); }
+  .btn:disabled, .btn.is-disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  /* Topbar pill (theme / access) */
+  .pill-btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 6px 12px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--line);
+    color: var(--cream);
+    border-radius: 999px;
+    font-family: inherit; font-size: 11px;
+    font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+    transition: all .15s; cursor: pointer;
+  }
+  .pill-btn.is-hover { background: rgba(212,184,122,0.12); border-color: rgba(212,184,122,0.4); color: var(--gold); }
+  .pill-btn svg { width: 13px; height: 13px; }
+
+  /* Language toggle */
+  .lang-toggle-demo { display: inline-flex; align-items: center; background: rgba(255,255,255,0.04); border: 1px solid var(--line); border-radius: 999px; padding: 3px; position: relative; }
+  .lang-toggle-demo button { background: transparent; border: none; color: var(--muted); font-family: inherit; font-size: 11px; font-weight: 600; letter-spacing: 1px; padding: 5px 10px; border-radius: 999px; cursor: pointer; position: relative; z-index: 1; }
+  .lang-toggle-demo button.active { color: var(--navy-0); }
+  .lang-toggle-demo .pill { position: absolute; top: 3px; bottom: 3px; left: 3px; width: 50px; background: linear-gradient(180deg, #ffffff 0%, var(--cream) 100%); border-radius: 999px; z-index: 0; box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 4px 12px rgba(0,0,0,0.25); }
+
+  /* Edit-mini icon buttons */
+  .edit-mini {
+    width: 28px; height: 28px; border-radius: 8px;
+    background: rgba(255,255,255,0.04); color: var(--muted);
+    border: 1px solid var(--line); cursor: pointer;
+    display: inline-grid; place-items: center; transition: all .15s;
+  }
+  .edit-mini svg { width: 12px; height: 12px; }
+  .edit-mini.edit.is-hover { background: rgba(212,184,122,0.18); color: var(--gold); border-color: rgba(212,184,122,0.4); }
+  .edit-mini.del.is-hover  { background: rgba(255,107,107,0.18); color: #ff8a8a; border-color: rgba(255,107,107,0.4); }
+
+  /* Tile buttons (dashboard) */
+  .tile-demo {
+    display: flex; flex-direction: column; justify-content: space-between;
+    width: 100%; height: 170px; padding: 22px;
+    border-radius: 14px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(5,20,40,0.5));
+    border: 1px solid var(--line);
+    color: var(--text);
+    cursor: pointer; transition: all .25s;
+    position: relative; overflow: hidden;
+  }
+  .tile-demo.is-hover {
+    border-color: rgba(212,184,122,0.4);
+    background: linear-gradient(180deg, rgba(212,184,122,0.10), rgba(5,20,40,0.6));
+    transform: translateY(-2px);
+    box-shadow: 0 18px 40px -16px rgba(212,184,122,0.4);
+  }
+  .tile-icon { width: 36px; height: 36px; color: var(--gold); }
+  .tile-icon svg { width: 100%; height: 100%; }
+  .tile-title { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--cream); font-weight: 600; }
+  .tile-desc { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .tile-badge {
+    position: absolute; top: 14px; right: 14px;
+    font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 700;
+    padding: 4px 8px; border-radius: 999px;
+  }
+  .tile-badge.new    { background: rgba(212,184,122,0.18); color: var(--gold); border: 1px solid rgba(212,184,122,0.4); }
+  .tile-badge.active { background: rgba(135,179,157,0.18); color: #87b39d; border: 1px solid rgba(135,179,157,0.4); }
+  .tile-badge.admin  { background: rgba(198,106,106,0.18); color: #c66a6a; border: 1px solid rgba(198,106,106,0.4); }
+  .tile-badge.soon   { background: rgba(148,164,190,0.18); color: var(--muted); border: 1px solid rgba(148,164,190,0.3); }
+
+  /* Status pills */
+  .status-pill {
+    display: inline-block; padding: 4px 10px; border-radius: 999px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
+  }
+  .status-pill.active    { background: rgba(135,179,157,0.16); color: #87b39d; border: 1px solid rgba(135,179,157,0.4); }
+  .status-pill.pending   { background: rgba(212,184,122,0.16); color: var(--gold); border: 1px solid rgba(212,184,122,0.4); }
+  .status-pill.suspended { background: rgba(198,106,106,0.16); color: #c66a6a; border: 1px solid rgba(198,106,106,0.4); }
+
+  /* Tier / access role chip */
+  .tier-chip {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 24px; height: 24px; padding: 0 8px;
+    border-radius: 999px;
+    background: rgba(5,15,30,0.6);
+    border: 1px solid rgba(212,184,122,0.4);
+    color: var(--gold);
+    font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+  }
+  .access-pill-demo {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 10px; border-radius: 999px;
+    background: var(--gold-soft); color: var(--gold);
+    font-size: 10px; letter-spacing: 1px; text-transform: uppercase; font-weight: 600;
+    border: 1px solid rgba(212,184,122,0.35);
+  }
+  .access-pill-demo::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--gold); }
+
+  /* Form controls */
+  .input, .select {
+    background: rgba(5,20,40,0.7);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 12px 14px;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    transition: border-color .15s, background .15s;
+    width: 100%;
+  }
+  .input:focus, .select:focus,
+  .input.is-focus, .select.is-focus { border-color: var(--gold); background: rgba(5,20,40,0.95); }
+  .input.is-error { border-color: rgba(255,107,107,0.6); }
+  .input::placeholder { color: var(--muted); }
+  .field-label { font-size: 11px; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; font-weight: 500; margin-bottom: 6px; display: block; }
+
+  /* Search input (with icon) */
+  .search-demo {
+    position: relative; width: 100%;
+  }
+  .search-demo svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--muted); }
+  .search-demo input {
+    background: rgba(5,20,40,0.7); border: 1px solid var(--line); border-radius: 999px;
+    color: var(--text); padding: 10px 16px 10px 38px; width: 100%;
+    font-family: inherit; font-size: 13px; outline: none;
+  }
+
+  /* Admin row buttons */
+  .act-btn {
+    font-family: inherit; padding: 6px 14px; border-radius: 6px;
+    border: none; font-size: 11px; font-weight: 600; cursor: pointer;
+    letter-spacing: 0.5px;
+  }
+  .act-btn.approve    { background: rgba(135,179,157,0.18); color: #87b39d; border: 1px solid rgba(135,179,157,0.4); }
+  .act-btn.suspend    { background: rgba(198,106,106,0.18); color: #c66a6a; border: 1px solid rgba(198,106,106,0.4); }
+  .act-btn.reactivate { background: rgba(212,184,122,0.18); color: var(--gold); border: 1px solid rgba(212,184,122,0.4); }
+
+  /* Toast */
+  .toast-demo {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 12px 18px; border-radius: 12px;
+    background: rgba(5,15,30,0.95);
+    border: 1px solid rgba(212,184,122,0.4);
+    color: var(--cream); font-size: 13px;
+    box-shadow: 0 20px 50px -10px rgba(0,0,0,0.7);
+  }
+
+  /* Loading / empty */
+  .loading { color: var(--muted); font-size: 13px; padding: 30px; text-align: center; }
+  .loading::after { content: '…'; animation: dots 1.4s infinite; }
+  @keyframes dots { 0%,20% { content: '.'; } 40% { content: '..'; } 60%,100% { content: '...'; } }
+  .empty {
+    color: var(--muted); font-size: 13px; padding: 30px; text-align: center;
+    border: 1px dashed var(--line); border-radius: 12px;
+  }
+
+  /* User chip */
+  .user-chip-demo {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 5px 14px 5px 5px; border-radius: 999px;
+    background: rgba(255,255,255,0.04); border: 1px solid var(--line);
+  }
+  .user-chip-demo .avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--cream), var(--gold));
+    color: var(--navy-0); font-weight: 700; font-size: 12px;
+    display: grid; place-items: center;
+  }
+  .user-chip-demo .name { font-size: 12px; color: var(--cream); font-weight: 500; }
+
+  /* Card examples — schedule + info block */
+  .demo-card {
+    width: 100%; padding: 22px;
+    border-radius: 14px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(5,20,40,0.5));
+    border: 1px solid var(--line);
+  }
+  .card-eyebrow { font-size: 10px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; font-weight: 700; margin-bottom: 6px; }
+  .card-title { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--cream); margin: 0 0 14px; font-weight: 600; }
+  .info-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+  .info-row:last-child { border-bottom: none; }
+  .info-row .num { color: var(--gold); font-weight: 700; }
+
+  /* Color swatch */
+  .swatch { width: 100%; aspect-ratio: 1.2; border-radius: 12px; border: 1px solid var(--line); position: relative; overflow: hidden; }
+  .swatch .hex { position: absolute; bottom: 8px; left: 10px; font-size: 11px; font-family: 'Inter', monospace; font-weight: 600; color: rgba(255,255,255,0.85); text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+  .swatch-name { font-size: 12px; color: var(--text); margin-top: 8px; font-weight: 500; }
+
+  /* =====================================================================
+     PRINT / PDF — browsers strip backgrounds and drop backdrop-filter on
+     export by default. Force colour rendering, swap glass surfaces for
+     solid navy, and avoid splitting components across pages.
+     ===================================================================== */
+  @page { size: A4; margin: 12mm; }
+
+  @media print {
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      color-adjust: exact !important;
+    }
+
+    html, body {
+      background: #0a1f3d !important;
+    }
+    /* Replace fixed skyline (which prints unreliably) with a flat backdrop */
+    .bg-skyline, .bg-overlay { display: none !important; }
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: -1;
+      background: linear-gradient(180deg, #102a4f 0%, #051428 100%);
+    }
+
+    /* backdrop-filter doesn't render in PDFs — fall back to opaque navy */
+    .sec, .item, .demo-card, .tile-demo, .topbar {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+    .sec  { background: rgba(8, 24, 46, 0.95) !important; }
+    .item { background: rgba(5, 15, 30, 0.88) !important; }
+
+    /* Keep components together — never split a card across pages */
+    .sec, .item, .demo-card, .tile-demo, .grid > *, .page-head, .type-sample {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    .page-head { page-break-after: avoid; break-after: avoid; }
+
+    /* Slightly tighter type so each section fits on a page */
+    .page { padding: 24px 32px; }
+    .sec  { margin-bottom: 32px; padding: 24px; }
+    .page-title { font-size: 36px; }
+    .sec-title  { font-size: 20px; }
+  }
+
+  /* Type sample */
+  .type-sample { padding: 16px 0; border-bottom: 1px solid var(--line); }
+  .type-sample:last-child { border-bottom: none; }
+  .type-meta { font-size: 10px; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; }
+  .type-h1 { font-family: 'Playfair Display', serif; font-size: 48px; font-weight: 600; color: var(--cream); line-height: 1.05; }
+  .type-h2 { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 600; color: var(--cream); line-height: 1.1; }
+  .type-h3 { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 600; color: var(--cream); }
+  .type-body { font-size: 14px; color: var(--text); line-height: 1.6; }
+  .type-meta-text { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+</style>
+</head>
+<body class="dashboard-bg">
+  <div class="bg-skyline"></div>
+  <div class="bg-overlay"></div>
+
+  <div class="page">
+    <!-- Header -->
+    <div class="page-head">
+      <div class="page-eyebrow">Exceed Real Estate · Dubai</div>
+      <h1 class="page-title">Portal Design System</h1>
+      <p class="page-lede">
+        Every button, pill, input and card in the staff portal — laid out as a single reference frame.
+        Use this as input for AI redesign tools. Brand: deep navy + warm gold + cream, Playfair Display
+        for headings, Inter for body, glass-morphism surfaces, bilingual JA/EN.
+      </p>
+    </div>
+
+    <!-- ============== COLOR ============== -->
+    <section class="sec">
+      <div class="sec-head">
+        <h2 class="sec-title">Color tokens</h2>
+        <span class="sec-sub">Navy base · gold accent · cream highlights</span>
+      </div>
+      <div class="grid grid-6">
+        <div><div class="swatch" style="background:#051428"><span class="hex">#051428</span></div><div class="swatch-name">Navy 0 · root</div></div>
+        <div><div class="swatch" style="background:#0a1f3d"><span class="hex">#0a1f3d</span></div><div class="swatch-name">Navy 1 · surface</div></div>
+        <div><div class="swatch" style="background:#102a4f"><span class="hex">#102a4f</span></div><div class="swatch-name">Navy 2 · raised</div></div>
+        <div><div class="swatch" style="background:#d4b87a"><span class="hex">#d4b87a</span></div><div class="swatch-name">Gold · accent</div></div>
+        <div><div class="swatch" style="background:#f1ead8"><span class="hex" style="color:#333">#f1ead8</span></div><div class="swatch-name">Cream · highlight</div></div>
+        <div><div class="swatch" style="background:#94a4be"><span class="hex">#94a4be</span></div><div class="swatch-name">Muted · secondary text</div></div>
+      </div>
+    </section>
+
+    <!-- ============== TYPOGRAPHY ============== -->
+    <section class="sec">
+      <div class="sec-head">
+        <h2 class="sec-title">Typography</h2>
+        <span class="sec-sub">Playfair Display for editorial · Inter for UI</span>
+      </div>
+      <div class="type-sample">
+        <div class="type-meta">Display · Playfair Display 48/52 · 600</div>
+        <div class="type-h1">Welcome back, Balraj</div>
+      </div>
+      <div class="type-sample">
+        <div class="type-meta">Section · Playfair 32/36 · 600</div>
+        <div class="type-h2">Quick access</div>
+      </div>
+      <div class="type-sample">
+        <div class="type-meta">Card title · Playfair 22/26 · 600</div>
+        <div class="type-h3">IRR Simulator</div>
+      </div>
+      <div class="type-sample">
+        <div class="type-meta">Body · Inter 14/22 · 400</div>
+        <p class="type-body" style="margin:0;max-width:680px">Exceed Real Estate is a luxury property agency in Dubai serving Japanese investors. The portal is bilingual — Japanese is primary, English is the toggle. Tone: discreet, editorial, hospitality-grade.</p>
+      </div>
+      <div class="type-sample">
+        <div class="type-meta">Eyebrow / meta · Inter 11/16 · 600 · 1.5px tracking</div>
+        <div class="type-meta-text">Today · Monday, 4 May</div>
+      </div>
+    </section>
+
+    <!-- ============== BUTTONS ============== -->
+    <section class="sec">
+      <div class="sec-head">
+        <h2 class="sec-title">Buttons — primary action set</h2>
+        <span class="sec-sub">Save / Cancel / Delete · used across modals</span>
+      </div>
+      <div class="grid grid-4">
+        <div class="item">
+          <button class="btn btn-primary">保存 / Save</button>
+          <span class="item-label">Primary · resting</span>
+        </div>
+        <div class="item">
+          <button class="btn btn-primary is-hover">保存 / Save</button>
+          <span class="item-label item-state">Primary · hover</span>
+        </div>
+        <div class="item">
+          <button class="btn btn-primary is-disabled">保存 / Save</button>
+          <span class="item-label item-state">Primary · disabled</span>
+        </div>
+        <div class="item">
+          <button class="btn btn-primary"><span style="display:inline-block;width:12px;height:12px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;margin-right:8px;vertical-align:-2px"></span>Saving</button>
+          <span class="item-label item-state">Primary · loading</span>
+        </div>
+
+        <div class="item">
+          <button class="btn btn-secondary">キャンセル / Cancel</button>
+          <span class="item-label">Secondary · resting</span>
+        </div>
+        <div class="item">
+          <button class="btn btn-secondary is-hover">キャンセル / Cancel</button>
+          <span class="item-label item-state">Secondary · hover</span>
+        </div>
+        <div class="item">
+          <button class="btn btn-destructive">削除 / Delete</button>
+          <span class="item-label">Destructive · resting</span>
+        </div>
+        <div class="item">
+          <button class="btn btn-destructive is-hover">削除 / Delete</button>
+          <span class="item-label item-state">Destructive · hover</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============== ADMIN ROW BUTTONS ============== -->
+    <section class="sec">
+      <div class="sec-head">
+        <h2 class="sec-title">Admin row actions</h2>
+        <span class="sec-sub">Approve · Suspend · Reactivate — table rows</span>
+      </div>
+      <div class="grid grid-4">
+        <div class="item"><button class="act-btn approve">承認 Approve</button><span class="item-label">Approve · resting</span></div>
+        <div class="item"><button class="act-btn suspend">停止 Suspend</button><span class="item-label">Suspend · resting</span></div>
+        <div class="item"><button class="act-btn reactivate">再有効化 Reactivate</button><span class="item-label">Reactivate · resting</span></div>
+        <div class="item"><button class="act-btn approve" disabled style="opacity:0.5;cursor:not-allowed">承認 Approve</button><span class="item-label item-state">Approve · disabled</span></div>
+      </div>
+    </section>
+
+    <!-- ============== TOPBAR PILLS ============== -->
+    <section class="sec">
+      <div class="sec-head">
+        <h2 class="sec-title">Topbar pills</h2>
+        <span class="sec-sub">Theme · Access · Language toggle · User chip</span>
+      </div>
+      <div class="grid grid-4">
+        <div class="item">
+          <button class="pill-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+            <span>Atrium</span>
+          </button>
+          <span class="item-label">Theme · resting</span>
+        </div>
+        <div class="item">
+          <button class="pill-btn is-hover">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+            <span>Atrium</span>
+          </button>
+          <span class="item-label item-state">Theme · hover</span>
+        </div>
+        <div class="item">
+          <button class="pill-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <span>アクセス</span>
+          </button>
+          <span class="item-label">Access · resting</span>
+        </div>
+        <div class="item">
+          <div class="user-chip-demo">
+            <div class="avatar">B</div>
+            <div class="name">Balraj</div>
+          </div>
+          <span class="item-label">User chip</span>
+        </div>
+      </div>
+
+      <div class="grid grid-3" style="margin-top:18px">
+        <div class="item">
+          <div class="lang-toggle-demo">
+            <span class="pill"></span>
+            <button class="active">日本語</button>
+            <button>EN</button>
+          </div>
+          <span class="item-label">Lang · JA active</span>
+        </div>
+        <div class="item">
+          <div class="lang-toggle-demo">
+            <span class="pill" style="left:auto;right:3px;width:38px"></span>
+            <button>日本語</button>
+            <button class="active">EN</button>
+          </div>
+          <span class="item-label item-state">Lang · EN active</span>
+        </div>
+        <div class="item" style="flex-direction:row;gap:8px;align-items:center">
+          <button class="edit-mini edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+          <button class="edit-mini edit is-hover"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+          <button class="edit-mini del"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+          <button class="edit-mini del is-hover"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+          <span class="item-label" style="margin-left:auto">Icon buttons</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============== TILE BUTTONS ============== -->
+    <section class="sec">
+      <div class="sec-head">
+        <h2 class="sec-title">Dashboard tile buttons</h2>
+        <span class="sec-sub">Tool grid on agent dashboard · 380×170 · badge variants</span>
+      </div>
+      <div class="grid grid-3">
+        <div class="tile-demo">
+          <span class="tile-badge new">NEW</span>
+          <div class="tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="3" y1="20" x2="21" y2="20"/></svg></div>
+          <div>
+            <div class="tile-title">IRR Simulator</div>
+            <div class="tile-desc">内部収益率を計算 · Calculate property IRR</div>
+          </div>
+        </div>
+        <div class="tile-demo is-hover">
+          <span class="tile-badge active">ACTIVE</span>
+          <div class="tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+          <div>
+            <div class="tile-title">Team Members</div>
+            <div class="tile-desc">組織図と連絡先 · Org chart &amp; contacts</div>
+          </div>
+        </div>
+        <div class="tile-demo">
+          <span class="tile-badge admin">ADMIN</span>
+          <div class="tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+          <div>
+            <div class="tile-title">Registered Customers</div>
+            <div class="tile-desc">顧客一覧 · All customers</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============== STATUS PILLS ============== -->
+    <section class="sec">
+      <div class="sec-head">
+        <h2 class="sec-title">Status pills &amp; chips</h2>
+        <span class="sec-sub">Status · access role · tier · linked-agent</span>
+      </div>
+      <div class="grid grid-6">
+        <div class="item center"><span class="status-pill active">active</span><span class="item-label">Active</span></div>
+        <div class="item center"><span class="status-pill pending">pending</span><span class="item-label">Pending</span></div>
+        <div class="item center"><span class="status-pill suspended">suspended</span><span class="item-label">Suspended</span></div>
+        <div class="item center"><span class="tier-chip">T1</span><span class="item-label">Tier chip</span></div>
+        <div class="item center"><span class="tier-chip" style="border-color:rgba(135,179,157,0.5);color:#87b39d">T4</span><span class="item-label">Tier · manager</span></div>
+        <div class="item center"><span class="access-pill-demo">Linked · balraj@</span><span class="item-label">Access pill</span></div>
+      </div>
+    </section>
+
+    <!-- ============== FORM CONTROLS ============== -->
+    <section class="sec">
+      <div class="sec-head">
+        <h2 class="sec-title">Form controls</h2>
+        <span class="sec-sub">Inputs · selects · search · field labels</span>
+      </div>
+      <div class="grid grid-3">
+        <div class="item">
+          <label class="field-label">名前 / Name</label>
+          <input class="input" placeholder="YUTA NAGATOSHI" />
+          <span class="item-label">Input · resting</span>
+        </div>
+        <div class="item">
+          <label class="field-label">名前 / Name</label>
+          <input class="input is-focus" value="Balraj Singh" />
+          <span class="item-label item-state">Input · focused</span>
+        </div>
+        <div class="item">
+          <label class="field-label">名前 / Name</label>
+          <input class="input is-error" value="" />
+          <span class="item-label item-state">Input · error</span>
+        </div>
+
+        <div class="item">
+          <label class="field-label">役割 / Role</label>
+          <select class="select">
+            <option>システム管理者 — プラットフォーム管理</option>
+            <option>CEO — 全権限</option>
+            <option>マネージャー — 配下のチーム管理</option>
+          </select>
+          <span class="item-label">Select · resting</span>
+        </div>
+        <div class="item">
+          <label class="field-label">役割 / Role</label>
+          <select class="select" disabled style="opacity:0.5;cursor:not-allowed">
+            <option>エージェント</option>
+          </select>
+          <span class="item-label item-state">Select · disabled</span>
+        </div>
+        <div class="item">
+          <label class="field-label">検索 / Search</label>
+          <div class="search-demo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input placeholder="ツールを検索..." />
+          </div>
+          <span class="item-label">Search input</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============== FEEDBACK ============== -->
+    <section class="sec">
+      <div class="sec-head">
+        <h2 class="sec-title">Feedback &amp; states</h2>
+        <span class="sec-sub">Toast · loading · empty · denied</span>
+      </div>
+      <div class="grid grid-4">
+        <div class="item center"><div class="toast-demo">✓ 保存しました</div><span class="item-label">Toast · success</span></div>
+        <div class="item center"><div class="toast-demo" style="border-color:rgba(255,107,107,0.4);color:#ff8a8a">✗ 保存に失敗</div><span class="item-label">Toast · error</span></div>
+        <div class="item center"><div class="loading">読み込み中</div><span class="item-label">Loading</span></div>
+        <div class="item center" style="padding:0"><div class="empty">該当する結果がありません</div><span class="item-label" style="padding:0 18px 14px">Empty</span></div>
+      </div>
+    </section>
+
+    <!-- ============== CARDS ============== -->
+    <section class="sec">
+      <div class="sec-head">
+        <h2 class="sec-title">Card surfaces</h2>
+        <span class="sec-sub">Schedule · info block · access hero</span>
+      </div>
+      <div class="grid grid-3">
+        <div class="demo-card">
+          <div class="card-eyebrow">本日 · Today</div>
+          <div class="card-title">5月 4日 月</div>
+          <div class="info-row"><span>10:00 · Sergio call</span><span class="num">JST</span></div>
+          <div class="info-row"><span>14:30 · Site visit</span><span class="num">GST</span></div>
+          <div class="info-row"><span>17:00 · Team sync</span><span class="num">JST</span></div>
+        </div>
+        <div class="demo-card">
+          <div class="card-eyebrow">Quick stats</div>
+          <div class="card-title">At a glance</div>
+          <div class="info-row"><span>Team members</span><span class="num">23</span></div>
+          <div class="info-row"><span>Available tools</span><span class="num">11</span></div>
+          <div class="info-row"><span>Online now</span><span class="num">7</span></div>
+        </div>
+        <div class="demo-card" style="background:linear-gradient(135deg, rgba(212,184,122,0.16), rgba(212,184,122,0.04));border-color:rgba(212,184,122,0.4)">
+          <div class="card-eyebrow" style="color:var(--gold)">Your role</div>
+          <div class="card-title">System Admin</div>
+          <div style="font-size:13px;color:var(--text);line-height:1.55">プラットフォーム管理者。全ての機能・データ・設定にアクセス可能。</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============== FOOTER ============== -->
+    <div style="margin-top:64px;padding-top:24px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px">
+      <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);font-weight:600">Exceed Real Estate · Dubai</div>
+      <div style="font-size:11px;color:var(--muted)">All components, all states, one frame · screenshot for AI redesign tools</div>
+    </div>
+  </div>
+</body>
+</html>
