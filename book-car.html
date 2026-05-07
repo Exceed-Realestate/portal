@@ -199,16 +199,42 @@
     .booking-list { display: flex; flex-direction: column; gap: 10px; }
     .booking-item {
       display: grid;
-      grid-template-columns: auto 1fr auto;
+      grid-template-columns: auto 1fr auto auto;
       align-items: center;
-      gap: 14px;
+      gap: 12px;
       padding: 14px 16px;
       background: rgba(255,255,255,0.04);
       border: 1px solid var(--line);
       border-radius: 10px;
     }
+    @media (max-width: 600px) {
+      .booking-item { grid-template-columns: 1fr auto; }
+      .booking-item .when, .booking-item .who { grid-column: 1 / -1; }
+    }
     .booking-item.approved { border-color: rgba(92,201,143,0.4); background: rgba(92,201,143,0.08); }
     .booking-item.declined { border-color: rgba(255,107,107,0.3); background: rgba(255,107,107,0.06); opacity: 0.7; }
+    .booking-item.cancelled { border-color: rgba(154,168,194,0.3); background: rgba(154,168,194,0.06); opacity: 0.6; }
+    .booking-item .row-actions { display: inline-flex; gap: 6px; align-items: center; }
+    .booking-item .row-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 11px; border-radius: 8px;
+      font-family: inherit; font-size: 11px; font-weight: 600;
+      letter-spacing: 0.5px; cursor: pointer; text-decoration: none;
+      border: 1px solid transparent;
+      transition: background .15s, border-color .15s;
+    }
+    .row-btn svg { width: 13px; height: 13px; }
+    .row-btn.driver {
+      background: rgba(37,211,102,0.14); color: #25d366;
+      border-color: rgba(37,211,102,0.4);
+    }
+    .row-btn.driver:hover { background: rgba(37,211,102,0.22); }
+    .row-btn.cancel {
+      background: rgba(255,107,107,0.10); color: #ff8a8a;
+      border-color: rgba(255,107,107,0.35);
+    }
+    .row-btn.cancel:hover { background: rgba(255,107,107,0.20); }
+    .row-btn:disabled { opacity: 0.5; cursor: wait; }
     .booking-item .when {
       font-family: ui-monospace, 'SF Mono', monospace;
       font-size: 13px;
@@ -225,6 +251,7 @@
     .status.pending { background: rgba(255,209,102,0.15); color: #ffd166; border: 1px solid rgba(255,209,102,0.4); }
     .status.approved { background: rgba(92,201,143,0.15); color: var(--green); border: 1px solid rgba(92,201,143,0.4); }
     .status.declined { background: rgba(255,107,107,0.15); color: #ff8a8a; border: 1px solid rgba(255,107,107,0.4); }
+    .status.cancelled { background: rgba(154,168,194,0.16); color: #c1c9da; border: 1px solid rgba(154,168,194,0.4); }
     .booking-empty { text-align: center; padding: 30px 20px; color: var(--muted); font-size: 13px; border: 1px dashed var(--line); border-radius: 10px; }
 
     .conflict-warn { background: rgba(255,107,107,0.12); border: 1px solid rgba(255,107,107,0.4); color: #ff8a8a; padding: 12px 14px; border-radius: 8px; font-size: 13px; margin: 14px 0; display: none; }
@@ -516,9 +543,19 @@
   </template>
 
   <script type="module">
-    import { auth, db, isAdmin } from './firebase-init.js';
+    import { auth, db, isAdmin, can } from './firebase-init.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-    import { collection, addDoc, getDocs, query, orderBy, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    import { collection, addDoc, getDoc, getDocs, doc, updateDoc, query, orderBy, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    import { sendCarBookingNotifications, driverWhatsappUrl } from './car-notify.js';
+
+    // Same approver list as car-approve.html — only ceo/md + named approvers
+    // can cancel anyone's booking. Requesters can always cancel their own.
+    const CAR_APPROVER_ROLES = ['ceo', 'md'];
+    const CAR_APPROVER_EMAILS = new Set([
+      'shoya@exceed-re.ae',
+      'teruo@exceed-re.ae'
+    ]);
+    let _userRole = null; // populated in auth gate
 
     // Approver phones — fill in with real numbers, then WhatsApp deep-links work directly.
     // Format: + then digits only (no spaces, no dashes) — required by wa.me links.
@@ -778,6 +815,21 @@ ${url}`;
 
     window.closeSendModal = function() { document.getElementById('sendModalBd').classList.remove('show'); };
 
+    /* ----- Permission helpers (mirror car-approve.html) ----- */
+    function canApproveCarBooking(role, email) {
+      if (isAdmin(email)) return true;
+      if (email && CAR_APPROVER_EMAILS.has(email.toLowerCase())) return true;
+      return !!(role && CAR_APPROVER_ROLES.includes(role));
+    }
+    function canCancelBooking(b) {
+      // Already cancelled? Done. Past? Don't allow.
+      if (b.status === 'cancelled') return false;
+      if (new Date(b.endISO) < new Date()) return false;
+      // Requester can always cancel their own. Approvers can cancel anyone's.
+      if (currentUser && b.requesterUid === currentUser.uid) return true;
+      return canApproveCarBooking(_userRole, currentUser && currentUser.email);
+    }
+
     async function loadBookings() {
       const listEl = document.getElementById('bookingList');
       try {
@@ -794,10 +846,33 @@ ${url}`;
           const end = new Date(b.endISO);
           const when = start.toLocaleDateString() + ' · ' + start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' – ' + end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
           const carName = b.car === 'phantom' ? 'Rolls-Royce Phantom' : 'Cadillac Escalade';
+
+          // Action buttons: Contact driver (only for upcoming approved) +
+          // Cancel (only for upcoming non-cancelled where caller has permission)
+          const isUpcoming = end > new Date();
+          const actions = [];
+          if (b.status === 'approved' && isUpcoming) {
+            const waUrl = driverWhatsappUrl(b, 'ready');
+            actions.push(`<a class="row-btn driver" href="${waUrl}" target="_blank" rel="noopener" title="Contact driver Mansoor">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.1-.2.3-.8.9-1 1.1-.2.2-.4.2-.6.1-.7-.4-1.5-.7-2.4-1.6-.7-.6-1.1-1.4-1.3-1.6-.1-.2 0-.3.1-.4.1-.1.2-.3.4-.4.1-.1.2-.2.2-.4.1-.2 0-.3 0-.4 0-.1-.6-1.5-.9-2-.2-.5-.5-.4-.7-.4h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4 0 1.4 1 2.8 1.2 3 .1.2 2 3.1 4.9 4.4.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.6-.1 1.7-.7 1.9-1.3.2-.7.2-1.2.2-1.3-.1-.1-.3-.2-.6-.3M12 2C6.5 2 2 6.5 2 12c0 1.9.5 3.7 1.5 5.3L2 22l4.8-1.3c1.5.8 3.3 1.3 5.2 1.3 5.5 0 10-4.5 10-10S17.5 2 12 2z"/></svg>
+              Driver
+            </a>`);
+          }
+          if (canCancelBooking(b)) {
+            actions.push(`<button class="row-btn cancel" onclick="cancelBookingPrompt('${b.id}')" title="Cancel booking">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+              Cancel
+            </button>`);
+          }
+          const actionsHtml = actions.length
+            ? `<div class="row-actions">${actions.join('')}</div>`
+            : '<div></div>';
+
           return `<div class="booking-item ${b.status}">
             <div class="when">${when}</div>
             <div class="who">${b.requesterName || 'Team'} → ${b.client || 'no client'}<span class="car-tag">${carName}</span></div>
             <span class="status ${b.status}">${b.status}</span>
+            ${actionsHtml}
           </div>`;
         }).join('');
         checkConflicts();
@@ -806,6 +881,39 @@ ${url}`;
         listEl.innerHTML = `<div class="booking-empty">Couldn't load bookings (${e.code || 'error'}).</div>`;
       }
     }
+
+    /* ----- Cancel handler -----
+       Confirms with the user, writes 'cancelled' status to Firestore (with
+       cancelledBy + cancelledAt audit fields), then fires the shared
+       email + in-portal notification dispatcher. */
+    window.cancelBookingPrompt = async function(bookingId) {
+      const b = bookings.find(x => x.id === bookingId);
+      if (!b) return;
+      const carName = b.car === 'phantom' ? 'Rolls-Royce Phantom' : 'Cadillac Escalade';
+      const when = new Date(b.startISO).toLocaleString();
+      const msg = `Cancel ${carName} booking for ${when}?\n\nThe requester and Shoya (plus Malik if applicable) will be notified by email.`;
+      if (!confirm(msg)) return;
+      try {
+        const u = currentUser;
+        const actorName = u.displayName || (u.email ? u.email.split('@')[0] : 'Team');
+        await updateDoc(doc(db, 'carBookings', bookingId), {
+          status: 'cancelled',
+          cancelledAt: serverTimestamp(),
+          cancelledByUid: u.uid,
+          cancelledByEmail: u.email,
+          cancelledByName: actorName
+        });
+        // Fire-and-forget — don't make the user wait on email queue
+        sendCarBookingNotifications(db, {
+          booking: b, bookingId, status: 'cancelled', actorName
+        }).catch(err => console.warn('cancellation notifications failed', err));
+        showToast(`✓ Cancelled — notifications sent`);
+        loadBookings();
+      } catch (err) {
+        console.error(err);
+        showToast('Cancel failed: ' + (err.message || err.code || 'unknown'));
+      }
+    };
 
     // Default date to today
     document.getElementById('bDate').valueAsDate = new Date();
@@ -819,6 +927,11 @@ ${url}`;
         firstName = local.charAt(0).toUpperCase() + local.slice(1);
       }
       document.getElementById('userName').textContent = firstName || 'Agent';
+      // Pull role for the cancel-permission check
+      try {
+        const aSnap = await getDoc(doc(db, 'agents', user.uid));
+        if (aSnap.exists()) _userRole = aSnap.data().role || null;
+      } catch (_) {}
       loadBookings();
     });
   </script>
