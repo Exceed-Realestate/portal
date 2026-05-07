@@ -266,7 +266,7 @@
         loadFailed: '読み込みに失敗しました',
         loadFailedBody: '予約の取得中にエラーが発生しました。しばらくしてから再度お試しください。',
         deniedTitle: '承認権限がありません',
-        deniedBody: '車両予約を承認できるのは、CEO・MD・マネージャー・管理者のみです。',
+        deniedBody: '車両予約を承認できるのは、CEO（島田）と MD（細山）のみです。',
         car: '車両', when: '日時', requester: '申請者', email: 'メール',
         property: '物件', area: 'エリア', leadSource: 'リード元',
         client: 'クライアント', budget: '予算 (AED)', notes: 'メモ',
@@ -296,7 +296,7 @@
         loadFailed: 'Load failed',
         loadFailedBody: 'Something went wrong fetching the booking. Please try again later.',
         deniedTitle: 'You don\'t have approval permission',
-        deniedBody: 'Only CEO / MD / Manager / Admin roles can approve car bookings.',
+        deniedBody: 'Only the CEO (Teruo) and MD (Shoya) can approve car bookings.',
         car: 'Vehicle', when: 'When', requester: 'Requester', email: 'Email',
         property: 'Property', area: 'Area', leadSource: 'Lead source',
         client: 'Client', budget: 'Budget (AED)', notes: 'Notes',
@@ -362,14 +362,19 @@
     }
 
     /* ----- Permission gate -----
-       Approval allowed for: admin emails, role admin/ceo/md/manager.
-       Capability map already covers this via 'approveAgents' but car-bookings
-       deserve their own check — using 'changeRoles' would be too tight,
-       'approveAgents' is the closest existing gate. */
+       Car bookings only need CEO or MD approval (Shoya = MD, Teruo = CEO).
+       isAdmin keeps the system owner unblocked even before their role doc
+       is set. CAR_APPROVER_EMAILS is the explicit fallback for named
+       approvers whose Firestore role hasn't been assigned yet. */
+    const CAR_APPROVER_ROLES = ['ceo', 'md'];
+    const CAR_APPROVER_EMAILS = new Set([
+      'shoya@exceed-re.ae',
+      'teruo@exceed-re.ae'
+    ]);
     function canApprove(role, email) {
       if (isAdmin(email)) return true;
-      // approveAgents is admin/ceo/md — that's the right tier for company assets
-      return can(role, 'approveAgents', email);
+      if (email && CAR_APPROVER_EMAILS.has(email.toLowerCase())) return true;
+      return !!(role && CAR_APPROVER_ROLES.includes(role));
     }
 
     function renderInvalid(titleKey, bodyKey) {
