@@ -989,6 +989,7 @@
     .tile[data-key="payment"]           { --tile-bg: url('cards/payment.jpg'); }
     .tile[data-key="manage-access"]     { --tile-bg: url('cards/manage-access.jpg'); }
     .tile[data-key="listings"]          { --tile-bg: url('cards/listings.jpg'); }
+    .tile[data-key="database"]          { --tile-bg: url('cards/database.jpg'); }
 
     /* ---- Per-tile accent palette ----
        Hues are kept in the same low-saturation, dusk-inspired family so
@@ -2068,7 +2069,8 @@
        get the .has-card class so the CSS layers in the photo background. */
     const TILES_WITH_CARD = new Set([
       'customer-register', 'irr', 'availability', 'travel', 'team',
-      'deal-alert', 'book-car', 'payment', 'manage-access', 'listings'
+      'deal-alert', 'book-car', 'payment', 'manage-access', 'listings',
+      'database'
     ]);
 
     function renderTileGrid() {
