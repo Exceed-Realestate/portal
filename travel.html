@@ -125,6 +125,47 @@
     main { max-width: 1100px; margin: 0 auto; padding: 30px 32px 80px; }
 
     .instructions { background: linear-gradient(180deg, rgba(212,184,122,0.08), rgba(212,184,122,0.02)); border: 1px solid rgba(212,184,122,0.3); border-radius: var(--radius); padding: 24px 28px; margin-bottom: 28px; position: relative; }
+
+    /* ----- How-to-use video block ----- */
+    .howto {
+      background: linear-gradient(180deg, rgba(16,42,79,0.85), rgba(10,31,61,0.85));
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      padding: 22px 24px 24px;
+      margin-bottom: 22px;
+      position: relative;
+    }
+    .howto-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+    .howto-title { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 600; color: var(--cream); display: flex; align-items: center; gap: 10px; }
+    .howto-title .badge {
+      font-family: 'Inter', sans-serif; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase;
+      padding: 3px 8px; border-radius: 999px;
+      background: rgba(212,184,122,0.16); color: var(--gold); border: 1px solid rgba(212,184,122,0.4);
+      font-weight: 700;
+    }
+    .howto-title svg { width: 18px; height: 18px; color: var(--gold); }
+    .howto-frame {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      border-radius: 12px;
+      overflow: hidden;
+      background: linear-gradient(135deg, #08182f 0%, #051428 100%);
+      border: 1px solid var(--line);
+    }
+    .howto-frame iframe { width: 100%; height: 100%; border: 0; display: block; }
+    .howto-frame.placeholder { display: grid; place-items: center; }
+    .howto-placeholder {
+      text-align: center; max-width: 320px; padding: 20px;
+    }
+    .howto-placeholder .play {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--cream), var(--gold));
+      display: grid; place-items: center; margin: 0 auto 14px;
+      box-shadow: 0 12px 32px -12px rgba(212,184,122,0.55);
+    }
+    .howto-placeholder .play svg { width: 22px; height: 22px; color: var(--navy-0); margin-left: 3px; }
+    .howto-placeholder p { color: var(--muted); font-size: 12.5px; margin: 0; line-height: 1.5; }
+    .howto-placeholder p strong { color: var(--cream); font-weight: 600; display: block; margin-bottom: 4px; }
     .instructions::before { content: ''; position: absolute; top: -1px; left: 24px; right: 24px; height: 2px; background: linear-gradient(90deg, transparent, var(--gold), transparent); opacity: 0.5; }
     .instructions-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
     .instructions-title { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 600; color: var(--cream); display: flex; align-items: center; gap: 10px; }
@@ -247,6 +288,17 @@
   </div>
 
   <main>
+    <div class="howto" id="howto-travel">
+      <div class="howto-head">
+        <div class="howto-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          <span data-i18n="howtoTitle">30秒で使い方を見る</span>
+          <span class="badge">30s</span>
+        </div>
+      </div>
+      <div class="howto-frame" id="howtoFrame"></div>
+    </div>
+
     <div class="instructions" id="ins-travel">
       <div class="instructions-head">
         <div class="instructions-title">
@@ -336,7 +388,7 @@
   <script type="module">
     import { auth, db } from './firebase-init.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    import { doc, getDoc, addDoc, deleteDoc, collection, query, where, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
     const I18N = {
       ja: {
@@ -357,7 +409,16 @@
         travelListTitle: 'あなたの出張予定', emptyTravel: '登録された出張はありません。',
         teamTravelTitle: 'チームの出張予定', emptyTeamTravel: 'チームメンバーの出張予定はまだありません。',
         travelType: '出張タイプ', ttWork: '仕事', ttHoliday: '休暇',
-        statusWork: '不在（現地のタイムゾーンで業務中）', statusHoliday: '不在（休暇中・連絡不可）'
+        statusWork: '不在（現地のタイムゾーンで業務中）', statusHoliday: '不在（休暇中・連絡不可）',
+        howtoTitle: '30秒で使い方を見る',
+        howtoSoonStrong: 'チュートリアル動画は近日公開',
+        howtoSoonBody: '出張登録の30秒ウォークスルーをここに表示します。下のステップをご覧ください。',
+        toastSaved: '✓ 出張を登録しました', toastDeleted: '✓ 削除しました',
+        toastNeedDates: '出発日・帰着日・滞在国を入力してください',
+        toastSaveFail: '保存に失敗: ',
+        deleteConfirm: 'この出張予定を削除しますか？',
+        deleteBtn: '削除',
+        savingBtn: '保存中…'
       },
       en: {
         back: 'Dashboard', hello: 'Hi, ',
@@ -378,7 +439,16 @@
         teamTravelTitle: 'Team trips', emptyTeamTravel: 'No upcoming team travel.',
         travelType: 'Trip type', ttWork: 'Work', ttHoliday: 'Holiday',
         statusWork: 'Out of office (working in destination time zone)',
-        statusHoliday: 'Out of office (holidays — fully unreachable)'
+        statusHoliday: 'Out of office (holidays — fully unreachable)',
+        howtoTitle: 'See how it works in 30s',
+        howtoSoonStrong: 'Tutorial video coming soon',
+        howtoSoonBody: 'A 30-second walkthrough of adding a trip will appear here. See the steps below.',
+        toastSaved: '✓ Trip added', toastDeleted: '✓ Deleted',
+        toastNeedDates: 'Enter depart date, return date and country',
+        toastSaveFail: 'Save failed: ',
+        deleteConfirm: 'Delete this trip?',
+        deleteBtn: 'Delete',
+        savingBtn: 'Saving…'
       }
     };
     let currentLang = 'ja';
@@ -408,6 +478,31 @@
       try { localStorage.setItem('insDismissed_travel', '1'); } catch (e) {}
     };
     try { if (localStorage.getItem('insDismissed_travel') === '1') { const el = document.getElementById('ins-travel'); if (el) el.style.display = 'none'; } } catch (e) {}
+
+    /* ----- How-to-use video -----
+       Paste the YouTube ID (just the 11-char part after watch?v=) in
+       HOWTO_VIDEO_ID below. Until then, a placeholder card renders. */
+    const HOWTO_VIDEO_ID = '';   // e.g. 'dQw4w9WgXcQ'
+    function renderHowto() {
+      const frame = document.getElementById('howtoFrame');
+      if (!frame) return;
+      const dict = I18N[currentLang];
+      if (HOWTO_VIDEO_ID && /^[A-Za-z0-9_-]{11}$/.test(HOWTO_VIDEO_ID)) {
+        frame.classList.remove('placeholder');
+        const lang = currentLang === 'ja' ? 'ja' : 'en';
+        frame.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${HOWTO_VIDEO_ID}?rel=0&modestbranding=1&hl=${lang}" title="How to use Travel" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+      } else {
+        frame.classList.add('placeholder');
+        frame.innerHTML = `
+          <div class="howto-placeholder">
+            <div class="play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
+            <p><strong>${dict.howtoSoonStrong}</strong>${dict.howtoSoonBody}</p>
+          </div>`;
+      }
+    }
+    renderHowto();
+    // Hook into the existing lang toggle so the howto card re-translates too.
+    document.querySelectorAll('.lang-toggle button').forEach(b => b.addEventListener('click', () => setTimeout(renderHowto, 0)));
 
     window.updateTzPreview = function() {
       const sel = document.getElementById('travelCountry');
