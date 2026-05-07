@@ -37,25 +37,30 @@ export function canApprovePayment(p, role, email) {
   return false;
 }
 
-/* Recipients for a decision email. */
+/* Recipients for a decision email.
+   NOTE: Teruo (CEO) temporarily dropped from the small-amount CC list
+   (Balraj 2026-05-07 — verifying Hira's inbox first). Re-add by un-commenting
+   the marked line below. CEO stays on > 1,000 AED because he's the approver. */
 function recipientsFor(p, status) {
   const out = new Set();
   if (p.requesterEmail) out.add(p.requesterEmail.toLowerCase());
   if (status === 'approved' || status === 'declined') {
     out.add(FINANCE.mouad);
     out.add(FINANCE.hira);
-    out.add(FINANCE.ceo);
+    if ((p.amount || 0) > SMALL_AMOUNT_AED) out.add(FINANCE.ceo);
+    // out.add(FINANCE.ceo);  // ← re-enable once Hira's inbox is confirmed
   }
   return [...out];
 }
 
-/* Recipients for the *initial submission* — who needs to act on it. */
+/* Recipients for the *initial submission* — who needs to act on it.
+   Same temporary CEO-CC removal as above. */
 export function submitRecipients(p) {
   const out = new Set();
   out.add(FINANCE.mouad);
   out.add(FINANCE.hira);
   if ((p.amount || 0) > SMALL_AMOUNT_AED) out.add(FINANCE.ceo);
-  else out.add(FINANCE.ceo); // CEO CC on small amounts too (per Balraj 2026-05-07)
+  // else out.add(FINANCE.ceo);  // ← re-enable once Hira's inbox is confirmed
   return [...out];
 }
 
