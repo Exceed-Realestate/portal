@@ -927,7 +927,16 @@
       gap: 16px;
     }
     .tile {
-      background: linear-gradient(180deg, rgba(16,42,79,0.85), rgba(10,31,61,0.85));
+      /* Each tile carries its own accent palette via custom properties.
+         Defaults below are gold; per-tile overrides further down change
+         the wash, the icon chip, the SVG art tint and the hover halo. */
+      --tile-accent:        rgba(212,184,122,0.20);
+      --tile-accent-strong: rgba(212,184,122,0.50);
+      --tile-accent-color:  #d4b87a;
+
+      background:
+        radial-gradient(140% 100% at 100% 100%, var(--tile-accent), transparent 62%),
+        linear-gradient(180deg, rgba(16,42,79,0.85), rgba(10,31,61,0.85));
       border: 1px solid var(--line);
       border-radius: var(--radius);
       padding: 26px 24px 26px;
@@ -940,26 +949,92 @@
       overflow: hidden;
       min-height: 132px;
     }
+
+    /* ---- Per-tile accent palette ----
+       Hues are kept in the same low-saturation, dusk-inspired family so
+       the dashboard reads as one set, not a rainbow. All accent alphas
+       stay ≤ 0.25 so the navy gradient remains dominant. */
+    .tile[data-key="customer-register"] {
+      --tile-accent: rgba(244,169,142,0.22);
+      --tile-accent-strong: rgba(244,169,142,0.55);
+      --tile-accent-color: #f4a98e;            /* warm peach — concierge */
+    }
+    .tile[data-key="irr"] {
+      --tile-accent: rgba(122,200,150,0.22);
+      --tile-accent-strong: rgba(122,200,150,0.55);
+      --tile-accent-color: #7ac896;            /* emerald — growth/finance */
+    }
+    .tile[data-key="availability"] {
+      --tile-accent: rgba(122,167,255,0.24);
+      --tile-accent-strong: rgba(122,167,255,0.55);
+      --tile-accent-color: #7aa7ff;            /* sky — calendar/time */
+    }
+    .tile[data-key="travel"] {
+      --tile-accent: rgba(255,154,86,0.22);
+      --tile-accent-strong: rgba(255,154,86,0.55);
+      --tile-accent-color: #ff9a56;            /* sunset — jet/travel */
+    }
+    .tile[data-key="team"] {
+      --tile-accent: rgba(241,234,216,0.20);
+      --tile-accent-strong: rgba(241,234,216,0.5);
+      --tile-accent-color: #f1ead8;            /* cream — people */
+    }
+    .tile[data-key="database"] {
+      --tile-accent: rgba(120,180,200,0.22);
+      --tile-accent-strong: rgba(120,180,200,0.55);
+      --tile-accent-color: #78b4c8;            /* slate — data */
+    }
+    .tile[data-key="deal-alert"] {
+      --tile-accent: rgba(255,107,107,0.22);
+      --tile-accent-strong: rgba(255,107,107,0.55);
+      --tile-accent-color: #ff6b6b;            /* red — urgency */
+    }
+    .tile[data-key="book-car"] {
+      --tile-accent: rgba(180,160,210,0.22);
+      --tile-accent-strong: rgba(180,160,210,0.55);
+      --tile-accent-color: #b4a0d2;            /* lilac — luxury auto */
+    }
+    .tile[data-key="attendance"] {
+      --tile-accent: rgba(140,200,170,0.22);
+      --tile-accent-strong: rgba(140,200,170,0.55);
+      --tile-accent-color: #8cc8aa;            /* sage — roll-call */
+    }
+    .tile[data-key="payment"] {
+      --tile-accent: rgba(255,200,100,0.24);
+      --tile-accent-strong: rgba(255,200,100,0.6);
+      --tile-accent-color: #ffc864;            /* warm gold — money */
+    }
+    .tile[data-key="manage-access"] {
+      --tile-accent: rgba(160,180,255,0.22);
+      --tile-accent-strong: rgba(160,180,255,0.55);
+      --tile-accent-color: #a0b4ff;            /* periwinkle — access */
+    }
+    .tile[data-key="listings"] {
+      --tile-accent: rgba(180,210,150,0.20);
+      --tile-accent-strong: rgba(180,210,150,0.5);
+      --tile-accent-color: #b4d296;            /* moss — property */
+    }
+
     /* Themed inline-SVG illustration per tile — positioned bottom-right behind content */
     .tile-art {
       position: absolute;
       right: -8px; bottom: -12px;
       width: 60%; height: 78%;
       pointer-events: none;
-      opacity: 0.18;
+      opacity: 0.22;                         /* a touch more visible than before */
       transition: opacity .3s ease, transform .4s ease;
       z-index: 0;
-      color: var(--gold);
+      color: var(--tile-accent-color);
     }
     .tile-art svg { width: 100%; height: 100%; display: block; }
     .tile:hover .tile-art { opacity: 0.36; transform: translate(-4px, -3px) scale(1.04); }
     .tile-icon-wrap, .tile h3, .tile .status, .tile-corner-badge { position: relative; z-index: 1; }
     .tile::after {
       content: ''; position: absolute; inset: 0;
-      background: radial-gradient(circle at 100% 0%, rgba(212,184,122,0.08), transparent 50%);
+      background: radial-gradient(circle at 100% 0%, var(--tile-accent), transparent 50%);
       opacity: 0; transition: opacity .25s; pointer-events: none;
     }
-    .tile:hover { transform: translateY(-3px); border-color: rgba(212,184,122,0.45); box-shadow: 0 22px 50px -22px rgba(0,0,0,.5); }
+    .tile:hover { transform: translateY(-3px); border-color: var(--tile-accent-strong); box-shadow: 0 22px 50px -22px rgba(0,0,0,.5); }
     .tile:hover::after { opacity: 1; }
     /* Subtle gold arrow appearing top-right on hover, replaces the lost status row. */
     .tile-hover-arrow {
@@ -967,7 +1042,7 @@
       top: 18px; right: 14px;
       width: 22px; height: 22px;
       display: grid; place-items: center;
-      color: var(--gold);
+      color: var(--tile-accent-color);
       opacity: 0;
       transform: translateX(-6px);
       transition: opacity .25s, transform .25s;
@@ -988,11 +1063,12 @@
     .tile-icon-wrap {
       width: 46px; height: 46px;
       border-radius: 12px;
-      background: linear-gradient(135deg, rgba(212,184,122,0.22), rgba(212,184,122,0.06));
-      border: 1px solid rgba(212,184,122,0.35);
+      background: linear-gradient(135deg, var(--tile-accent-strong), var(--tile-accent));
+      border: 1px solid var(--tile-accent-strong);
       display: grid; place-items: center;
-      color: var(--gold);
+      color: var(--tile-accent-color);
       margin-bottom: 14px;
+      transition: background .25s, border-color .25s;
     }
     .tile-icon-wrap svg { width: 22px; height: 22px; }
     .tile.disabled .tile-icon-wrap { background: rgba(255,255,255,0.04); border-color: var(--line); color: var(--muted); }
