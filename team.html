@@ -232,6 +232,7 @@
     }
     .node.division:hover .div-icon { background: rgba(212,184,122,0.18); border-color: var(--gold); }
     .node.division .div-icon svg { width: 16px; height: 16px; }
+    .div-flag { display: inline-block; margin-right: 8px; font-size: 1.05em; vertical-align: -1px; line-height: 1; }
     .node.division h4 {
       font-family: 'Inter', 'Noto Sans JP', sans-serif;
       font-size: 12px;
@@ -942,7 +943,6 @@
       // Admin moves them into the proper division using the Edit Tree button.
       roster: [
         { name: 'HAMZA',            nameJa: '',          role: 'Admin · Exceed',     roleJa: 'Admin · Exceed', phone: '',          phoneDisplay: '',                  email: '', photo: '' },
-        { name: 'LAITH',            nameJa: '',          role: 'Pending assignment', roleJa: '配属待ち', phone: '',               phoneDisplay: '',                  email: '', photo: '' },
         { name: 'LU',               nameJa: '',          role: 'Pending assignment', roleJa: '配属待ち', phone: '+971555328787',  phoneDisplay: '+971 55 532 8787', email: '', photo: '' },
         { name: 'TATSUO',           nameJa: '',          role: 'Pending assignment', roleJa: '配属待ち', phone: '+819055481390',  phoneDisplay: '+81 90 5548 1390', email: '', photo: '' },
         { name: 'MANSOOR',          nameJa: '',          role: 'Driver',             roleJa: 'ドライバー', phone: '+971566118712',  phoneDisplay: '+971 56 611 8712', email: '', photo: '' }
@@ -959,11 +959,11 @@
         nameJa: 'Exceed Real Estate',
         accent: '#d4b87a',
         teams: [
-          { id: 'japan-sales',  ja: '日本営業',       en: 'Japan Sales',  icon: 'pin' },
-          { id: 'dubai-sales',  ja: 'ドバイ営業',      en: 'Dubai Sales',  icon: 'pin' },
-          { id: 'dubai-office', ja: 'ドバイオフィス',   en: 'Dubai Office', icon: 'building' },
-          { id: 'japan-office', ja: '日本オフィス',     en: 'Japan Office', icon: 'building' },
-          { id: 'lombok',       ja: 'ロンボク',        en: 'Lombok',       icon: 'island' }
+          { id: 'japan-sales',  ja: '日本営業',       en: 'Japan Sales',  icon: 'pin',      flag: '🇯🇵' },
+          { id: 'dubai-sales',  ja: 'ドバイ営業',      en: 'Dubai Sales',  icon: 'pin',      flag: '🇦🇪' },
+          { id: 'dubai-office', ja: 'ドバイオフィス',   en: 'Dubai Office', icon: 'building', flag: '🇦🇪' },
+          { id: 'japan-office', ja: '日本オフィス',     en: 'Japan Office', icon: 'building', flag: '🇯🇵' },
+          { id: 'lombok',       ja: 'ロンボク',        en: 'Lombok',       icon: 'island',   flag: '🇮🇩' }
         ]
       },
       {
@@ -1143,10 +1143,11 @@
     function divisionHeader(d) {
       const label = currentLang === 'ja' ? d.ja : d.en;
       const list = TEAM[d.id] || [];
+      const flag = d.flag ? `<span class="div-flag" aria-hidden="true">${d.flag}</span>` : '';
       return `
         <div class="node division">
           <div class="div-icon">${ICON[d.icon] || ICON.pin}</div>
-          <h4>${label}</h4>
+          <h4>${flag}${label}</h4>
           <div class="div-count">${list.length}</div>
         </div>`;
     }
@@ -1405,6 +1406,12 @@
         phone: '', phoneDisplay: '', email: '', photo: 'team/malik-bouessah.png' }
     ];
 
+    // Names to remove from every section. Useful when a member leaves or
+    // was duplicated. Idempotent — silently skipped once already gone.
+    const REMOVE_FROM_TREE_2026_05 = [
+      'LAITH'
+    ];
+
     window.applyRestructure = async function() {
       let touched = 0;
       RESTRUCTURE_2026_05.forEach(rule => {
@@ -1450,6 +1457,16 @@
         const matchKey = nameKey(member.name);
         const exists = TEAM.board.some(m => nameKey(m.name) === matchKey);
         if (!exists) { TEAM.board.push({ ...member }); touched++; }
+      });
+      // Removals — strip these names from every section
+      REMOVE_FROM_TREE_2026_05.forEach(name => {
+        const k = nameKey(name);
+        Object.keys(TEAM).forEach(section => {
+          if (!Array.isArray(TEAM[section])) return;
+          const before = TEAM[section].length;
+          TEAM[section] = TEAM[section].filter(m => nameKey(m.name) !== k);
+          if (TEAM[section].length !== before) touched++;
+        });
       });
       if (!touched) {
         showToast(currentLang === 'ja' ? '再配置済みです' : 'Already in place');
@@ -1685,6 +1702,34 @@
       // Load latest team config + the registered agents directory in parallel.
       // Display-time merge fills in any missing email/phone/uid from agent docs.
       await Promise.all([loadTeamConfig(), loadAgentsDirectory()]);
+
+      // Silent migration for admins: ensures Board section is populated and
+      // any pending removals are honoured without requiring the manual
+      // "Apply structure" click. Idempotent — does nothing once applied.
+      if (can(editorRole, 'editTeamTree', user.email)) {
+        let touched = 0;
+        if (!Array.isArray(TEAM.board)) TEAM.board = [];
+        ADD_TO_BOARD_2026_05.forEach(member => {
+          const k = nameKey(member.name);
+          if (!TEAM.board.some(m => nameKey(m.name) === k)) {
+            TEAM.board.push({ ...member });
+            touched++;
+          }
+        });
+        REMOVE_FROM_TREE_2026_05.forEach(name => {
+          const k = nameKey(name);
+          Object.keys(TEAM).forEach(section => {
+            if (!Array.isArray(TEAM[section])) return;
+            const before = TEAM[section].length;
+            TEAM[section] = TEAM[section].filter(m => nameKey(m.name) !== k);
+            if (TEAM[section].length !== before) touched++;
+          });
+        });
+        if (touched > 0) {
+          try { await saveTeamConfig(); } catch (e) { console.warn('silent migration save failed', e); }
+        }
+      }
+
       renderChart(); renderAside();
     });
 
