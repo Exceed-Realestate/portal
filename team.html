@@ -870,7 +870,12 @@
         { name: 'TERUO SHIMADA',   nameJa: '島田 輝雄',   role: 'Chief Executive Officer', roleJa: '代表取締役 CEO',
           phone: '+971507438754', phoneDisplay: '+971 50 743 8754', email: '', photo: 'team/teruo-shimada.png' }
       ],
-      board: [],
+      board: [
+        { name: 'SHOYA HOSOYAMA',  nameJa: '細山 翔也',   role: 'Board Member · MD Japan',  roleJa: '取締役・日本MD',
+          phone: '', phoneDisplay: '', email: '', photo: 'team/shoya-hosoyama.png' },
+        { name: 'MALIK BOUESSAH',  nameJa: 'مالك بو عيسى', role: 'Board Member · COO Dubai', roleJa: '取締役・ドバイCOO',
+          phone: '', phoneDisplay: '', email: '', photo: 'team/malik-bouessah.png' }
+      ],
       // Exceed Real Estate teams
       'japan-sales': [
         { name: 'SHOYA HOSOYAMA',  nameJa: '細山 翔也',   role: 'MD · Head of Japan Sales', roleJa: 'MD・日本営業部長',
@@ -1390,6 +1395,16 @@
       }
     ];
 
+    // Board-section additions (people who lead a division AND sit on the board).
+    // Different from ENSURE_MEMBERS above: they're allowed to also exist
+    // elsewhere in the tree — we just need them present in 'board' too.
+    const ADD_TO_BOARD_2026_05 = [
+      { name: 'SHOYA HOSOYAMA',  nameJa: '細山 翔也',   role: 'Board Member · MD Japan',  roleJa: '取締役・日本MD',
+        phone: '', phoneDisplay: '', email: '', photo: 'team/shoya-hosoyama.png' },
+      { name: 'MALIK BOUESSAH',  nameJa: 'مالك بو عيسى', role: 'Board Member · COO Dubai', roleJa: '取締役・ドバイCOO',
+        phone: '', phoneDisplay: '', email: '', photo: 'team/malik-bouessah.png' }
+    ];
+
     window.applyRestructure = async function() {
       let touched = 0;
       RESTRUCTURE_2026_05.forEach(rule => {
@@ -1427,6 +1442,14 @@
           TEAM[rule.target].push({ ...rule.member });
           touched++;
         }
+      });
+      // Board additions — people who lead a division AND sit on the board.
+      // Adds them to /board if missing there; doesn't remove from elsewhere.
+      if (!Array.isArray(TEAM.board)) TEAM.board = [];
+      ADD_TO_BOARD_2026_05.forEach(member => {
+        const matchKey = nameKey(member.name);
+        const exists = TEAM.board.some(m => nameKey(m.name) === matchKey);
+        if (!exists) { TEAM.board.push({ ...member }); touched++; }
       });
       if (!touched) {
         showToast(currentLang === 'ja' ? '再配置済みです' : 'Already in place');
