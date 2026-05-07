@@ -1344,7 +1344,13 @@
       .tile-grid { grid-template-columns: 1fr 1fr; }
     }
     @media (max-width: 460px) {
-      .tile-grid { grid-template-columns: 1fr; }
+      /* Keep two tiles per row even on the smallest phones — single-column
+         scrolling makes the dashboard feel like a long list of links. */
+      .tile-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .tile { padding: 14px 12px 16px; min-height: 96px; }
+      .tile h3 { font-size: 12.5px; line-height: 1.25; }
+      .tile-icon-wrap { width: 36px; height: 36px; }
+      .tile-icon-wrap svg { width: 18px; height: 18px; }
       .topbar { padding: 12px 14px; gap: 10px; }
       .topbar-meta { gap: 8px; flex-wrap: wrap; }
       .search { flex-basis: 100%; padding: 8px 14px; }
