@@ -315,29 +315,29 @@
     .cal-month { margin-top: 4px; }
     .cal-month-nav {
       display: flex; align-items: center; justify-content: space-between;
-      gap: 12px; margin-bottom: 16px;
+      gap: 12px; margin-bottom: 22px;
     }
     .cal-month-title {
       font-family: 'Playfair Display', serif;
-      font-size: 18px; color: var(--cream); font-weight: 600;
+      font-size: 26px; color: var(--cream); font-weight: 600;
       letter-spacing: 0.3px;
     }
-    .cal-month-arrows { display: flex; gap: 6px; }
+    .cal-month-arrows { display: flex; gap: 8px; align-items: center; }
     .cal-arrow {
-      width: 32px; height: 32px;
+      width: 40px; height: 40px;
       background: rgba(255,255,255,0.05);
       border: 1px solid var(--line);
       color: var(--text);
-      border-radius: 8px; cursor: pointer;
+      border-radius: 10px; cursor: pointer;
       display: grid; place-items: center;
       transition: background .15s, border-color .15s;
     }
     .cal-arrow:hover { background: rgba(212,184,122,0.12); border-color: rgba(212,184,122,0.4); color: var(--gold); }
-    .cal-arrow svg { width: 14px; height: 14px; }
+    .cal-arrow svg { width: 16px; height: 16px; }
     .cal-today-btn {
-      padding: 6px 12px; background: rgba(212,184,122,0.10); border: 1px solid rgba(212,184,122,0.35);
-      color: var(--gold); border-radius: 8px; cursor: pointer;
-      font-family: inherit; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
+      padding: 9px 16px; background: rgba(212,184,122,0.10); border: 1px solid rgba(212,184,122,0.35);
+      color: var(--gold); border-radius: 10px; cursor: pointer;
+      font-family: inherit; font-size: 12px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
       transition: background .15s;
     }
     .cal-today-btn:hover { background: rgba(212,184,122,0.20); }
@@ -345,19 +345,19 @@
     .cal-grid {
       display: grid; grid-template-columns: repeat(7, 1fr);
       gap: 2px; background: var(--line);
-      border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
+      border: 1px solid var(--line); border-radius: 12px; overflow: hidden;
     }
     .cal-grid-head {
       background: rgba(5,15,30,0.6);
-      padding: 10px 8px; font-size: 10px; letter-spacing: 1.5px;
+      padding: 14px 10px; font-size: 11px; letter-spacing: 1.8px;
       text-transform: uppercase; color: var(--muted); font-weight: 700;
       text-align: center;
     }
     .cal-cell {
       background: rgba(8,22,42,0.55);
-      min-height: 92px;
-      padding: 6px 8px;
-      display: flex; flex-direction: column; gap: 4px;
+      min-height: 140px;
+      padding: 10px 12px;
+      display: flex; flex-direction: column; gap: 5px;
       cursor: pointer;
       transition: background .15s;
       position: relative;
@@ -366,19 +366,19 @@
     .cal-cell.other-month { opacity: 0.35; }
     .cal-cell.today .cal-cell-num {
       background: var(--gold); color: var(--navy-0);
-      width: 22px; height: 22px; border-radius: 50%;
+      width: 28px; height: 28px; border-radius: 50%;
       display: grid; place-items: center;
-      font-weight: 700;
+      font-weight: 700; font-size: 14px;
     }
     .cal-cell.selected { outline: 2px solid var(--gold); outline-offset: -2px; background: rgba(212,184,122,0.10); }
-    .cal-cell-num { font-size: 12px; font-weight: 600; color: var(--cream); align-self: flex-start; }
+    .cal-cell-num { font-size: 14px; font-weight: 600; color: var(--cream); align-self: flex-start; }
     .cal-cell.other-month .cal-cell-num { color: var(--muted); }
     .cal-chip {
-      font-size: 10px; line-height: 1.3;
+      font-size: 11.5px; line-height: 1.35;
       background: rgba(212,184,122,0.18);
       color: var(--gold);
-      padding: 2px 5px;
-      border-radius: 4px;
+      padding: 3px 7px;
+      border-radius: 5px;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       border-left: 2px solid var(--gold);
     }
@@ -386,7 +386,7 @@
       background: rgba(135,179,157,0.18); color: #87b39d;
       border-left-color: #87b39d;
     }
-    .cal-chip-more { font-size: 10px; color: var(--muted); padding: 0 4px; }
+    .cal-chip-more { font-size: 11px; color: var(--muted); padding: 0 4px; font-weight: 500; }
 
     .cal-day-detail {
       margin-top: 16px;
@@ -404,9 +404,12 @@
     .cal-day-detail .cal-event { padding: 6px 0; }
 
     @media (max-width: 700px) {
-      .cal-cell { min-height: 64px; padding: 4px 5px; }
-      .cal-chip { font-size: 9px; padding: 1px 4px; }
-      .cal-grid-head { font-size: 9px; padding: 6px 2px; }
+      .cal-cell { min-height: 80px; padding: 6px 6px; }
+      .cal-chip { font-size: 10px; padding: 2px 4px; }
+      .cal-cell-num { font-size: 12px; }
+      .cal-cell.today .cal-cell-num { width: 22px; height: 22px; font-size: 12px; }
+      .cal-grid-head { font-size: 9px; padding: 8px 2px; }
+      .cal-month-title { font-size: 19px; }
     }
 
     /* Empty state with stub button */
@@ -545,8 +548,8 @@
         </div>
         <div class="cal-actions">
           <div class="cal-view-toggle" id="calViewToggle" hidden>
-            <button class="cal-view-btn active" data-view="list" onclick="setCalView('list')" data-i18n="viewList">リスト</button>
-            <button class="cal-view-btn" data-view="month" onclick="setCalView('month')" data-i18n="viewMonth">月</button>
+            <button class="cal-view-btn" data-view="list" onclick="setCalView('list')" data-i18n="viewList">リスト</button>
+            <button class="cal-view-btn active" data-view="month" onclick="setCalView('month')" data-i18n="viewMonth">月</button>
           </div>
           <button class="icon-btn" id="calRefreshBtn" onclick="refreshCalendar()" data-i18n="btnRefresh" hidden>更新</button>
           <button class="icon-btn" id="calDisconnectBtn" onclick="disconnectCalendar()" data-i18n="btnDisconnect" hidden>切断</button>
@@ -964,7 +967,7 @@
 
     // ----- View state (list | month) + month-grid state -----
     const VIEW_KEY = 'gcal_view_v1';
-    let calView = (() => { try { return localStorage.getItem(VIEW_KEY) || 'list'; } catch (_) { return 'list'; } })();
+    let calView = (() => { try { return localStorage.getItem(VIEW_KEY) || 'month'; } catch (_) { return 'month'; } })();
     let monthCursor = new Date(); monthCursor.setDate(1);
     let selectedDayKey = null;
     let monthEventsCache = [];

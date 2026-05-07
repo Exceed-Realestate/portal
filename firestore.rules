@@ -102,5 +102,32 @@ service cloud.firestore {
       // Only admins can edit or delete customer records.
       allow update, delete: if isAdminEmail();
     }
+
+    // ------- Notifications -------
+    // In-portal notification feed. Each doc is for a single recipient (forUid).
+    // Senders can be any signed-in user (e.g., the approver writing a decision
+    // notification for the requester). Recipients can read their own + mark read.
+    match /notifications/{nid} {
+      allow read: if isSignedIn()
+        && (resource.data.forUid == request.auth.uid || isAdminEmail());
+      allow list: if isSignedIn();
+      allow create: if isSignedIn()
+        && request.resource.data.forUid is string
+        && request.resource.data.type is string;
+      allow update: if isSignedIn()
+        && resource.data.forUid == request.auth.uid;
+      allow delete: if isAdminEmail();
+    }
+
+    // ------- Outbound email queue -------
+    // The Trigger Email Firebase extension watches this collection; any doc
+    // written here gets sent. Cloud Functions use admin SDK so they bypass
+    // these rules — we only restrict client-side writes.
+    match /mail/{mid} {
+      allow create: if isSignedIn()
+        && request.resource.data.to is string
+        && request.resource.data.message is map;
+      allow read, update, delete: if false;
+    }
   }
 }

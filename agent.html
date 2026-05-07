@@ -385,6 +385,68 @@
     }
     .user-chip-name { font-size: 13px; color: var(--cream); font-weight: 500; }
 
+    /* ---- Notifications ---- */
+    .notif-wrap { position: relative; }
+    .notif-btn { position: relative; padding: 6px 10px; }
+    .notif-btn svg { width: 14px; height: 14px; }
+    .notif-badge {
+      position: absolute; top: -4px; right: -4px;
+      min-width: 16px; height: 16px; padding: 0 4px;
+      background: linear-gradient(180deg, #ff8a78, #d43f3f);
+      color: #fff;
+      border-radius: 999px;
+      font-size: 10px; font-weight: 700;
+      display: grid; place-items: center;
+      box-shadow: 0 2px 6px rgba(212,63,63,0.45);
+      border: 1.5px solid var(--navy-0);
+    }
+    .notif-panel {
+      position: absolute; top: calc(100% + 8px); right: 0;
+      width: min(360px, 90vw);
+      max-height: 480px; overflow-y: auto;
+      background: linear-gradient(180deg, #102a4f, #07172d);
+      border: 1px solid rgba(212,184,122,0.32);
+      border-radius: 14px;
+      box-shadow: 0 30px 80px -20px rgba(0,0,0,.7);
+      z-index: 1100;
+    }
+    .notif-head {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--line);
+      font-family: 'Playfair Display', serif;
+      font-size: 14px; color: var(--cream); font-weight: 600;
+    }
+    .notif-clear {
+      background: transparent; border: none; color: var(--muted);
+      font-family: inherit; font-size: 11px; cursor: pointer;
+      letter-spacing: 0.5px;
+    }
+    .notif-clear:hover { color: var(--gold); }
+    .notif-list {
+      display: flex; flex-direction: column;
+    }
+    .notif-item {
+      display: block; padding: 12px 18px;
+      border-bottom: 1px solid var(--line);
+      color: inherit; text-decoration: none;
+      transition: background .15s;
+      cursor: pointer;
+    }
+    .notif-item:last-child { border-bottom: none; }
+    .notif-item:hover { background: rgba(212,184,122,0.05); }
+    .notif-item.unread { background: rgba(212,184,122,0.07); }
+    .notif-item.unread::before {
+      content: '';
+      display: inline-block; width: 6px; height: 6px;
+      background: var(--gold); border-radius: 50%;
+      margin-right: 6px; vertical-align: middle;
+    }
+    .notif-title { font-size: 13px; font-weight: 600; color: var(--cream); margin-bottom: 3px; }
+    .notif-body { font-size: 12px; color: var(--muted); line-height: 1.45; }
+    .notif-time { font-size: 10px; color: var(--muted); margin-top: 4px; letter-spacing: 0.5px; }
+    .notif-empty { padding: 30px 20px; text-align: center; color: var(--muted); font-size: 12.5px; }
+
     /* ---- Body 3-column layout ---- */
     .body-grid {
       display: grid;
@@ -1291,6 +1353,19 @@
             <button data-lang="ja" class="active">日本語</button>
             <button data-lang="en">EN</button>
           </div>
+          <div class="notif-wrap" id="notifWrap">
+            <button class="theme-btn notif-btn" id="notifBtn" onclick="toggleNotifs()" title="Notifications" aria-label="Notifications">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              <span class="notif-badge" id="notifBadge" hidden>0</span>
+            </button>
+            <div class="notif-panel" id="notifPanel" hidden>
+              <div class="notif-head">
+                <span data-i18n="notifTitle">通知</span>
+                <button class="notif-clear" id="notifClearBtn" onclick="markAllNotifsRead()" data-i18n="notifMarkAll">すべて既読</button>
+              </div>
+              <div class="notif-list" id="notifList"></div>
+            </div>
+          </div>
           <div class="user-chip">
             <div class="user-chip-avatar" id="userAvatar">A</div>
             <span class="user-chip-name" id="userName">Agent</span>
@@ -1441,7 +1516,7 @@
   <script type="module">
     import { auth, db, isAdmin, can, ROLES, ROLE_LABELS, ROLE_CAPABILITIES, roleLabel, roleSummary, roleCapabilities, isValidRole } from './firebase-init.js';
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-    import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    import { doc, getDoc, updateDoc, collection, query, where, orderBy, limit, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
     // Tool catalogue — single source of truth, drives both left list and center grid
     const TOOLS = [
@@ -1577,6 +1652,7 @@
         editBtn: '並び替え', editDone: '完了',
         editHint: 'タイルをドラッグして並び替え。完了したら「完了」を押してください。',
         todayLabel: '本日', notConnected: '未連携', connected: '連携済', scNoToday: '本日の予定はありません',
+        notifTitle: '通知', notifMarkAll: 'すべて既読', notifEmpty: '通知はありません',
         scTitle: '今日の予定はここに表示されます',
         scBody: '「カレンダー」タブでGoogleカレンダーと連携すると、本日のミーティングや予定がここに自動表示されます。',
         scCta: 'カレンダーを連携 →',
@@ -1612,6 +1688,7 @@
         editBtn: 'Reorder', editDone: 'Done',
         editHint: 'Drag tiles to reorder. Tap "Done" when finished.',
         todayLabel: 'Today', notConnected: 'Not connected', connected: 'Connected', scNoToday: 'No more events today',
+        notifTitle: 'Notifications', notifMarkAll: 'Mark all read', notifEmpty: 'No notifications',
         scTitle: 'Your meetings will show here',
         scBody: "Connect your Google Calendar from the Calendar tab and today's events appear here automatically.",
         scCta: 'Connect calendar →',
@@ -2421,6 +2498,9 @@
       renderTileGrid();
       applyOnboardingState();   // re-apply now that we know admin status
       updateStats();
+      loadNotifications();
+      // Refresh notifications every 60 seconds while the tab is open
+      setInterval(loadNotifications, 60000);
     });
 
     // ----- Access modal -----
@@ -2530,7 +2610,112 @@
     // Re-fetch today's calendar when the user comes back to the dashboard
     // (e.g. after connecting on availability.html)
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') renderTodaySchedule();
+      if (document.visibilityState === 'visible') {
+        renderTodaySchedule();
+        loadNotifications();
+      }
+    });
+
+    /* ----- In-portal notifications -----
+       Fetches the latest 20 notifications for the signed-in user, shows
+       an unread count on the bell, and renders a dropdown panel on click.
+       Marks individual items read on click; "Mark all" clears the badge. */
+    let _notifs = [];
+    async function loadNotifications() {
+      if (!currentUser) return;
+      try {
+        const q = query(
+          collection(db, 'notifications'),
+          where('forUid', '==', currentUser.uid),
+          orderBy('createdAt', 'desc'),
+          limit(20)
+        );
+        const snap = await getDocs(q);
+        _notifs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderNotifBadge();
+        if (!document.getElementById('notifPanel').hidden) renderNotifPanel();
+      } catch (err) {
+        console.warn('notifications load failed', err);
+      }
+    }
+    function renderNotifBadge() {
+      const badge = document.getElementById('notifBadge');
+      const unread = _notifs.filter(n => !n.read).length;
+      if (unread > 0) {
+        badge.textContent = unread > 9 ? '9+' : String(unread);
+        badge.hidden = false;
+      } else {
+        badge.hidden = true;
+      }
+    }
+    function fmtRelTime(ts) {
+      if (!ts) return '';
+      const d = ts.toDate ? ts.toDate() : new Date(ts);
+      const diffMs = Date.now() - d.getTime();
+      const mins = Math.round(diffMs / 60000);
+      if (mins < 1)  return currentLang === 'ja' ? 'たった今' : 'just now';
+      if (mins < 60) return currentLang === 'ja' ? `${mins}分前` : `${mins}m ago`;
+      const hours = Math.round(mins / 60);
+      if (hours < 24) return currentLang === 'ja' ? `${hours}時間前` : `${hours}h ago`;
+      const days = Math.round(hours / 24);
+      if (days < 7)  return currentLang === 'ja' ? `${days}日前` : `${days}d ago`;
+      return new Intl.DateTimeFormat(currentLang === 'ja' ? 'ja-JP' : 'en-GB',
+        { month: 'short', day: 'numeric' }).format(d);
+    }
+    function renderNotifPanel() {
+      const list = document.getElementById('notifList');
+      const dict = I18N[currentLang] || {};
+      if (!_notifs.length) {
+        list.innerHTML = `<div class="notif-empty">${dict.notifEmpty || (currentLang === 'ja' ? '通知はありません' : 'No notifications')}</div>`;
+        return;
+      }
+      const esc = s => String(s == null ? '' : s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      list.innerHTML = _notifs.map(n => {
+        const cls = 'notif-item' + (n.read ? '' : ' unread');
+        return `<a href="${esc(n.link || '#')}" class="${cls}" data-id="${esc(n.id)}" onclick="onNotifClick('${esc(n.id)}')">
+          <div class="notif-title">${esc(n.title || '—')}</div>
+          <div class="notif-body">${esc(n.body || '')}</div>
+          <div class="notif-time">${esc(fmtRelTime(n.createdAt))}</div>
+        </a>`;
+      }).join('');
+    }
+    window.toggleNotifs = function() {
+      const panel = document.getElementById('notifPanel');
+      const willOpen = panel.hidden;
+      panel.hidden = !willOpen;
+      if (willOpen) renderNotifPanel();
+    };
+    window.onNotifClick = async function(id) {
+      const n = _notifs.find(x => x.id === id);
+      if (!n) return;
+      if (!n.read) {
+        n.read = true;
+        renderNotifBadge();
+        try { await updateDoc(doc(db, 'notifications', id), { read: true }); } catch (_) {}
+      }
+      // Default <a> navigation handles the link click.
+    };
+    window.markAllNotifsRead = async function() {
+      const unread = _notifs.filter(n => !n.read);
+      if (!unread.length) return;
+      try {
+        const batch = writeBatch(db);
+        unread.forEach(n => {
+          n.read = true;
+          batch.update(doc(db, 'notifications', n.id), { read: true });
+        });
+        await batch.commit();
+      } catch (err) { console.warn('mark all read failed', err); }
+      renderNotifBadge();
+      renderNotifPanel();
+    };
+    // Close panel when clicking outside
+    document.addEventListener('click', (e) => {
+      const wrap = document.getElementById('notifWrap');
+      if (!wrap || wrap.contains(e.target)) return;
+      const panel = document.getElementById('notifPanel');
+      if (panel && !panel.hidden) panel.hidden = true;
     });
   </script>
   <!-- Access role modal -->

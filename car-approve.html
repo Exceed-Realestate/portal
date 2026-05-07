@@ -250,7 +250,180 @@
   <script type="module">
     import { auth, db, isAdmin, can } from './firebase-init.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-    import { doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    import { doc, getDoc, updateDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+    /* ----- Email recipient config -----
+       Approval emails go to the requester + Shoya. If the requester is
+       part of Malik's Dubai Sales team, Malik is added to the loop.
+       Decline emails go only to the requester. Edit emails here if the
+       team changes. */
+    const NOTIFY_EMAILS = {
+      shoya: 'shoya@exceed-re.ae',
+      malik: 'malik@exceed-re.ae'
+    };
+    const MALIK_TEAM_SECTIONS = ['dubai-sales']; // Sections in teamConfig that report to Malik
+    function nameKey(s) {
+      return (s || '').toString().toLowerCase()
+        .normalize('NFKD').replace(/[̀-ͯ]/g, '')
+        .replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+    }
+    async function isUnderMalik(booking) {
+      try {
+        const tcSnap = await getDoc(doc(db, 'teamConfig', 'main'));
+        if (!tcSnap.exists()) return false;
+        const tc = tcSnap.data();
+        const reqEmail = (booking.requesterEmail || '').toLowerCase();
+        const reqUid   = booking.requesterUid;
+        const reqName  = nameKey(booking.requesterName || '');
+        for (const section of MALIK_TEAM_SECTIONS) {
+          const arr = tc[section];
+          if (!Array.isArray(arr)) continue;
+          for (const m of arr) {
+            if (!m) continue;
+            // Skip Malik himself — no need to notify the requester's manager
+            // when the requester IS the manager
+            if (nameKey(m.name).includes('malik')) continue;
+            if (m.uid && m.uid === reqUid) return true;
+            if (m.email && m.email.toLowerCase() === reqEmail) return true;
+            if (reqName && nameKey(m.name) === reqName) return true;
+          }
+        }
+        return false;
+      } catch (_) {
+        return false;
+      }
+    }
+
+    /* ----- Email + notification dispatch -----
+       Builds an HTML email body, queues it via the /mail collection (the
+       Trigger Email extension picks it up and sends within seconds), and
+       writes an in-portal notification doc for the requester. */
+    function fmtRangeStatic(b, lang) {
+      const start = new Date(b.startISO);
+      const end = new Date(b.endISO);
+      const datePart = new Intl.DateTimeFormat(lang === 'ja' ? 'ja-JP' : 'en-GB',
+        { year: 'numeric', month: 'short', day: 'numeric', weekday: 'short' }).format(start);
+      const timeFmt = new Intl.DateTimeFormat(lang === 'ja' ? 'ja-JP' : 'en-GB',
+        { hour: '2-digit', minute: '2-digit' });
+      return `${datePart} · ${timeFmt.format(start)} – ${timeFmt.format(end)}`;
+    }
+
+    function buildEmailHtml(b, bookingId, status, decidedByName) {
+      const carName = b.car === 'phantom' ? 'Rolls-Royce Phantom' : 'Cadillac Escalade';
+      const isApproved = status === 'approved';
+      const accent = isApproved ? '#5cc98f' : '#ff6b6b';
+      const statusLabel = isApproved ? 'Approved' : 'Declined';
+      const detailUrl = `${location.origin}${location.pathname.replace('car-approve.html','car-approve.html')}?id=${bookingId}`;
+      const calendarUrl = `${location.origin}${location.pathname.replace('car-approve.html','availability.html')}`;
+      const row = (k, v) => v && v !== '—'
+        ? `<tr><td style="padding:6px 0;color:#9aa8c2;font-size:11px;letter-spacing:1.2px;text-transform:uppercase;width:140px;vertical-align:top;">${k}</td><td style="padding:6px 0;color:#f1ead8;font-size:14px;">${v}</td></tr>`
+        : '';
+      return `<!DOCTYPE html>
+<html><body style="margin:0;padding:0;background:#051428;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  <div style="max-width:560px;margin:0 auto;padding:32px 24px;color:#f5f7fb;">
+    <div style="text-align:center;margin-bottom:24px;">
+      <div style="font-family:Georgia,serif;font-size:18px;letter-spacing:3px;color:#d4b87a;">EXCEED REAL ESTATE</div>
+      <div style="font-size:10px;letter-spacing:3px;color:#9aa8c2;text-transform:uppercase;margin-top:6px;">DUBAI</div>
+    </div>
+    <div style="background:linear-gradient(180deg,#0a1f3d,#102a4f);border:1px solid rgba(255,255,255,0.10);border-radius:14px;padding:24px;">
+      <div style="display:inline-block;padding:5px 12px;border-radius:999px;background:${accent}26;color:${accent};border:1px solid ${accent}66;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;">
+        ${statusLabel}
+      </div>
+      <h2 style="font-family:Georgia,serif;font-weight:600;font-size:22px;margin:0 0 6px;color:#f1ead8;">
+        Car Booking ${isApproved ? 'Approved' : 'Declined'}
+      </h2>
+      <p style="color:#d4b87a;font-size:15px;font-weight:600;margin:0 0 18px;">${fmtRangeStatic(b, 'en')}</p>
+      <p style="color:#9aa8c2;font-size:13px;margin:0 0 16px;line-height:1.5;">
+        Your request for the <strong style="color:#f1ead8;">${carName}</strong> was ${statusLabel.toLowerCase()} by <strong style="color:#f1ead8;">${decidedByName}</strong>.
+      </p>
+      <table style="width:100%;border-collapse:collapse;margin:12px 0;border-top:1px solid rgba(255,255,255,0.10);border-bottom:1px solid rgba(255,255,255,0.10);">
+        ${row('Vehicle', carName)}
+        ${row('When', fmtRangeStatic(b, 'en'))}
+        ${row('Property', b.property)}
+        ${row('Area', b.area)}
+        ${row('Lead source', b.leadSource)}
+        ${row('Client', b.client)}
+        ${row('Budget (AED)', b.budget ? Number(b.budget).toLocaleString() : '')}
+        ${row('Notes', b.notes)}
+      </table>
+      <div style="margin-top:22px;text-align:center;">
+        <a href="${detailUrl}" style="display:inline-block;padding:12px 24px;background:linear-gradient(135deg,#f1ead8,#d4b87a);color:#0a1f3d;text-decoration:none;border-radius:8px;font-weight:700;font-size:12px;letter-spacing:1.2px;text-transform:uppercase;">View Booking</a>
+        <a href="${calendarUrl}" style="display:inline-block;margin-left:8px;padding:12px 22px;background:transparent;color:#d4b87a;text-decoration:none;border:1px solid #d4b87a;border-radius:8px;font-weight:600;font-size:12px;letter-spacing:1.2px;text-transform:uppercase;">Open Calendar</a>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:18px;color:#9aa8c2;font-size:11px;letter-spacing:1px;">
+      Exceed Real Estate · Dubai · automated message
+    </div>
+  </div>
+</body></html>`;
+    }
+
+    function buildEmailText(b, status, decidedByName) {
+      const carName = b.car === 'phantom' ? 'Rolls-Royce Phantom' : 'Cadillac Escalade';
+      const lines = [
+        `Car booking ${status === 'approved' ? 'APPROVED' : 'DECLINED'}`,
+        '',
+        `Decided by: ${decidedByName}`,
+        `Vehicle: ${carName}`,
+        `When: ${fmtRangeStatic(b, 'en')}`,
+        `Property: ${b.property || '—'}`,
+        `Area: ${b.area || '—'}`,
+        `Lead source: ${b.leadSource || '—'}`,
+        `Client: ${b.client || '—'}`,
+        `Budget: ${b.budget ? Number(b.budget).toLocaleString() + ' AED' : '—'}`,
+        `Notes: ${b.notes || '—'}`,
+        '',
+        '— Exceed Real Estate, Dubai'
+      ];
+      return lines.join('\n');
+    }
+
+    async function fireDecisionNotifications(booking, bookingId, status, decidedByName) {
+      const carName = booking.car === 'phantom' ? 'Rolls-Royce Phantom' : 'Cadillac Escalade';
+      const html = buildEmailHtml(booking, bookingId, status, decidedByName);
+      const text = buildEmailText(booking, status, decidedByName);
+      const subject = `[Exceed] Car booking ${status === 'approved' ? 'approved' : 'declined'} — ${carName}`;
+
+      // Recipient list: requester always; for approvals also Shoya, plus
+      // Malik if the requester is in his Dubai Sales team.
+      const recipients = [];
+      if (booking.requesterEmail) recipients.push(booking.requesterEmail);
+      if (status === 'approved') {
+        recipients.push(NOTIFY_EMAILS.shoya);
+        if (await isUnderMalik(booking)) recipients.push(NOTIFY_EMAILS.malik);
+      }
+      const uniqueRecipients = [...new Set(recipients.filter(Boolean).map(e => e.toLowerCase()))];
+
+      const writes = [];
+
+      // One mail doc per recipient (cleanest — independent retries, individual delivery status)
+      for (const to of uniqueRecipients) {
+        writes.push(addDoc(collection(db, 'mail'), {
+          to,
+          message: { subject, html, text },
+          createdAt: serverTimestamp(),
+          source: 'car-approve',
+          bookingId
+        }));
+      }
+
+      // In-portal notification for the requester (only — no need to spam approvers)
+      if (booking.requesterUid) {
+        writes.push(addDoc(collection(db, 'notifications'), {
+          forUid: booking.requesterUid,
+          type: 'car-booking-decision',
+          status,
+          title: `Car booking ${status}`,
+          body: `Your ${carName} request for ${fmtRangeStatic(booking, 'en')} was ${status} by ${decidedByName}.`,
+          link: `car-approve.html?id=${bookingId}`,
+          bookingId,
+          createdAt: serverTimestamp(),
+          read: false
+        }));
+      }
+
+      await Promise.all(writes);
+    }
 
     const I18N = {
       ja: {
@@ -506,14 +679,20 @@
       if (dBtn) dBtn.textContent = newStatus === 'declined' ? dict.declining : dict.decline;
       try {
         const u = state.user;
+        const decidedByName = u.displayName || (u.email ? u.email.split('@')[0] : '—');
         await updateDoc(doc(db, 'carBookings', state.id), {
           status: newStatus,
           decidedAt: serverTimestamp(),
           decidedByUid: u.uid,
           decidedByEmail: u.email,
-          decidedByName: u.displayName || (u.email ? u.email.split('@')[0] : '—')
+          decidedByName
         });
         showToast(newStatus === 'approved' ? dict.approvedToast : dict.declinedToast);
+
+        // Fire-and-forget: notification + email writes. Don't block the UI on these.
+        fireDecisionNotifications(state.booking, state.id, newStatus, decidedByName)
+          .catch(err => console.warn('decision notifications failed', err));
+
         // Reload the doc to show the decision info — keep the cached requesterAgent
         const snap = await getDoc(doc(db, 'carBookings', state.id));
         state.booking = { ...snap.data() };
