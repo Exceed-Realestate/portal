@@ -199,16 +199,26 @@ export async function sendPaymentNotifications(db,
       }]
     : null;
 
+  // replyTo points at the requester so when approvers hit "Reply" their
+  // response goes to the actual person who submitted the request — even
+  // though the email itself is sent through the portal's SMTP account.
+  // (True From: <requester> needs domain-verified relay; Gmail SMTP refuses.)
+  const replyTo = payment.requesterEmail
+    ? `${payment.requesterName || 'Exceed team'} <${payment.requesterEmail}>`
+    : undefined;
+
   const writes = recipients.map(to => {
     const message = { subject, html, text };
     if (attachments) message.attachments = attachments;
-    return addDoc(collection(db, 'mail'), {
+    const doc = {
       to,
       message,
       createdAt: serverTimestamp(),
       source: 'payment-' + status,
       paymentId
-    });
+    };
+    if (replyTo) doc.replyTo = replyTo;
+    return addDoc(collection(db, 'mail'), doc);
   });
 
   // In-portal bell: requester-only on approval decisions (mirrors car-notify).
