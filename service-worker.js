@@ -9,7 +9,7 @@
    Bump CACHE_VERSION on every deploy with breaking shell changes.
    ======================================================================== */
 
-const CACHE_VERSION = 'v1-2026-05-07';
+const CACHE_VERSION = 'v2-2026-05-07-cards';
 const SHELL_CACHE   = `exceed-shell-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `exceed-runtime-${CACHE_VERSION}`;
 
