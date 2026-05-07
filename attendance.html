@@ -182,7 +182,7 @@
   <div class="page-head">
     <div class="eyebrow">Monday Morning Briefing</div>
     <h1>Attendance</h1>
-    <p class="lede">Track who attended the Monday team briefing. Restricted in production to Balraj, Malik & Shoya — full access during dev. Dubai-based members are listed below; others are filtered out automatically.</p>
+    <p class="lede">Mark daily attendance for every signed-up portal user with Agent or Back Office access. Restricted in production to Balraj, Malik &amp; Shoya — full access during dev.</p>
   </div>
 
   <main>
@@ -244,13 +244,16 @@
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
     import { doc, getDoc, setDoc, collection, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
-    // Sections whose members are considered Dubai-based
-    const DUBAI_SECTIONS = ['ceo', 'dubai-sales', 'dubai-office', 'way-office', 'marketing'];
+    // Roles whose holders show up on the daily roll. Leadership (admin/ceo/
+    // md/board/manager) is excluded — they take attendance, they don't get
+    // marked. Edit here if the policy changes.
+    const ATTENDANCE_ROLES = ['agent', 'back_office'];
 
     let currentUser = null;
     let TEAM_CFG = null;
-    let DUBAI_MEMBERS = [];   // [{ id, name, photo, role, section }]
-    let RECORDS = {};          // { memberId: 'present' | 'late' | 'absent' }
+    let AGENTS_BY_NAME = new Map();   // normalized name -> agent doc
+    let ELIGIBLE_MEMBERS = [];        // [{ id, name, photo, role, section, accessRole }]
+    let RECORDS = {};                  // { memberId: 'present' | 'late' | 'absent' }
     let CURRENT_DATE = '';
 
     function showToast(msg) {
@@ -268,30 +271,73 @@
       } catch (e) { console.warn('teamConfig load failed', e?.message); }
     }
 
-    function buildDubaiList() {
-      DUBAI_MEMBERS = [];
-      if (!TEAM_CFG) return;
-      DUBAI_SECTIONS.forEach(sec => {
-        const arr = Array.isArray(TEAM_CFG[sec]) ? TEAM_CFG[sec] : [];
-        arr.forEach(m => {
-          if (!m || !m.name) return;
-          const id = (m.name + '|' + sec).toLowerCase().replace(/\s+/g, '-');
-          DUBAI_MEMBERS.push({
-            id,
-            name: m.name,
-            nameJa: m.nameJa || '',
-            photo: m.photo || '',
-            role: m.role || sec,
-            section: sec
+    function nameKeyFor(s) {
+      return (s || '').toString().toLowerCase()
+        .normalize('NFKD').replace(/[̀-ͯ]/g, '')
+        .replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+    }
+
+    /* Load every signed-up portal user; index by name + by uid so we can
+       cross-reference with the team tree to pick up photos and roles. */
+    async function loadAgentsDirectory() {
+      try {
+        const snap = await getDocs(collection(db, 'agents'));
+        AGENTS_BY_NAME.clear();
+        snap.forEach(d => {
+          const a = { id: d.id, ...d.data() };
+          // Common name variants -> lookup map
+          const full = `${a.firstName || ''} ${a.lastName || ''}`.trim();
+          [full, a.firstName, a.displayName].forEach(s => {
+            const k = nameKeyFor(s);
+            if (k && !AGENTS_BY_NAME.has(k)) AGENTS_BY_NAME.set(k, a);
           });
         });
-      });
-      // Dedupe by name (someone may appear in multiple sections)
+      } catch (e) { console.warn('agents load failed', e?.message); }
+    }
+
+    /* Build the roll: every agents/{uid} doc whose role is in
+       ATTENDANCE_ROLES. Pull photo / display role from the matched team
+       tree entry where one exists. Falls back to agent doc fields. */
+    function buildEligibleList() {
+      ELIGIBLE_MEMBERS = [];
       const seen = new Set();
-      DUBAI_MEMBERS = DUBAI_MEMBERS.filter(m => {
-        const k = m.name.toLowerCase();
-        if (seen.has(k)) return false;
-        seen.add(k); return true;
+
+      // Index team members by name for photo / role lookup
+      const teamByName = new Map();
+      if (TEAM_CFG) {
+        Object.keys(TEAM_CFG).forEach(sec => {
+          const arr = Array.isArray(TEAM_CFG[sec]) ? TEAM_CFG[sec] : [];
+          arr.forEach(m => {
+            if (!m || !m.name) return;
+            const k = nameKeyFor(m.name);
+            if (k && !teamByName.has(k)) teamByName.set(k, { ...m, section: sec });
+          });
+        });
+      }
+
+      AGENTS_BY_NAME.forEach((a) => {
+        const role = a.role || '';
+        if (!ATTENDANCE_ROLES.includes(role)) return;
+        const fullName = `${a.firstName || ''} ${a.lastName || ''}`.trim() || a.displayName || a.email || '?';
+        const k = nameKeyFor(fullName);
+        if (seen.has(k)) return;
+        seen.add(k);
+        const teamRow = teamByName.get(k) || teamByName.get(nameKeyFor(a.firstName));
+        ELIGIBLE_MEMBERS.push({
+          id: a.id,                                              // = uid — stable, won't drift if name changes
+          name: (teamRow && teamRow.name) || fullName,
+          nameJa: (teamRow && teamRow.nameJa) || '',
+          photo: (teamRow && teamRow.photo) || a.photoURL || '',
+          role: (teamRow && teamRow.role) || role,
+          accessRole: role,
+          section: teamRow ? teamRow.section : '—'
+        });
+      });
+
+      // Stable sort: by access role (agent first), then by name
+      ELIGIBLE_MEMBERS.sort((a, b) => {
+        if (a.accessRole !== b.accessRole) return a.accessRole === 'agent' ? -1 : 1;
+        return a.name.localeCompare(b.name);
       });
     }
 
@@ -299,11 +345,11 @@
 
     function renderRoll() {
       const wrap = document.getElementById('roll');
-      if (!DUBAI_MEMBERS.length) {
-        wrap.innerHTML = `<div class="empty-state">No Dubai-based members in the org chart yet. Add members to <strong>CEO / Dubai Sales / Dubai Office / Way Office / Marketing</strong> in Team Members → Edit Tree.</div>`;
+      if (!ELIGIBLE_MEMBERS.length) {
+        wrap.innerHTML = `<div class="empty-state">No portal users with Agent or Back Office access yet. Anyone who signs up via the portal and is assigned the Agent or Back Office role will appear here automatically.</div>`;
         return;
       }
-      wrap.innerHTML = DUBAI_MEMBERS.map(m => {
+      wrap.innerHTML = ELIGIBLE_MEMBERS.map(m => {
         const status = RECORDS[m.id] || '';
         return `<div class="roll-item ${status ? 'set' : ''}" data-id="${m.id}">
           <div class="roll-avatar">
@@ -331,7 +377,7 @@
       document.getElementById('saveStatus').className = 'save-status';
     };
     window.markAllPresent = function() {
-      DUBAI_MEMBERS.forEach(m => RECORDS[m.id] = 'present');
+      ELIGIBLE_MEMBERS.forEach(m => RECORDS[m.id] = 'present');
       renderRoll();
     };
     window.clearAll = function() {
@@ -435,7 +481,7 @@
       tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:30px">Loading…</td></tr>`;
       const { startStr, endStr } = periodRange(CURRENT_PERIOD);
       const totals = {};
-      DUBAI_MEMBERS.forEach(m => totals[m.id] = { p: 0, l: 0, a: 0 });
+      ELIGIBLE_MEMBERS.forEach(m => totals[m.id] = { p: 0, l: 0, a: 0 });
       let meetingsCount = 0;
       try {
         const q = query(collection(db, 'attendance'), where('date', '>=', startStr), where('date', '<=', endStr));
@@ -458,7 +504,7 @@
         tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:30px">No meetings recorded in this period.</td></tr>`;
         return;
       }
-      const rows = DUBAI_MEMBERS.map(m => {
+      const rows = ELIGIBLE_MEMBERS.map(m => {
         const t = totals[m.id] || { p:0, l:0, a:0 };
         const total = t.p + t.l + t.a;
         const rate = total ? Math.round(((t.p + t.l * 0.5) / total) * 100) : 0;
@@ -503,8 +549,8 @@
       CURRENT_DATE = dateInput.value;
       onDateChange();
 
-      await loadTeamConfig();
-      buildDubaiList();
+      await Promise.all([loadTeamConfig(), loadAgentsDirectory()]);
+      buildEligibleList();
       renderRoll();
       await loadAttendanceForDate();
       loadSummary();
