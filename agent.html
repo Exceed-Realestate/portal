@@ -1257,7 +1257,7 @@
         <a class="rail-icon" title="Team" href="team.html">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         </a>
-        <a class="rail-icon" title="Availability" href="availability.html">
+        <a class="rail-icon" title="Calendar" href="availability.html">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
         </a>
         <a class="rail-icon" title="Travel" href="travel.html">
@@ -1321,7 +1321,7 @@
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="10" y2="14"/><line x1="14" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="10" y2="18"/><line x1="14" y1="18" x2="16" y2="18"/></svg>
                 </div>
                 <div class="schedule-empty-title" data-i18n="scTitle">今日の予定はここに表示されます</div>
-                <p data-i18n="scBody">「Availability Sharing」でGoogleカレンダーと連携すると、本日のミーティングや予定がここに自動表示されます。</p>
+                <p data-i18n="scBody">「カレンダー」タブでGoogleカレンダーと連携すると、本日のミーティングや予定がここに自動表示されます。</p>
                 <a class="schedule-cta" href="availability.html" data-i18n="scCta">
                   カレンダーを連携 →
                 </a>
@@ -1465,8 +1465,8 @@
       },
       {
         key: 'availability',
-        label: 'Availability Sharing', labelEn: 'Availability Sharing',
-        desc: 'チームの空き時間', descEn: "Team's free slots",
+        label: 'カレンダー', labelEn: 'Calendar',
+        desc: 'Googleカレンダー連携', descEn: 'Google Calendar sync',
         action: 'page', target: 'availability.html',
         icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>',
         badge: 'new'
@@ -1576,9 +1576,9 @@
         searchPh: 'ツールを検索...',
         editBtn: '並び替え', editDone: '完了',
         editHint: 'タイルをドラッグして並び替え。完了したら「完了」を押してください。',
-        todayLabel: '本日', notConnected: '未連携',
+        todayLabel: '本日', notConnected: '未連携', connected: '連携済', scNoToday: '本日の予定はありません',
         scTitle: '今日の予定はここに表示されます',
-        scBody: '「Availability Sharing」でGoogleカレンダーと連携すると、本日のミーティングや予定がここに自動表示されます。',
+        scBody: '「カレンダー」タブでGoogleカレンダーと連携すると、本日のミーティングや予定がここに自動表示されます。',
         scCta: 'カレンダーを連携 →',
         shortcutEmpty: 'まだショートカットがありません。よく使うリンクを追加できます。',
         shortcutAdd: '追加',
@@ -1611,9 +1611,9 @@
         searchPh: 'Search tools...',
         editBtn: 'Reorder', editDone: 'Done',
         editHint: 'Drag tiles to reorder. Tap "Done" when finished.',
-        todayLabel: 'Today', notConnected: 'Not connected',
+        todayLabel: 'Today', notConnected: 'Not connected', connected: 'Connected', scNoToday: 'No more events today',
         scTitle: 'Your meetings will show here',
-        scBody: "Connect your Google Calendar from Availability Sharing and today's events appear here automatically.",
+        scBody: "Connect your Google Calendar from the Calendar tab and today's events appear here automatically.",
         scCta: 'Connect calendar →',
         shortcutEmpty: "No shortcuts yet — add the links you reach for most.",
         shortcutAdd: 'Add one',
@@ -1998,6 +1998,100 @@
       document.getElementById('scheduleDate').textContent = fmt.format(new Date());
     }
 
+    /* ----- Today's schedule from Google Calendar -----
+       Reads the access token persisted by availability.html (GIS flow).
+       If present and valid, fetches today's events and renders them in
+       the schedule card. If absent/expired, falls back to the empty
+       state with the "Connect calendar" CTA. */
+    const GCAL_TOKEN_KEY = 'gcal_token_v1';
+    const GCAL_EXP_KEY   = 'gcal_token_exp_v1';
+    function _readGcalToken() {
+      try {
+        const t = localStorage.getItem(GCAL_TOKEN_KEY);
+        const e = +localStorage.getItem(GCAL_EXP_KEY) || 0;
+        if (t && Date.now() < e) return t;
+      } catch (_) {}
+      return null;
+    }
+    function _scheduleStatusEl()  { return document.getElementById('scheduleStatus'); }
+    function _scheduleEmptyEl()   { return document.getElementById('scheduleEmpty'); }
+    function _scheduleListEl()    { return document.getElementById('scheduleList'); }
+    function _showEmptyState() {
+      const dict = I18N[currentLang];
+      const status = _scheduleStatusEl();
+      const list = _scheduleListEl();
+      const empty = _scheduleEmptyEl();
+      if (!status || !list || !empty) return;
+      status.textContent = dict.notConnected || '未連携';
+      status.classList.remove('live');
+      list.style.display = 'none';
+      list.innerHTML = '';
+      empty.style.display = '';
+    }
+    function _showEvents(events) {
+      const dict = I18N[currentLang];
+      const status = _scheduleStatusEl();
+      const list = _scheduleListEl();
+      const empty = _scheduleEmptyEl();
+      if (!status || !list || !empty) return;
+      status.textContent = dict.connected || '連携済';
+      status.classList.add('live');
+      empty.style.display = 'none';
+      if (!events.length) {
+        list.style.display = '';
+        list.innerHTML = `<li class="schedule-item"><div class="what" style="text-align:center;color:var(--muted)">${dict.scNoToday || '本日の予定はありません'}</div></li>`;
+        return;
+      }
+      const fmtT = new Intl.DateTimeFormat(currentLang === 'ja' ? 'ja-JP' : 'en-GB', { hour: '2-digit', minute: '2-digit' });
+      list.innerHTML = events.map(ev => {
+        const startStr = ev.start.dateTime || ev.start.date;
+        const start = new Date(startStr);
+        const allDay = !ev.start.dateTime;
+        const time = allDay
+          ? (currentLang === 'ja' ? '終日' : 'All day')
+          : fmtT.format(start);
+        const title = (ev.summary || '(untitled)')
+          .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        return `<li class="schedule-item"><div class="time">${time}</div><div class="what">${title}</div></li>`;
+      }).join('');
+      list.style.display = '';
+    }
+    async function renderTodaySchedule() {
+      const token = _readGcalToken();
+      if (!token) { _showEmptyState(); return; }
+      // Fetch primary calendar events between now and end-of-today (local).
+      const now = new Date();
+      const eod = new Date(now); eod.setHours(23, 59, 59, 999);
+      const params = new URLSearchParams({
+        timeMin: now.toISOString(),
+        timeMax: eod.toISOString(),
+        singleEvents: 'true',
+        orderBy: 'startTime',
+        maxResults: '20'
+      });
+      try {
+        const res = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events?' + params, {
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        if (res.status === 401 || res.status === 403) {
+          // Token expired/revoked — drop it locally so the user re-connects via availability.html
+          try {
+            localStorage.removeItem(GCAL_TOKEN_KEY);
+            localStorage.removeItem(GCAL_EXP_KEY);
+            localStorage.removeItem('gcal_email_v1');
+          } catch (_) {}
+          _showEmptyState();
+          return;
+        }
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        _showEvents(data.items || []);
+      } catch (err) {
+        console.warn('schedule fetch failed', err);
+        _showEmptyState();
+      }
+    }
+
     // ----- Editable shortcuts (per-user, localStorage) -----
     function loadShortcuts() {
       try { return JSON.parse(localStorage.getItem('shortcuts') || '[]'); }
@@ -2114,6 +2208,7 @@
       renderTileGrid();
       renderTzList();
       renderTodayDate();
+      renderTodaySchedule();
       renderShortcuts();
       renderTraveling();
       renderBirthdays();
@@ -2432,6 +2527,11 @@
     window.addEventListener('load', () => { setLang('ja'); });
     window.addEventListener('resize', positionPill);
     setInterval(renderTzList, 60000);  // refresh times every minute
+    // Re-fetch today's calendar when the user comes back to the dashboard
+    // (e.g. after connecting on availability.html)
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') renderTodaySchedule();
+    });
   </script>
   <!-- Access role modal -->
   <div class="acc-bd" id="accBd" onclick="if(event.target===this)closeAccessModal()">
