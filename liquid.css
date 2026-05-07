@@ -1412,3 +1412,133 @@ html[lang="ja"] .left-col h1 {
 
 /* Manor's noise overlay we already disabled is the right call; nexus
    keeps it ON because the cooler palette benefits from texture too. */
+
+
+/* =====================================================================
+   Mobile responsive — global safety net.
+   Applied across every page that imports liquid.css. Page-scoped styles
+   can still override these via specificity; these are the floor that
+   keeps layouts from breaking on phones.
+   ===================================================================== */
+
+/* No horizontal scroll anywhere — this catches stray fixed-width rules. */
+html, body { max-width: 100%; overflow-x: hidden; }
+
+/* Prevent text inflation on iOS rotation. */
+html { -webkit-text-size-adjust: 100%; }
+
+/* Long words / URLs / emails don't push a card off-screen. */
+body { word-wrap: break-word; overflow-wrap: anywhere; }
+
+/* Anything with this class scrolls horizontally on small screens —
+   used to wrap wide tables and flex toolbars. */
+.scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* Tables — when wrapped in .table-wrap they scroll cleanly. */
+.table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-left: -4px; margin-right: -4px;
+  padding-left: 4px;  padding-right: 4px;
+}
+
+/* Phones (≤ 640px) — shared fixes the portal needs across all pages. */
+@media (max-width: 640px) {
+  /* Topbar: wrap brand + meta cleanly, never crop a button. */
+  .topbar {
+    padding: 12px 14px !important;
+    flex-wrap: wrap;
+    gap: 10px;
+    row-gap: 8px;
+  }
+  .topbar .brand img {
+    width: 34px !important; height: 34px !important;
+  }
+  .topbar .brand-name {
+    font-size: 13px !important;
+    letter-spacing: 1.5px !important;
+  }
+  /* Push the right cluster onto the next line if needed instead of squishing */
+  .topbar-right, .topbar-meta {
+    gap: 8px;
+    flex-wrap: wrap;
+    font-size: 12px;
+  }
+  .topbar-right .icon-btn,
+  .topbar-meta .icon-btn,
+  .topbar .icon-btn {
+    padding: 6px 10px;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+  }
+  .lang-toggle button { padding: 4px 9px; font-size: 10.5px; }
+
+  /* Page heads — reclaim horizontal real estate. */
+  .page-head {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+    padding-top: 22px !important;
+  }
+  .page-head h1 { font-size: 22px !important; line-height: 1.25; }
+  .page-head .lede { font-size: 13px; }
+
+  /* Main content padding — every page caps at 16px on phones. */
+  main { padding-left: 16px !important; padding-right: 16px !important; }
+
+  /* Cards — tighter so 320px phones still get breathing room. */
+  .card,
+  .booking-card,
+  .form-section,
+  .panel { padding: 18px 14px !important; }
+
+  /* Two-column form rows always stack on phones. */
+  .row { grid-template-columns: 1fr !important; gap: 10px !important; }
+
+  /* Inputs / textareas / selects — full width, comfortable touch targets. */
+  input, select, textarea {
+    width: 100%;
+    max-width: 100%;
+    font-size: 16px;  /* prevents iOS Safari auto-zoom on focus */
+  }
+
+  /* Buttons inside a .btn-row stack instead of cramming. */
+  .btn-row {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  /* Modal / sheet bodies. */
+  .modal, .modal-body, .acc-bd, .bell-panel {
+    max-width: calc(100vw - 28px) !important;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  /* Tables that haven't been hand-wrapped — let them scroll. */
+  table { display: block; max-width: 100%; overflow-x: auto; }
+  /* If the page already wraps, restore native table layout inside the wrap. */
+  .table-wrap > table { display: table; }
+
+  /* Toasts shouldn't disappear off the side. */
+  .toast {
+    max-width: calc(100vw - 32px);
+    font-size: 12.5px;
+    padding: 10px 16px;
+  }
+}
+
+/* Small phones (≤ 420px) — squeeze further. */
+@media (max-width: 420px) {
+  .topbar { padding: 10px 12px !important; }
+  .topbar .brand img { width: 30px !important; height: 30px !important; }
+  .topbar .brand-name { font-size: 12px !important; letter-spacing: 1px !important; }
+  /* Hide the small caption under the brand name on the smallest phones. */
+  .brand .brand-sub,
+  .brand > div > div:nth-child(2) { display: none; }
+
+  /* "Dashboard" / "Back" labels on icon buttons collapse to icon-only. */
+  .icon-btn .label-mobile-hide { display: none; }
+
+  .page-head h1 { font-size: 20px !important; }
+  .page-head .eyebrow { letter-spacing: 3px !important; font-size: 10px; }
+}

@@ -156,8 +156,11 @@
     .users-count { color: var(--muted); font-size: 12px; }
     .users-count strong { color: var(--cream); font-weight: 600; }
 
-    .users-table-wrap { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
-    table.users { width: 100%; border-collapse: collapse; }
+    .users-table-wrap {
+      border: 1px solid var(--line); border-radius: 12px;
+      overflow-x: auto; -webkit-overflow-scrolling: touch;
+    }
+    table.users { width: 100%; border-collapse: collapse; min-width: 640px; }
     table.users th, table.users td {
       padding: 12px 14px;
       text-align: left;
