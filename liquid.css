@@ -1427,8 +1427,12 @@ html, body { max-width: 100%; overflow-x: hidden; }
 /* Prevent text inflation on iOS rotation. */
 html { -webkit-text-size-adjust: 100%; }
 
-/* Long words / URLs / emails don't push a card off-screen. */
-body { word-wrap: break-word; overflow-wrap: anywhere; }
+/* Long URLs / emails / IDs don't push a card off-screen — but only break
+   at word boundaries by default (so "ALINA" stays as one word, while
+   a 60-char email or URL wraps cleanly). Use .break-anywhere on the
+   specific elements that need character-level breaking. */
+body { word-wrap: break-word; overflow-wrap: break-word; }
+.break-anywhere { overflow-wrap: anywhere; word-break: break-word; }
 
 /* Anything with this class scrolls horizontally on small screens —
    used to wrap wide tables and flex toolbars. */

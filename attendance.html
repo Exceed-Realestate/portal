@@ -32,6 +32,28 @@
 
     main { max-width: 1200px; margin: 0 auto; padding: 28px 32px 80px; display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr); gap: 22px; }
     @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+    @media (max-width: 640px) {
+      /* Buttons (PRESENT / LATE / ABSENT / OOO) drop to a second row so
+         the name has full width — otherwise the 1fr name column collapses
+         to ~30px and every letter wraps onto its own line. */
+      .roll-item {
+        grid-template-columns: auto 1fr;
+        grid-row-gap: 10px;
+      }
+      .roll-buttons {
+        grid-column: 1 / -1;
+        gap: 6px;
+      }
+      .roll-buttons .att-btn {
+        flex: 1 1 0;        /* equal width across the row */
+        min-width: 0;        /* allow shrinking below content size */
+        padding: 8px 6px;
+        font-size: 10.5px;
+        letter-spacing: 0.5px;
+      }
+      .roll-name { font-size: 14px; }
+      .roll-role { font-size: 11px; }
+    }
     @media (max-width: 480px) {
       .topbar { padding: 12px 14px; flex-wrap: wrap; gap: 10px; }
       .brand img { width: 32px; height: 32px; }
@@ -39,6 +61,8 @@
       .topbar-right { font-size: 12px; gap: 8px; flex-wrap: wrap; }
       main { padding: 18px 14px 60px; gap: 16px; }
       .panel { padding: 18px 16px; }
+      .roll-avatar { width: 38px; height: 38px; font-size: 12px; }
+      .roll-buttons .att-btn { padding: 8px 4px; font-size: 10px; }
     }
 
     .panel { background: linear-gradient(180deg, rgba(16,42,79,0.65), rgba(10,31,61,0.65)); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px; backdrop-filter: blur(14px); }
