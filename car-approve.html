@@ -308,13 +308,48 @@
       return `${datePart} · ${timeFmt.format(start)} – ${timeFmt.format(end)}`;
     }
 
+    // Google Calendar "quick add" template URL — opens with the event pre-filled
+    function gcalTemplateUrl(b) {
+      const carName = b.car === 'phantom' ? 'Rolls-Royce Phantom' : 'Cadillac Escalade';
+      const requester = b.requesterName || 'Team';
+      const title = `🚗 ${carName} — booked by ${requester}`;
+      const start = new Date(b.startISO);
+      const end = new Date(b.endISO);
+      // Google Calendar wants UTC in YYYYMMDDTHHMMSSZ form (no separators)
+      const fmt = d => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+      const dates = `${fmt(start)}/${fmt(end)}`;
+      const details = [
+        `Car: ${carName}`,
+        `Booked by: ${requester}${b.requesterEmail ? ' (' + b.requesterEmail + ')' : ''}`,
+        b.client    ? `Client: ${b.client}` : '',
+        b.property  ? `Property: ${b.property}` : '',
+        b.leadSource? `Lead source: ${b.leadSource}` : '',
+        b.budget    ? `Budget: ${Number(b.budget).toLocaleString()} AED` : '',
+        b.notes     ? `Notes: ${b.notes}` : '',
+        '',
+        `Booking ref: ${location.origin}${location.pathname.replace('car-approve.html','car-approve.html')}?id=${b.__id || ''}`
+      ].filter(Boolean).join('\n');
+      const location_ = b.area || '';
+      const params = new URLSearchParams({
+        action: 'TEMPLATE',
+        text: title,
+        dates,
+        details,
+        location: location_
+      });
+      return 'https://calendar.google.com/calendar/render?' + params.toString();
+    }
+
     function buildEmailHtml(b, bookingId, status, decidedByName) {
+      // Stash the id on the booking obj so gcalTemplateUrl can include the ref link
+      b.__id = bookingId;
       const carName = b.car === 'phantom' ? 'Rolls-Royce Phantom' : 'Cadillac Escalade';
       const isApproved = status === 'approved';
       const accent = isApproved ? '#5cc98f' : '#ff6b6b';
       const statusLabel = isApproved ? 'Approved' : 'Declined';
       const detailUrl = `${location.origin}${location.pathname.replace('car-approve.html','car-approve.html')}?id=${bookingId}`;
       const calendarUrl = `${location.origin}${location.pathname.replace('car-approve.html','availability.html')}`;
+      const gcalUrl = gcalTemplateUrl(b);
       const row = (k, v) => v && v !== '—'
         ? `<tr><td style="padding:6px 0;color:#9aa8c2;font-size:11px;letter-spacing:1.2px;text-transform:uppercase;width:140px;vertical-align:top;">${k}</td><td style="padding:6px 0;color:#f1ead8;font-size:14px;">${v}</td></tr>`
         : '';
@@ -347,8 +382,9 @@
         ${row('Notes', b.notes)}
       </table>
       <div style="margin-top:22px;text-align:center;">
-        <a href="${detailUrl}" style="display:inline-block;padding:12px 24px;background:linear-gradient(135deg,#f1ead8,#d4b87a);color:#0a1f3d;text-decoration:none;border-radius:8px;font-weight:700;font-size:12px;letter-spacing:1.2px;text-transform:uppercase;">View Booking</a>
-        <a href="${calendarUrl}" style="display:inline-block;margin-left:8px;padding:12px 22px;background:transparent;color:#d4b87a;text-decoration:none;border:1px solid #d4b87a;border-radius:8px;font-weight:600;font-size:12px;letter-spacing:1.2px;text-transform:uppercase;">Open Calendar</a>
+        <a href="${detailUrl}" style="display:inline-block;margin:4px 6px;padding:12px 22px;background:linear-gradient(135deg,#f1ead8,#d4b87a);color:#0a1f3d;text-decoration:none;border-radius:8px;font-weight:700;font-size:12px;letter-spacing:1.2px;text-transform:uppercase;">View Booking</a>
+        ${isApproved ? `<a href="${gcalUrl}" style="display:inline-block;margin:4px 6px;padding:12px 22px;background:rgba(135,179,157,0.18);color:#87b39d;text-decoration:none;border:1px solid rgba(135,179,157,0.5);border-radius:8px;font-weight:700;font-size:12px;letter-spacing:1.2px;text-transform:uppercase;">📅 Add to Google Calendar</a>` : ''}
+        <a href="${calendarUrl}" style="display:inline-block;margin:4px 6px;padding:12px 22px;background:transparent;color:#d4b87a;text-decoration:none;border:1px solid #d4b87a;border-radius:8px;font-weight:600;font-size:12px;letter-spacing:1.2px;text-transform:uppercase;">Open Portal Calendar</a>
       </div>
     </div>
     <div style="text-align:center;margin-top:18px;color:#9aa8c2;font-size:11px;letter-spacing:1px;">
@@ -360,8 +396,9 @@
 
     function buildEmailText(b, status, decidedByName) {
       const carName = b.car === 'phantom' ? 'Rolls-Royce Phantom' : 'Cadillac Escalade';
+      const isApproved = status === 'approved';
       const lines = [
-        `Car booking ${status === 'approved' ? 'APPROVED' : 'DECLINED'}`,
+        `Car booking ${isApproved ? 'APPROVED' : 'DECLINED'}`,
         '',
         `Decided by: ${decidedByName}`,
         `Vehicle: ${carName}`,
@@ -371,10 +408,14 @@
         `Lead source: ${b.leadSource || '—'}`,
         `Client: ${b.client || '—'}`,
         `Budget: ${b.budget ? Number(b.budget).toLocaleString() + ' AED' : '—'}`,
-        `Notes: ${b.notes || '—'}`,
-        '',
-        '— Exceed Real Estate, Dubai'
+        `Notes: ${b.notes || '—'}`
       ];
+      if (isApproved) {
+        lines.push('');
+        lines.push(`Add to Google Calendar: ${gcalTemplateUrl(b)}`);
+      }
+      lines.push('');
+      lines.push('— Exceed Real Estate, Dubai');
       return lines.join('\n');
     }
 
