@@ -34,6 +34,8 @@ service cloud.firestore {
 
       // Admins can change any field (mainly status & role).
       // A normal user can update their own doc but cannot change email/uid/status/role.
+      // (gcalConnected, gcalEmail, gcalConnectedAt are user-writable so calendar
+      //  consent persists across browsers/devices.)
       allow update: if isAdminEmail()
         || (isSignedIn()
             && request.auth.uid == userId
@@ -116,6 +118,39 @@ service cloud.firestore {
         && request.resource.data.type is string;
       allow update: if isSignedIn()
         && resource.data.forUid == request.auth.uid;
+      allow delete: if isAdminEmail();
+    }
+
+    // ------- Payments (Finance approval flow) -------
+    // /payments/{id}.amount + recipient + purpose + status + requesterUid/email/name +
+    //  category + dueDate + notes + createdAt + decisionAt/By/Uid + cancelledAt/By
+    match /payments/{paymentId} {
+      // Anyone signed in can read payment requests (back-office visibility).
+      // Tighten to (own + finance approver emails) once this is heavily used.
+      allow read, list: if isSignedIn();
+
+      // Requester creates own request.
+      allow create: if isSignedIn()
+        && request.resource.data.requesterUid == request.auth.uid
+        && request.resource.data.status == 'submitted'
+        && request.resource.data.amount is number
+        && request.resource.data.amount > 0;
+
+      // Updates: admin OR (requester withdraws) OR (finance approver decides).
+      // Approval rights are ALSO checked client-side via canApprovePayment(p, role, email).
+      allow update: if isAdminEmail()
+        || (isSignedIn() && resource.data.requesterUid == request.auth.uid
+            && request.resource.data.status == 'cancelled')
+        || (isSignedIn() && request.auth.token.email in [
+              'mouad@exceed-re.ae',
+              'hira@exceed-re.ae',
+              'teruo@exceed-re.ae',
+              'balraj@exceed-re.ae',
+              'admin@exceed-re.ae'
+            ]
+            && (request.resource.data.status == 'approved'
+                || request.resource.data.status == 'declined'));
+
       allow delete: if isAdminEmail();
     }
 

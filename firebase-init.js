@@ -182,7 +182,12 @@ export const CAPABILITIES = {
   bookCar:            ['admin', 'ceo', 'md', 'board', 'manager', 'agent', 'back_office'],
   useTravel:          ['admin', 'ceo', 'md', 'board', 'manager', 'agent'],
   useIRR:             ['admin', 'ceo', 'md', 'board', 'manager', 'agent'],
-  useListings:        ['admin', 'ceo', 'md', 'board', 'manager', 'agent', 'back_office']
+  useListings:        ['admin', 'ceo', 'md', 'board', 'manager', 'agent', 'back_office'],
+
+  // Finance / Payment Approval — anyone on the team can submit a request.
+  // Approval gating is finer-grained and lives in payment-notify.js
+  // (Mouad / Hira can approve ≤ 1,000 AED; CEO required above that).
+  usePayment:         ['admin', 'ceo', 'md', 'board', 'manager', 'agent', 'back_office']
 };
 
 // can(role, capability, email?) — central capability check.

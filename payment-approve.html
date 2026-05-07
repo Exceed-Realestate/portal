@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payment Approval — Exceed Real Estate</title>
+  <link rel="icon" type="image/jpeg" href="logo.jpg">
+  <script src="theme-init.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="liquid.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    :root {
+      --navy-0:#051428; --navy-1:#0a1f3d; --navy-2:#102a4f;
+      --line:rgba(255,255,255,0.10); --line-strong:rgba(255,255,255,0.18);
+      --text:#f5f7fb; --muted:#9aa8c2; --gold:#d4b87a; --cream:#f1ead8;
+      --green:#5cc98f; --red:#ff6b6b; --radius:14px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    html { background: var(--navy-0); }
+    body {
+      font-family: 'Noto Sans JP','Inter',sans-serif;
+      background:
+        radial-gradient(1100px 600px at 80% -10%, rgba(212,184,122,0.10), transparent 60%),
+        radial-gradient(900px 700px at -10% 110%, rgba(23,54,99,0.6), transparent 60%),
+        var(--navy-0);
+      color: var(--text); min-height: 100vh;
+    }
+    .topbar { display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 32px; border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(8px); background: rgba(5,20,40,0.7);
+      position: sticky; top: 0; z-index: 10;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; cursor: pointer; text-decoration: none; color: inherit; }
+    .brand img { width: 40px; height: 40px; border-radius: 8px; }
+    .brand-name { font-family: 'Playfair Display', serif; letter-spacing: 2px; font-weight: 600; }
+    .brand-name span { color: var(--gold); font-weight: 400; }
+    .icon-btn {
+      background: rgba(255,255,255,0.05); border: 1px solid var(--line);
+      color: var(--text); padding: 8px 14px; border-radius: 8px; cursor: pointer;
+      font-family: inherit; font-size: 12px; letter-spacing: 1px; text-transform: uppercase;
+      transition: background .2s; display: inline-flex; align-items: center; gap: 8px;
+      text-decoration: none;
+    }
+    .icon-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--line-strong); }
+    .icon-btn svg { width: 14px; height: 14px; }
+
+    main { max-width: 720px; margin: 0 auto; padding: 36px 32px 80px; }
+
+    .card {
+      background: linear-gradient(180deg, rgba(16,42,79,0.85), rgba(10,31,61,0.85));
+      backdrop-filter: blur(18px) saturate(160%);
+      border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 28px;
+    }
+
+    .pill {
+      display: inline-block; padding: 5px 14px; border-radius: 999px; font-size: 11px;
+      font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; border: 1px solid;
+    }
+    .pill.submitted { background: rgba(212,184,122,0.14); color: var(--gold); border-color: rgba(212,184,122,0.4); }
+    .pill.approved  { background: rgba(92,201,143,0.14);  color: var(--green); border-color: rgba(92,201,143,0.4); }
+    .pill.declined  { background: rgba(255,107,107,0.14); color: var(--red); border-color: rgba(255,107,107,0.4); }
+    .pill.cancelled { background: rgba(255,255,255,0.05); color: var(--muted); border-color: var(--line-strong); }
+
+    h1 { font-family: 'Playfair Display','Noto Serif JP',serif; font-weight: 600; font-size: clamp(24px, 4vw, 36px); margin: 14px 0 4px; }
+    .amount {
+      font-family: 'Playfair Display','Noto Serif JP',serif; font-weight: 700;
+      color: var(--gold); font-size: 38px; margin: 14px 0 4px;
+    }
+    .req-info { color: var(--muted); font-size: 13px; margin: 4px 0 16px; }
+
+    .meta-row {
+      display: grid; grid-template-columns: 140px 1fr; gap: 8px 16px;
+      padding: 10px 0; border-top: 1px solid var(--line); font-size: 14px;
+    }
+    .meta-row:last-child { border-bottom: 1px solid var(--line); }
+    .meta-row .k { color: var(--muted); font-size: 11px; letter-spacing: 1.4px; text-transform: uppercase; padding-top: 2px; }
+    .meta-row .v { color: var(--cream); }
+
+    .actions { display: flex; gap: 12px; margin-top: 22px; flex-wrap: wrap; }
+    .btn-approve, .btn-decline, .btn-pdf {
+      flex: 1; min-width: 200px; padding: 14px 18px; border-radius: 10px; font-weight: 700;
+      font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer;
+      font-family: inherit; border: 1px solid;
+    }
+    .btn-approve { background: rgba(92,201,143,0.14); color: var(--green); border-color: rgba(92,201,143,0.5); }
+    .btn-approve:hover { background: rgba(92,201,143,0.22); }
+    .btn-decline { background: rgba(255,107,107,0.10); color: var(--red); border-color: rgba(255,107,107,0.5); }
+    .btn-decline:hover { background: rgba(255,107,107,0.18); }
+    .btn-pdf {
+      flex: 0 0 auto; min-width: 140px; background: transparent; color: var(--gold);
+      border-color: rgba(212,184,122,0.5);
+    }
+    .btn-pdf:hover { background: rgba(212,184,122,0.12); }
+
+    .gate-msg {
+      margin-top: 20px; padding: 14px; border-radius: 10px;
+      background: rgba(212,184,122,0.06); border: 1px solid rgba(212,184,122,0.2);
+      color: var(--cream); font-size: 13px; line-height: 1.6;
+    }
+    .gate-msg.deny { background: rgba(255,107,107,0.06); border-color: rgba(255,107,107,0.3); color: var(--red); }
+
+    .approver-line { margin-top: 12px; color: var(--muted); font-size: 12px; }
+    .approver-line strong { color: var(--cream); }
+
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: rgba(10,31,61,0.95); border: 1px solid var(--gold); color: var(--cream);
+      padding: 12px 22px; border-radius: 10px; font-size: 13px; opacity: 0; pointer-events: none;
+      transition: opacity .25s, transform .25s; z-index: 50;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(-6px); }
+    .toast.error { border-color: var(--red); color: var(--red); }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="agent.html">
+      <img src="logo.jpg" alt="Exceed">
+      <div>
+        <div class="brand-name">EXCEED <span>Real Estate</span></div>
+        <div style="font-size:10px;letter-spacing:2px;color:var(--muted);">DUBAI · FINANCE</div>
+      </div>
+    </a>
+    <a class="icon-btn" href="agent.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      Dashboard
+    </a>
+  </header>
+
+  <main>
+    <div class="card" id="paneCard">
+      <div id="paneContent" style="text-align:center;color:var(--muted);padding:40px 0;">Loading…</div>
+    </div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script type="module">
+    import { auth, db, isAdmin } from './firebase-init.js';
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+    import { doc, getDoc, updateDoc, serverTimestamp } from
+      "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    import { sendPaymentNotifications, canApprovePayment, FINANCE, SMALL_AMOUNT_AED }
+      from './payment-notify.js';
+
+    function fmtAmount(v) {
+      const n = Number(v || 0);
+      return n.toLocaleString('en-US', { maximumFractionDigits: 2 }) + ' AED';
+    }
+    function fmtDate(d) {
+      if (!d) return '—';
+      try {
+        return new Date(d).toLocaleDateString('en-GB',
+          { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+      } catch (_) { return d; }
+    }
+    function showToast(msg, isErr) {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.classList.toggle('error', !!isErr);
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    function buildPaymentPdfBase64(p, paymentId) {
+      const { jsPDF } = window.jspdf;
+      const docp = new jsPDF({ unit: 'pt', format: 'a4' });
+      const pageW = docp.internal.pageSize.getWidth();
+      docp.setFillColor(10, 31, 61);
+      docp.rect(0, 0, pageW, 110, 'F');
+      docp.setTextColor(212, 184, 122);
+      docp.setFont('helvetica', 'bold');
+      docp.setFontSize(20);
+      docp.text('EXCEED REAL ESTATE', 40, 50);
+      docp.setFont('helvetica', 'normal');
+      docp.setFontSize(10);
+      docp.setTextColor(241, 234, 216);
+      docp.text('Dubai · Finance · Payment Request', 40, 70);
+      docp.setFontSize(9);
+      docp.setTextColor(154, 168, 194);
+      docp.text(`Reference: ${paymentId}`, 40, 90);
+
+      docp.setTextColor(10, 31, 61);
+      docp.setFont('helvetica', 'bold');
+      docp.setFontSize(16);
+      docp.text('Payment Request', 40, 150);
+
+      const status = (p.status || 'submitted').toUpperCase();
+      const accent = status === 'APPROVED' ? [92,201,143] : status === 'DECLINED' ? [255,107,107] : [212,184,122];
+      docp.setFillColor(accent[0], accent[1], accent[2]);
+      docp.roundedRect(40, 184, 160, 22, 4, 4, 'F');
+      docp.setTextColor(255, 255, 255);
+      docp.setFont('helvetica', 'bold');
+      docp.setFontSize(10);
+      docp.text(status, 50, 199);
+
+      docp.setFont('helvetica', 'bold');
+      docp.setFontSize(28);
+      docp.setTextColor(10, 31, 61);
+      docp.text(fmtAmount(p.amount), 40, 250);
+
+      const rows = [
+        ['Requester',   p.requesterName || ''],
+        ['Email',       p.requesterEmail || ''],
+        ['Pay to',      p.recipient || '—'],
+        ['Purpose',     p.purpose || '—'],
+        ['Category',    p.category || '—'],
+        ['Due date',    fmtDate(p.dueDate)],
+        ['Notes',       p.notes || '—'],
+        ['Approval tier', (p.amount || 0) > SMALL_AMOUNT_AED
+          ? '> 1,000 AED · CEO approval required'
+          : '≤ 1,000 AED · Mouad / Hira (CEO cc)']
+      ];
+      if (p.decisionBy) rows.push(['Decision by', p.decisionBy + (p.decisionAt ? ' · ' + new Date(p.decisionAt).toLocaleString('en-GB') : '')]);
+      let y = 290;
+      docp.setFont('helvetica', 'normal');
+      docp.setFontSize(9);
+      for (const [k, v] of rows) {
+        docp.setTextColor(154, 168, 194);
+        docp.text(k.toUpperCase(), 40, y);
+        docp.setTextColor(10, 31, 61);
+        docp.setFont('helvetica', 'bold');
+        const lines = docp.splitTextToSize(String(v), pageW - 200);
+        docp.text(lines, 200, y);
+        docp.setFont('helvetica', 'normal');
+        y += Math.max(20, lines.length * 12 + 8);
+      }
+      docp.setFontSize(8);
+      docp.setTextColor(154, 168, 194);
+      docp.text('Generated by the Exceed Portal',
+        40, docp.internal.pageSize.getHeight() - 30);
+
+      return docp.output('datauristring').split(',')[1] || '';
+    }
+    function downloadPdf(p, id) {
+      const { jsPDF } = window.jspdf;
+      // Re-render and trigger download
+      const b64 = buildPaymentPdfBase64(p, id);
+      const blob = new Blob(
+        [Uint8Array.from(atob(b64), c => c.charCodeAt(0))],
+        { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `Payment-Request-${id}.pdf`;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 0);
+    }
+
+    let me = null, myProfile = null, myRole = null;
+    let payment = null, paymentId = null;
+
+    function render() {
+      const status = payment.status || 'submitted';
+      const isPending = status === 'submitted';
+      const myEmail = (me.email || '').toLowerCase();
+      const allowedToAct = isPending && canApprovePayment(payment, myRole, myEmail);
+
+      const tierLine = (payment.amount || 0) > SMALL_AMOUNT_AED
+        ? `Approver: <strong>CEO only</strong> (> 1,000 AED tier)`
+        : `Approvers: <strong>Mouad / Hira</strong> · CEO cc · ≤ 1,000 AED tier`;
+
+      const decisionLine = (status === 'approved' || status === 'declined') && payment.decisionBy
+        ? `<div class="approver-line">Decided by <strong>${payment.decisionBy}</strong>${payment.decisionAt ? ' on ' + new Date(payment.decisionAt).toLocaleString('en-GB') : ''}.</div>`
+        : `<div class="approver-line">${tierLine}</div>`;
+
+      let buttons = '';
+      if (allowedToAct) {
+        buttons = `
+          <div class="actions">
+            <button class="btn-approve" id="btnApprove">✓ Approve</button>
+            <button class="btn-decline" id="btnDecline">✕ Decline</button>
+            <button class="btn-pdf" id="btnPdf">📄 PDF</button>
+          </div>
+          <div class="gate-msg">You can act on this request. Approval will email the requester, Mouad, Hira and the CEO.</div>`;
+      } else if (isPending) {
+        buttons = `
+          <div class="actions">
+            <button class="btn-pdf" id="btnPdf">📄 Download PDF</button>
+          </div>
+          <div class="gate-msg deny">You don't have approval rights for this tier. ${tierLine}</div>`;
+      } else {
+        buttons = `
+          <div class="actions">
+            <button class="btn-pdf" id="btnPdf">📄 Download PDF</button>
+          </div>`;
+      }
+
+      document.getElementById('paneContent').innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+          <span class="pill ${status}">${status}</span>
+          <span style="color:var(--muted);font-size:12px;">Ref: ${paymentId.slice(0, 8)}…</span>
+        </div>
+        <h1>Payment Request</h1>
+        <div class="req-info">${payment.purpose || ''}${payment.recipient ? ' · ' + payment.recipient : ''}</div>
+        <div class="amount">${fmtAmount(payment.amount)}</div>
+        ${decisionLine}
+
+        <div style="margin-top:18px;">
+          <div class="meta-row"><div class="k">Requester</div><div class="v">${payment.requesterName || '—'}<br><span style="color:var(--muted);font-size:12px;">${payment.requesterEmail || ''}</span></div></div>
+          <div class="meta-row"><div class="k">Pay to</div><div class="v">${payment.recipient || '—'}</div></div>
+          <div class="meta-row"><div class="k">Category</div><div class="v">${payment.category || '—'}</div></div>
+          <div class="meta-row"><div class="k">Due date</div><div class="v">${fmtDate(payment.dueDate)}</div></div>
+          <div class="meta-row"><div class="k">Notes</div><div class="v">${(payment.notes || '—').replace(/</g,'&lt;')}</div></div>
+        </div>
+
+        ${buttons}
+      `;
+
+      const pdfBtn = document.getElementById('btnPdf');
+      if (pdfBtn) pdfBtn.addEventListener('click', () => downloadPdf(payment, paymentId));
+
+      const approveBtn = document.getElementById('btnApprove');
+      if (approveBtn) approveBtn.addEventListener('click', () => decide('approved'));
+      const declineBtn = document.getElementById('btnDecline');
+      if (declineBtn) declineBtn.addEventListener('click', () => decide('declined'));
+    }
+
+    async function decide(newStatus) {
+      const verb = newStatus === 'approved' ? 'approve' : 'decline';
+      if (!confirm(`Confirm ${verb} this payment request?`)) return;
+      const actorName = (myProfile && (myProfile.firstName || myProfile.lastName))
+        ? `${myProfile.firstName || ''} ${myProfile.lastName || ''}`.trim()
+        : (me.displayName || me.email);
+      try {
+        await updateDoc(doc(db, 'payments', paymentId), {
+          status: newStatus,
+          decisionAt: new Date().toISOString(),
+          decisionBy: actorName,
+          decisionUid: me.uid
+        });
+        // Re-fetch fresh state
+        const fresh = await getDoc(doc(db, 'payments', paymentId));
+        payment = fresh.data();
+        const pdfBase64 = buildPaymentPdfBase64(payment, paymentId);
+        await sendPaymentNotifications(db, {
+          payment, paymentId, status: newStatus,
+          actorName, actorUid: me.uid,
+          pdfBase64, pdfFilename: `Payment-Request-${paymentId}.pdf`
+        });
+        showToast(newStatus === 'approved' ? 'Approved.' : 'Declined.');
+        render();
+      } catch (err) {
+        console.error(err);
+        showToast('Could not save: ' + (err.message || ''), true);
+      }
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = 'index.html'; return; }
+      me = user;
+      try {
+        const snap = await getDoc(doc(db, 'agents', user.uid));
+        if (snap.exists()) { myProfile = snap.data(); myRole = myProfile.role || null; }
+      } catch (_) {}
+      const params = new URLSearchParams(location.search);
+      paymentId = params.get('id');
+      if (!paymentId) {
+        document.getElementById('paneContent').innerHTML = `<div style="text-align:center;color:var(--muted);padding:30px 0;">Missing payment id.</div>`;
+        return;
+      }
+      try {
+        const snap = await getDoc(doc(db, 'payments', paymentId));
+        if (!snap.exists()) {
+          document.getElementById('paneContent').innerHTML = `<div style="text-align:center;color:var(--muted);padding:30px 0;">Payment request not found.</div>`;
+          return;
+        }
+        payment = snap.data();
+        render();
+      } catch (err) {
+        console.error(err);
+        document.getElementById('paneContent').innerHTML = `<div style="text-align:center;color:var(--red);padding:30px 0;">Error: ${err.message || ''}</div>`;
+      }
+    });
+  </script>
+</body>
+</html>

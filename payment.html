@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payment Approval — Exceed Real Estate</title>
+  <link rel="icon" type="image/jpeg" href="logo.jpg">
+  <script src="theme-init.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="liquid.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    :root {
+      --navy-0:#051428; --navy-1:#0a1f3d; --navy-2:#102a4f;
+      --line:rgba(255,255,255,0.10); --line-strong:rgba(255,255,255,0.18);
+      --text:#f5f7fb; --muted:#9aa8c2; --gold:#d4b87a; --cream:#f1ead8;
+      --green:#5cc98f; --red:#ff6b6b; --radius:14px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    html { background: var(--navy-0); }
+    body {
+      font-family: 'Noto Sans JP', 'Inter', sans-serif;
+      background:
+        radial-gradient(1100px 600px at 80% -10%, rgba(212,184,122,0.10), transparent 60%),
+        radial-gradient(900px 700px at -10% 110%, rgba(23,54,99,0.6), transparent 60%),
+        var(--navy-0);
+      color: var(--text); min-height: 100vh;
+    }
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 32px; border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(8px); background: rgba(5,20,40,0.7);
+      position: sticky; top: 0; z-index: 10;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; cursor: pointer; text-decoration: none; color: inherit; }
+    .brand img { width: 40px; height: 40px; border-radius: 8px; }
+    .brand-name { font-family: 'Playfair Display', serif; letter-spacing: 2px; font-weight: 600; }
+    .brand-name span { color: var(--gold); font-weight: 400; }
+    .topbar-right { display: flex; align-items: center; gap: 14px; color: var(--muted); font-size: 13px; }
+    .topbar-right strong { color: var(--cream); font-weight: 600; }
+    .icon-btn {
+      background: rgba(255,255,255,0.05); border: 1px solid var(--line);
+      color: var(--text); padding: 8px 14px; border-radius: 8px; cursor: pointer;
+      font-family: inherit; font-size: 12px; letter-spacing: 1px; text-transform: uppercase;
+      transition: background .2s; display: inline-flex; align-items: center; gap: 8px;
+      text-decoration: none;
+    }
+    .icon-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--line-strong); }
+    .icon-btn svg { width: 14px; height: 14px; }
+
+    .page-head { max-width: 760px; margin: 0 auto; padding: 36px 32px 0; }
+    .page-head .eyebrow { color: var(--gold); letter-spacing: 5px; font-size: 11px; text-transform: uppercase; margin-bottom: 10px; }
+    .page-head h1 { font-family: 'Playfair Display', 'Noto Serif JP', serif; font-weight: 600; font-size: clamp(28px, 4vw, 40px); margin: 0 0 8px; }
+    .page-head .lede { color: var(--muted); font-size: 14px; margin: 0; line-height: 1.6; }
+
+    main { max-width: 760px; margin: 0 auto; padding: 28px 32px 80px; }
+
+    .card {
+      background: linear-gradient(180deg, rgba(16,42,79,0.85), rgba(10,31,61,0.85));
+      backdrop-filter: blur(18px) saturate(160%);
+      border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 26px; margin-bottom: 22px;
+    }
+    .card h2 { font-family: 'Playfair Display','Noto Serif JP',serif; font-weight: 600; margin: 0 0 16px; font-size: 20px; }
+    .help-line { color: var(--muted); font-size: 12px; margin: -10px 0 16px; line-height: 1.6; }
+
+    label { display: block; color: var(--muted); font-size: 11px; letter-spacing: 1.4px; text-transform: uppercase; margin: 14px 0 6px; }
+    input[type="text"], input[type="number"], input[type="date"], textarea, select {
+      width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--line);
+      color: var(--text); border-radius: 10px; padding: 12px 14px; font-size: 14px;
+      font-family: inherit;
+    }
+    textarea { min-height: 90px; resize: vertical; }
+    input:focus, textarea:focus, select:focus { outline: none; border-color: var(--gold); background: rgba(212,184,122,0.06); }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media (max-width: 540px) { .row { grid-template-columns: 1fr; } }
+
+    .amount-tier {
+      display: flex; align-items: center; gap: 10px; margin-top: 8px;
+      padding: 10px 14px; border-radius: 10px; font-size: 12px; line-height: 1.5;
+      background: rgba(212,184,122,0.08); border: 1px solid rgba(212,184,122,0.3);
+      color: var(--cream);
+    }
+    .amount-tier.high { background: rgba(255,107,107,0.08); border-color: rgba(255,107,107,0.4); }
+    .amount-tier strong { color: var(--gold); }
+    .amount-tier.high strong { color: var(--red); }
+
+    .submit-btn {
+      width: 100%; margin-top: 22px; padding: 14px; border: 0; border-radius: 10px;
+      background: linear-gradient(135deg, #f1ead8, #d4b87a); color: var(--navy-1);
+      font-weight: 700; font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase;
+      cursor: pointer; font-family: inherit;
+    }
+    .submit-btn:disabled { opacity: 0.5; cursor: wait; }
+
+    .req-list { margin-top: 14px; }
+    .req-row {
+      display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: center;
+      padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; margin-bottom: 8px;
+      background: rgba(255,255,255,0.03);
+    }
+    .req-row .meta { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .req-row .title { color: var(--cream); font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .req-row .sub { color: var(--muted); font-size: 12px; }
+    .req-row .amt { color: var(--gold); font-weight: 700; font-size: 15px; white-space: nowrap; }
+    .pill {
+      display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 10.5px;
+      font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase;
+      border: 1px solid; white-space: nowrap;
+    }
+    .pill.submitted { background: rgba(212,184,122,0.14); color: var(--gold); border-color: rgba(212,184,122,0.4); }
+    .pill.approved  { background: rgba(92,201,143,0.14);  color: var(--green); border-color: rgba(92,201,143,0.4); }
+    .pill.declined  { background: rgba(255,107,107,0.14); color: var(--red); border-color: rgba(255,107,107,0.4); }
+    .pill.cancelled { background: rgba(255,255,255,0.05); color: var(--muted); border-color: var(--line-strong); }
+
+    .row-action {
+      background: transparent; color: var(--muted); border: 1px solid var(--line-strong);
+      padding: 6px 12px; border-radius: 8px; font-size: 11px; letter-spacing: 1px;
+      text-transform: uppercase; cursor: pointer; font-family: inherit;
+    }
+    .row-action:hover { color: var(--red); border-color: rgba(255,107,107,0.5); }
+    .empty { color: var(--muted); text-align: center; padding: 24px; font-size: 13px; }
+
+    .lang-toggle { display: inline-flex; gap: 4px; background: rgba(255,255,255,0.04); padding: 4px; border-radius: 999px; border: 1px solid var(--line); }
+    .lang-toggle button { background: none; border: 0; padding: 5px 12px; color: var(--muted); font-size: 11px; letter-spacing: 1px; cursor: pointer; border-radius: 999px; font-family: inherit; }
+    .lang-toggle button.active { background: var(--gold); color: var(--navy-1); font-weight: 700; }
+
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: rgba(10,31,61,0.95); border: 1px solid var(--gold); color: var(--cream);
+      padding: 12px 22px; border-radius: 10px; font-size: 13px; opacity: 0; pointer-events: none;
+      transition: opacity .25s, transform .25s; z-index: 50;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(-6px); }
+    .toast.error { border-color: var(--red); color: var(--red); }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="agent.html">
+      <img src="logo.jpg" alt="Exceed">
+      <div>
+        <div class="brand-name">EXCEED <span>Real Estate</span></div>
+        <div style="font-size:10px;letter-spacing:2px;color:var(--muted);">DUBAI · FINANCE</div>
+      </div>
+    </a>
+    <div class="topbar-right">
+      <div class="lang-toggle" id="langToggle">
+        <button data-lang="ja" class="active">日本語</button>
+        <button data-lang="en">EN</button>
+      </div>
+      <a class="icon-btn" href="agent.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        <span data-i18n="back">ダッシュボード</span>
+      </a>
+    </div>
+  </header>
+
+  <div class="page-head">
+    <div class="eyebrow" data-i18n="eyebrow">PAYMENT APPROVAL</div>
+    <h1 data-i18n="title">支払い承認</h1>
+    <p class="lede" data-i18n="lede">支払い申請を提出すると、PDFで自動添付し、Mouad / Hira / CEO に通知メールを送信します。</p>
+  </div>
+
+  <main>
+    <div class="card">
+      <h2 data-i18n="newReq">新規申請</h2>
+      <p class="help-line" data-i18n="newReqHelp">金額が 1,000 AED 以下なら Mouad もしくは Hira が承認できます。1,000 AED を超える場合は CEO 承認が必要です。</p>
+
+      <form id="payForm">
+        <div class="row">
+          <div>
+            <label data-i18n="amountL">金額 (AED) *</label>
+            <input type="number" id="amount" step="0.01" min="0" required oninput="updateTier()">
+            <div class="amount-tier" id="amountTier" data-i18n="tierLow">≤ 1,000 AED · 承認: <strong>Mouad / Hira</strong> (CEO は CC)</div>
+          </div>
+          <div>
+            <label data-i18n="dueL">支払希望日 *</label>
+            <input type="date" id="dueDate" required>
+          </div>
+        </div>
+
+        <label data-i18n="recipientL">送金先 / 受取人 *</label>
+        <input type="text" id="recipient" required placeholder="Vendor name / IBAN / employee">
+
+        <div class="row">
+          <div>
+            <label data-i18n="categoryL">カテゴリー</label>
+            <select id="category">
+              <option value="vendor">Vendor / Supplier</option>
+              <option value="reimbursement">Reimbursement</option>
+              <option value="commission">Commission</option>
+              <option value="marketing">Marketing</option>
+              <option value="travel">Travel</option>
+              <option value="utility">Utility / Office</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label data-i18n="purposeL">用途 (短く) *</label>
+            <input type="text" id="purpose" required placeholder="e.g. JLL listing fee Q2">
+          </div>
+        </div>
+
+        <label data-i18n="notesL">備考</label>
+        <textarea id="notes" placeholder="Invoice number, lead source, payment method, etc."></textarea>
+
+        <button type="submit" class="submit-btn" id="submitBtn">
+          <span data-i18n="submit">申請を送信 (PDF添付)</span>
+        </button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2 data-i18n="myReqs">自分の申請</h2>
+      <div class="req-list" id="reqList">
+        <div class="empty" data-i18n="loading">読み込み中…</div>
+      </div>
+    </div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script type="module">
+    import { auth, db, isAdmin } from './firebase-init.js';
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+    import {
+      doc, getDoc, addDoc, updateDoc, collection, query, where,
+      orderBy, getDocs, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    import { sendPaymentNotifications, SMALL_AMOUNT_AED } from './payment-notify.js';
+
+    /* ----- i18n ----- */
+    const I18N = {
+      ja: {
+        eyebrow: 'PAYMENT APPROVAL',
+        title: '支払い承認',
+        lede: '支払い申請を提出すると、PDFで自動添付し、Mouad / Hira / CEO に通知メールを送信します。',
+        back: 'ダッシュボード',
+        newReq: '新規申請',
+        newReqHelp: '金額が 1,000 AED 以下なら Mouad もしくは Hira が承認できます。1,000 AED を超える場合は CEO 承認が必要です。',
+        amountL: '金額 (AED) *',
+        dueL: '支払希望日 *',
+        recipientL: '送金先 / 受取人 *',
+        categoryL: 'カテゴリー',
+        purposeL: '用途 (短く) *',
+        notesL: '備考',
+        submit: '申請を送信 (PDF添付)',
+        submitting: '送信中…',
+        myReqs: '自分の申請',
+        loading: '読み込み中…',
+        none: '申請はまだありません。',
+        tierLow: '≤ 1,000 AED · 承認: <strong>Mouad / Hira</strong> (CEO は CC)',
+        tierHigh: '> 1,000 AED · 承認: <strong>CEO のみ</strong>',
+        toastOk: '申請を送信しました。',
+        toastErr: '送信に失敗しました。',
+        withdraw: '取消',
+        cancel: 'キャンセル'
+      },
+      en: {
+        eyebrow: 'PAYMENT APPROVAL',
+        title: 'Payment Approval',
+        lede: 'Submitting a request auto-attaches a PDF and emails Mouad / Hira / CEO.',
+        back: 'Dashboard',
+        newReq: 'New request',
+        newReqHelp: 'Up to 1,000 AED can be approved by Mouad or Hira. Above that, CEO approval is required.',
+        amountL: 'Amount (AED) *',
+        dueL: 'Due date *',
+        recipientL: 'Pay to / recipient *',
+        categoryL: 'Category',
+        purposeL: 'Purpose (short) *',
+        notesL: 'Notes',
+        submit: 'Submit (PDF attached)',
+        submitting: 'Sending…',
+        myReqs: 'My requests',
+        loading: 'Loading…',
+        none: 'No payment requests yet.',
+        tierLow: '≤ 1,000 AED · approver: <strong>Mouad / Hira</strong> (CEO cc)',
+        tierHigh: '> 1,000 AED · approver: <strong>CEO only</strong>',
+        toastOk: 'Request submitted.',
+        toastErr: 'Could not submit.',
+        withdraw: 'Withdraw',
+        cancel: 'Cancel'
+      }
+    };
+    let currentLang = 'ja';
+    function setLang(l) {
+      currentLang = l;
+      document.documentElement.lang = l;
+      const dict = I18N[l];
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const k = el.getAttribute('data-i18n');
+        if (dict[k]) el.innerHTML = dict[k];
+      });
+      document.querySelectorAll('#langToggle button').forEach(b =>
+        b.classList.toggle('active', b.dataset.lang === l));
+      updateTier();
+    }
+    document.querySelectorAll('#langToggle button').forEach(b =>
+      b.addEventListener('click', () => setLang(b.dataset.lang)));
+
+    /* ----- Helpers ----- */
+    function fmtAmount(v) {
+      const n = Number(v || 0);
+      return n.toLocaleString('en-US', { maximumFractionDigits: 2 }) + ' AED';
+    }
+    function fmtDate(d) {
+      if (!d) return '';
+      try {
+        return new Date(d).toLocaleDateString('en-GB',
+          { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+      } catch (_) { return d; }
+    }
+    function showToast(msg, isErr) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.toggle('error', !!isErr);
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2500);
+    }
+    window.updateTier = function() {
+      const v = parseFloat(document.getElementById('amount').value || 0);
+      const tier = document.getElementById('amountTier');
+      if (v > SMALL_AMOUNT_AED) {
+        tier.classList.add('high');
+        tier.innerHTML = I18N[currentLang].tierHigh;
+      } else {
+        tier.classList.remove('high');
+        tier.innerHTML = I18N[currentLang].tierLow;
+      }
+    };
+
+    /* ----- PDF generation (jsPDF) ----- */
+    function buildPaymentPdfBase64(p, paymentId) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+      const pageW = doc.internal.pageSize.getWidth();
+
+      // Header band
+      doc.setFillColor(10, 31, 61);
+      doc.rect(0, 0, pageW, 110, 'F');
+      doc.setTextColor(212, 184, 122);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(20);
+      doc.text('EXCEED REAL ESTATE', 40, 50);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(241, 234, 216);
+      doc.text('Dubai · Finance · Payment Request', 40, 70);
+      doc.setFontSize(9);
+      doc.setTextColor(154, 168, 194);
+      doc.text(`Reference: ${paymentId}`, 40, 90);
+
+      // Body
+      doc.setTextColor(10, 31, 61);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(16);
+      doc.text('Payment Request', 40, 150);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(80, 80, 80);
+      doc.text(`Submitted: ${new Date().toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })}`, 40, 168);
+
+      // Status pill
+      doc.setFillColor(212, 184, 122);
+      doc.roundedRect(40, 184, 130, 22, 4, 4, 'F');
+      doc.setTextColor(10, 31, 61);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.text('PENDING APPROVAL', 50, 199);
+
+      // Amount large
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(28);
+      doc.setTextColor(10, 31, 61);
+      doc.text(fmtAmount(p.amount), 40, 250);
+
+      // Field rows
+      const rows = [
+        ['Requester',   `${p.requesterName || ''}`],
+        ['Email',       `${p.requesterEmail || ''}`],
+        ['Pay to',      p.recipient || '—'],
+        ['Purpose',     p.purpose || '—'],
+        ['Category',    p.category || '—'],
+        ['Due date',    fmtDate(p.dueDate) || '—'],
+        ['Notes',       p.notes || '—'],
+        ['Approval tier', (p.amount || 0) > SMALL_AMOUNT_AED
+          ? '> 1,000 AED · CEO approval required'
+          : '≤ 1,000 AED · Mouad / Hira (CEO cc)']
+      ];
+      let y = 290;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      for (const [k, v] of rows) {
+        doc.setTextColor(154, 168, 194);
+        doc.text(k.toUpperCase(), 40, y);
+        doc.setTextColor(10, 31, 61);
+        doc.setFont('helvetica', 'bold');
+        const lines = doc.splitTextToSize(String(v), pageW - 200);
+        doc.text(lines, 200, y);
+        doc.setFont('helvetica', 'normal');
+        y += Math.max(20, lines.length * 12 + 8);
+      }
+
+      // Approval signatures footer
+      y += 20;
+      doc.setDrawColor(212, 184, 122);
+      doc.setLineWidth(0.5);
+      doc.line(40, y, pageW - 40, y);
+      y += 22;
+      doc.setTextColor(154, 168, 194);
+      doc.setFontSize(9);
+      doc.text('Approved by:', 40, y);
+      doc.text('Date:', 280, y);
+      doc.text('Signature:', 410, y);
+      y += 26;
+      doc.line(40, y, 250, y);
+      doc.line(280, y, 380, y);
+      doc.line(410, y, pageW - 40, y);
+
+      // Footer
+      doc.setFontSize(8);
+      doc.setTextColor(154, 168, 194);
+      doc.text('Generated automatically by the Exceed Portal — exceed-realestate.github.io/portal',
+        40, doc.internal.pageSize.getHeight() - 30);
+
+      // datauristring → strip prefix → base64 only
+      const datauri = doc.output('datauristring');
+      return datauri.split(',')[1] || '';
+    }
+
+    /* ----- Submit ----- */
+    let me = null, myProfile = null;
+
+    document.getElementById('payForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      const dict = I18N[currentLang];
+      btn.disabled = true;
+      btn.querySelector('span').textContent = dict.submitting;
+      try {
+        const amount = parseFloat(document.getElementById('amount').value);
+        const dueDate = document.getElementById('dueDate').value;
+        const recipient = document.getElementById('recipient').value.trim();
+        const category = document.getElementById('category').value;
+        const purpose = document.getElementById('purpose').value.trim();
+        const notes = document.getElementById('notes').value.trim();
+        if (!amount || amount <= 0) throw new Error('Amount required');
+
+        const requesterName = ((myProfile && (myProfile.firstName || myProfile.lastName))
+          ? `${myProfile.firstName || ''} ${myProfile.lastName || ''}`.trim()
+          : (me.displayName || me.email));
+
+        const payload = {
+          amount, dueDate, recipient, category, purpose, notes,
+          requesterUid: me.uid,
+          requesterEmail: (me.email || '').toLowerCase(),
+          requesterName,
+          status: 'submitted',
+          tier: amount > SMALL_AMOUNT_AED ? 'high' : 'low',
+          createdAt: serverTimestamp()
+        };
+        const ref = await addDoc(collection(db, 'payments'), payload);
+
+        const pdfBase64 = buildPaymentPdfBase64(payload, ref.id);
+        await sendPaymentNotifications(db, {
+          payment: payload,
+          paymentId: ref.id,
+          status: 'submitted',
+          actorName: requesterName,
+          actorUid: me.uid,
+          pdfBase64,
+          pdfFilename: `Payment-Request-${ref.id}.pdf`
+        });
+
+        // Reset form
+        document.getElementById('payForm').reset();
+        updateTier();
+        showToast(dict.toastOk);
+        loadList();
+      } catch (err) {
+        console.error(err);
+        showToast(dict.toastErr + ' ' + (err.message || ''), true);
+      } finally {
+        btn.disabled = false;
+        btn.querySelector('span').textContent = dict.submit;
+      }
+    });
+
+    /* ----- My requests list ----- */
+    async function loadList() {
+      const wrap = document.getElementById('reqList');
+      const dict = I18N[currentLang];
+      wrap.innerHTML = `<div class="empty">${dict.loading}</div>`;
+      try {
+        const snap = await getDocs(query(
+          collection(db, 'payments'),
+          where('requesterUid', '==', me.uid),
+          orderBy('createdAt', 'desc')
+        ));
+        if (snap.empty) { wrap.innerHTML = `<div class="empty">${dict.none}</div>`; return; }
+        const rows = [];
+        snap.forEach(d => {
+          const p = d.data();
+          const id = d.id;
+          const status = p.status || 'submitted';
+          const canCancel = status === 'submitted';
+          rows.push(`
+            <div class="req-row">
+              <div class="meta">
+                <div class="title">${(p.purpose || p.recipient || '—').replace(/</g,'&lt;')}</div>
+                <div class="sub">${fmtDate(p.dueDate)} · ${p.category || ''}</div>
+              </div>
+              <div class="amt">${fmtAmount(p.amount)}</div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span class="pill ${status}">${status}</span>
+                ${canCancel ? `<button class="row-action" data-id="${id}">${dict.withdraw}</button>` : ''}
+                <a class="row-action" href="payment-approve.html?id=${id}" style="text-decoration:none;">→</a>
+              </div>
+            </div>
+          `);
+        });
+        wrap.innerHTML = rows.join('');
+        wrap.querySelectorAll('button.row-action[data-id]').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const id = btn.dataset.id;
+            if (!confirm(currentLang === 'ja' ? '申請を取り消しますか？' : 'Withdraw this request?')) return;
+            await updateDoc(doc(db, 'payments', id), {
+              status: 'cancelled',
+              cancelledAt: serverTimestamp(),
+              cancelledBy: me.uid
+            });
+            loadList();
+          });
+        });
+      } catch (err) {
+        console.error(err);
+        wrap.innerHTML = `<div class="empty">${err.message || 'error'}</div>`;
+      }
+    }
+
+    /* ----- Auth gate ----- */
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = 'index.html'; return; }
+      me = user;
+      try {
+        const snap = await getDoc(doc(db, 'agents', user.uid));
+        if (snap.exists()) myProfile = snap.data();
+      } catch (_) {}
+      setLang('ja');
+      loadList();
+    });
+  </script>
+</body>
+</html>
