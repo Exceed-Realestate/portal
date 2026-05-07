@@ -60,16 +60,66 @@
       background: linear-gradient(180deg, rgba(16,42,79,0.85), rgba(10,31,61,0.85));
       backdrop-filter: blur(18px) saturate(160%);
       border: 1px solid var(--line); border-radius: var(--radius);
-      padding: 28px; position: relative;
+      padding: 0 0 28px; position: relative;
+      overflow: hidden;
     }
-    .car-badge {
+
+    /* Car hero image at top of the booking card */
+    .car-hero {
+      position: relative; height: 200px;
+      background: radial-gradient(80% 100% at 50% 50%, rgba(212,184,122,0.18), rgba(10,31,61,0.6) 70%);
+      display: grid; place-items: center;
+      border-bottom: 1px solid var(--line);
+      overflow: hidden;
+    }
+    .car-hero img {
+      max-height: 75%; max-width: 80%; object-fit: contain;
+      filter: drop-shadow(0 16px 24px rgba(0,0,0,0.45));
+    }
+    .car-hero::after {
+      content: ''; position: absolute; inset: auto 0 0 0; height: 60%;
+      background: linear-gradient(180deg, transparent, rgba(10,31,61,0.6));
+      pointer-events: none;
+    }
+    .car-badge-overlay {
+      position: absolute; top: 14px; left: 14px;
       display: inline-flex; align-items: center; gap: 8px;
       padding: 6px 12px; border-radius: 999px;
-      background: rgba(212,184,122,0.14); color: var(--gold);
+      background: rgba(5,15,30,0.75); color: var(--gold);
       border: 1px solid rgba(212,184,122,0.4);
       font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
-      margin-bottom: 14px;
+      backdrop-filter: blur(8px);
+      z-index: 2;
     }
+
+    .booking-body { padding: 22px 28px 0; }
+
+    /* Requester strip — avatar + name + role */
+    .requester-strip {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 16px;
+      background: rgba(5,15,30,0.5);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      margin-bottom: 18px;
+    }
+    .requester-avatar {
+      width: 56px; height: 56px; border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid rgba(212,184,122,0.5);
+      box-shadow: 0 6px 16px -6px rgba(0,0,0,0.5);
+      flex-shrink: 0;
+      background: linear-gradient(135deg, #f6ecc8, #d4b87a);
+      display: grid; place-items: center;
+      color: var(--navy-0);
+      font-family: 'Playfair Display', serif;
+      font-size: 22px; font-weight: 700;
+    }
+    .requester-meta { min-width: 0; }
+    .requester-eyebrow { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); font-weight: 600; margin-bottom: 3px; }
+    .requester-name { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 600; color: var(--cream); line-height: 1.2; }
+    .requester-email { font-size: 12px; color: var(--muted); margin-top: 2px; word-break: break-all; }
+
     .booking-card h2 {
       font-family: 'Playfair Display', serif; font-weight: 600;
       font-size: 26px; margin: 0 0 6px; color: var(--cream);
@@ -384,11 +434,8 @@
 
       const urgent = b.urgent ? `<div class="urgent-banner">${dict.urgentBanner}</div>` : '';
 
+      // Field grid — drop car/when (now in hero) and requester/email (now in strip)
       const fields = [
-        ['car',         carName],
-        ['when',        fmtRange(b)],
-        ['requester',   b.requesterName || '—'],
-        ['email',       b.requesterEmail || '—'],
         ['property',    b.property || '—'],
         ['area',        b.area || '—'],
         ['leadSource',  b.leadSource || '—'],
@@ -400,16 +447,44 @@
         `<div class="field-row"><div class="field-key">${dict[k] || k}</div><div class="field-val${v === '—' ? ' muted' : ''}">${escHtml(v)}</div></div>`
       ).join('');
 
+      // Car hero — try multiple paths so the page works whether photos
+      // live in cars/ or at the repo root
+      const carImgPaths = [`cars/${b.car}.png`, `${b.car}.png`, `cars/${b.car}.jpg`, `${b.car}.jpg`];
+      const carImgFallback = carImgPaths.slice(1).reverse()
+        .reduce((acc, p) => `this.onerror=null;this.src='${p}';`, '');
+      const carImgHtml = `<img src="${carImgPaths[0]}" alt="${carName}" onerror="${carImgFallback}this.style.display='none'">`;
+
+      // Requester strip — use linked agent's photo if available, else initial
+      const agent = state.requesterAgent || {};
+      const photoURL = agent.photoURL || '';
+      const initial = ((b.requesterName || agent.firstName || b.requesterEmail || '?').trim()[0] || '?').toUpperCase();
+      const avatarHtml = photoURL
+        ? `<img class="requester-avatar" src="${escHtml(photoURL)}" alt="${escHtml(b.requesterName || '')}" onerror="this.outerHTML='<div class=\\'requester-avatar\\'>${initial}</div>'">`
+        : `<div class="requester-avatar">${initial}</div>`;
+
       document.getElementById('content').innerHTML = `
         <div class="booking-card">
-          <div class="car-badge">${carName}</div>
-          <h2>${dict.title}</h2>
-          <div class="booking-when">${fmtRange(b)}</div>
-          <div style="margin-bottom:18px"><span class="status-pill ${b.status}">${dict[statusKey]}</span></div>
-          ${urgent}
-          <div class="field-grid">${rowsHtml}</div>
-          ${actionsHtml}
-          ${decisionHtml}
+          <div class="car-hero">
+            <span class="car-badge-overlay">${carName}</span>
+            ${carImgHtml}
+          </div>
+          <div class="booking-body">
+            <div class="requester-strip">
+              ${avatarHtml}
+              <div class="requester-meta">
+                <div class="requester-eyebrow">${dict.requester}</div>
+                <div class="requester-name">${escHtml(b.requesterName || '—')}</div>
+                <div class="requester-email">${escHtml(b.requesterEmail || '')}</div>
+              </div>
+            </div>
+            <h2>${dict.title}</h2>
+            <div class="booking-when">${fmtRange(b)}</div>
+            <div style="margin-bottom:18px"><span class="status-pill ${b.status}">${dict[statusKey]}</span></div>
+            ${urgent}
+            <div class="field-grid">${rowsHtml}</div>
+            ${actionsHtml}
+            ${decisionHtml}
+          </div>
         </div>`;
     }
 
@@ -432,10 +507,10 @@
           decidedByName: u.displayName || (u.email ? u.email.split('@')[0] : '—')
         });
         showToast(newStatus === 'approved' ? dict.approvedToast : dict.declinedToast);
-        // Reload the doc to show the decision info
+        // Reload the doc to show the decision info — keep the cached requesterAgent
         const snap = await getDoc(doc(db, 'carBookings', state.id));
         state.booking = { ...snap.data() };
-        renderBooking(state);
+        renderBooking(state);  // requesterAgent is already on state from loadBooking
       } catch (err) {
         console.error(err);
         showToast(dict.actionFailed + (err.message || err.code || 'unknown'), true);
@@ -456,14 +531,20 @@
         if (!snap.exists()) { renderInvalid('notFound', 'notFoundBody'); return; }
         const booking = { ...snap.data() };
 
-        // Resolve user role via agent doc to gate the action buttons
+        // Resolve user role via agent doc to gate the action buttons,
+        // and pull the requester's agent doc to surface their photo.
         let role = null;
+        let requesterAgent = null;
         try {
-          const aSnap = await getDoc(doc(db, 'agents', user.uid));
-          if (aSnap.exists()) role = aSnap.data().role || null;
+          const [meSnap, reqSnap] = await Promise.all([
+            getDoc(doc(db, 'agents', user.uid)),
+            booking.requesterUid ? getDoc(doc(db, 'agents', booking.requesterUid)) : Promise.resolve(null)
+          ]);
+          if (meSnap.exists()) role = meSnap.data().role || null;
+          if (reqSnap && reqSnap.exists()) requesterAgent = reqSnap.data();
         } catch (_) {}
 
-        const state = { id, booking, user, role, canApprove: canApprove(role, user.email) };
+        const state = { id, booking, user, role, requesterAgent, canApprove: canApprove(role, user.email) };
         window._bookingState = state;
         renderBooking(state);
 
