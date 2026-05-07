@@ -670,69 +670,6 @@
       font-size: 11px;
     }
 
-    /* Google sign-in button (primary) + secondary email path */
-    .google-btn {
-      width: 100%;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      padding: 14px 20px;
-      background: #ffffff;
-      color: #3c4043;
-      border: 1px solid rgba(255,255,255,0.18);
-      border-radius: 10px;
-      font-family: 'Inter', system-ui, sans-serif;
-      font-weight: 500;
-      font-size: 14px;
-      letter-spacing: 0.2px;
-      cursor: pointer;
-      transition: transform .15s ease, box-shadow .2s ease;
-      box-shadow: 0 8px 24px -10px rgba(0,0,0,0.5);
-    }
-    .google-btn:hover { transform: translateY(-1px); box-shadow: 0 14px 32px -12px rgba(212,184,122,0.45); }
-    .google-btn:disabled { opacity: 0.5; cursor: wait; transform: none; }
-    .google-btn svg { flex-shrink: 0; }
-    .google-hint {
-      font-size: 11.5px;
-      color: var(--muted);
-      text-align: center;
-      margin: 10px 0 22px;
-      letter-spacing: 0.2px;
-    }
-    .login-divider {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin: 4px 0 18px;
-      font-size: 11px;
-      color: var(--muted);
-      letter-spacing: 0.5px;
-    }
-    .login-divider::before,
-    .login-divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: rgba(255,255,255,0.10);
-    }
-    .modal .btn-secondary {
-      width: 100%;
-      padding: 12px 20px;
-      background: rgba(255,255,255,0.04);
-      color: var(--cream);
-      border: 1px solid rgba(255,255,255,0.14);
-      border-radius: 10px;
-      font-family: inherit;
-      font-weight: 600;
-      font-size: 12px;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: background .15s, border-color .15s;
-    }
-    .modal .btn-secondary:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.22); }
-
     /* Rolling-logo login loader — transparent track, the logo rolls along
        a thin gold guideline while a glow fills behind it. */
     .rolling-track {
@@ -952,21 +889,6 @@
       </button>
       <h3 data-i18n="loginTitle">エージェントログイン</h3>
       <p class="modal-sub" data-i18n="loginSub">会社の認証情報でサインインしてください。</p>
-
-      <!-- Primary path: Google sign-in (auto-connects calendar) -->
-      <button type="button" class="google-btn" id="googleSignInBtn" onclick="handleGoogleSignIn()">
-        <svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true">
-          <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.6-.4-3.5z"/>
-          <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 16 19 13 24 13c3.1 0 5.8 1.2 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
-          <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2c-2 1.4-4.5 2.4-7.2 2.4-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/>
-          <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.1 5.6l6.2 5.2c-.4.4 6.6-4.8 6.6-14.8 0-1.3-.1-2.6-.4-3.5z"/>
-        </svg>
-        <span data-i18n="googleSignIn">Googleでサインイン</span>
-      </button>
-      <p class="google-hint" data-i18n="googleHint">@exceed-re.ae のアカウントで自動的にカレンダーが連携されます</p>
-
-      <div class="login-divider"><span data-i18n="orEmail">または、メールアドレスとパスワードでログイン</span></div>
-
       <form id="login-form" onsubmit="submitLogin(event)" novalidate>
         <div class="field">
           <label for="loginEmail" data-i18n="email">会社メール</label>
@@ -978,7 +900,7 @@
           <input id="loginPassword" type="password" required minlength="6" />
         </div>
         <div class="modal-actions">
-          <button type="submit" class="btn-secondary"><span data-i18n="loginBtn">ログイン</span></button>
+          <button type="submit" class="btn-primary"><span data-i18n="loginBtn">ログイン</span></button>
           <p class="demo-hint" data-i18n-html="demoHint">デモアカウント: <code>demo@exceed-re.ae</code> / <code>demo1234</code></p>
         </div>
       </form>
@@ -990,8 +912,6 @@
     import {
       createUserWithEmailAndPassword,
       signInWithEmailAndPassword,
-      GoogleAuthProvider,
-      signInWithPopup,
       onAuthStateChanged,
       updateProfile,
       signOut
@@ -1043,11 +963,7 @@
         loginTitle: 'エージェントログイン',
         loginSub: '会社の認証情報でサインインしてください。',
         loginBtn: 'ログイン',
-        demoHint: '会社メールとパスワードでサインインしてください。',
-        googleSignIn: 'Googleでサインイン',
-        googleHint: '@exceed-re.ae のアカウントで、カレンダーが自動連携されます',
-        orEmail: 'または、メールアドレスとパスワードでログイン',
-        toastDomainGoogle: '@exceed-re.ae のGoogleアカウントのみログイン可能です。'
+        demoHint: '会社メールとパスワードでサインインしてください。'
       },
       en: {
         tagline: 'DUBAI · OFF-PLAN & RESALE',
@@ -1089,11 +1005,7 @@
         loginTitle: 'Agent Login',
         loginSub: 'Sign in with your company credentials.',
         loginBtn: 'Sign In',
-        demoHint: 'Use your company email and password to sign in.',
-        googleSignIn: 'Sign in with Google',
-        googleHint: 'Use your @exceed-re.ae account — your calendar connects automatically',
-        orEmail: 'Or sign in with email and password',
-        toastDomainGoogle: 'Only @exceed-re.ae Google accounts can sign in.'
+        demoHint: 'Use your company email and password to sign in.'
       }
     };
 
@@ -1255,94 +1167,6 @@
       } catch (err) {
         await animDone;
         restoreForm();
-        showToast(mapAuthError(err.code, dict));
-      }
-    };
-
-    /* ---------- Google sign-in (path β) ----------
-       One-click sign-in that also requests calendar.readonly. The OAuth
-       access token + expiry are stashed in sessionStorage so availability.html
-       can pull events without re-auth. Restricts to @exceed-re.ae. */
-    const CALENDAR_SCOPE = 'https://www.googleapis.com/auth/calendar.readonly';
-
-    window.handleGoogleSignIn = async function() {
-      const dict = i18n[currentLang];
-      const btn = document.getElementById('googleSignInBtn');
-      btn.disabled = true;
-      try {
-        const provider = new GoogleAuthProvider();
-        provider.addScope(CALENDAR_SCOPE);
-        provider.setCustomParameters({
-          hd: 'exceed-re.ae',           // hint: only show @exceed-re.ae accounts
-          prompt: 'select_account'      // always show picker, don't silent-pick
-        });
-        const result = await signInWithPopup(auth, provider);
-        const user = result.user;
-
-        // Defense in depth — hd is a hint, not enforcement
-        if (!user.email || !user.email.toLowerCase().endsWith('@exceed-re.ae')) {
-          await signOut(auth);
-          showToast(dict.toastDomainGoogle || dict.toastDomain);
-          btn.disabled = false;
-          return;
-        }
-
-        // Stash the OAuth access token for availability.html to use
-        const credential = GoogleAuthProvider.credentialFromResult(result);
-        if (credential && credential.accessToken) {
-          try {
-            sessionStorage.setItem('gcal_token', credential.accessToken);
-            sessionStorage.setItem('gcal_token_exp', String(Date.now() + 55 * 60 * 1000));
-            sessionStorage.setItem('gcal_email', user.email);
-          } catch (e) { /* sessionStorage may fail in incognito; non-fatal */ }
-        }
-
-        // First sign-in: create the agents/{uid} doc from Google profile.
-        // Firestore rules require status='pending' on initial create — admins
-        // get auto-promoted to active+admin role in a follow-up update (which
-        // the rules allow because isAdminEmail() can update any doc).
-        const ref = doc(db, 'agents', user.uid);
-        const snap = await getDoc(ref);
-        if (!snap.exists()) {
-          const parts = (user.displayName || '').trim().split(/\s+/);
-          await setDoc(ref, {
-            firstName: parts[0] || '',
-            lastName:  parts.slice(1).join(' ') || '',
-            email:     user.email,
-            phone:     '',
-            role:      DEFAULT_ROLE,
-            uid:       user.uid,
-            status:    'pending',
-            photoURL:  user.photoURL || '',
-            createdAt: serverTimestamp()
-          });
-          if (isAdmin(user.email)) {
-            try {
-              await setDoc(ref, { status: 'active', role: 'admin' }, { merge: true });
-            } catch (e) { console.warn('admin auto-promote failed', e); }
-          }
-        } else {
-          // Existing user — refresh photo if Google has one
-          const data = snap.data();
-          if (user.photoURL && data.photoURL !== user.photoURL) {
-            try { await setDoc(ref, { photoURL: user.photoURL }, { merge: true }); } catch (e) {}
-          }
-          // Block suspended users from continuing
-          if (data.status === 'suspended') {
-            await signOut(auth);
-            showToast(dict.toastSuspended);
-            btn.disabled = false;
-            return;
-          }
-        }
-
-        showToast(dict.toastLoginSuccess);
-        window.location.href = 'agent.html';
-      } catch (err) {
-        btn.disabled = false;
-        if (err && err.code === 'auth/popup-closed-by-user') return;  // user cancelled, no toast
-        if (err && err.code === 'auth/cancelled-popup-request') return;
-        console.error(err);
         showToast(mapAuthError(err.code, dict));
       }
     };
