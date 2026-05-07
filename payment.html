@@ -86,13 +86,23 @@
     .amount-tier strong { color: var(--gold); }
     .amount-tier.high strong { color: var(--red); }
 
-    .submit-btn {
-      width: 100%; margin-top: 22px; padding: 14px; border: 0; border-radius: 10px;
-      background: linear-gradient(135deg, #f1ead8, #d4b87a); color: var(--navy-1);
-      font-weight: 700; font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase;
-      cursor: pointer; font-family: inherit;
+    .btn-row {
+      display: grid; grid-template-columns: 1fr 1.4fr; gap: 12px; margin-top: 22px;
     }
-    .submit-btn:disabled { opacity: 0.5; cursor: wait; }
+    @media (max-width: 540px) { .btn-row { grid-template-columns: 1fr; } }
+    .submit-btn, .ghost-btn {
+      padding: 14px; border-radius: 10px; font-weight: 700; font-size: 13px;
+      letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; font-family: inherit;
+    }
+    .submit-btn {
+      border: 0; background: linear-gradient(135deg, #f1ead8, #d4b87a); color: var(--navy-1);
+    }
+    .ghost-btn {
+      background: transparent; color: var(--gold);
+      border: 1px solid rgba(212,184,122,0.5);
+    }
+    .ghost-btn:hover { background: rgba(212,184,122,0.10); }
+    .submit-btn:disabled, .ghost-btn:disabled { opacity: 0.5; cursor: wait; }
 
     .req-list { margin-top: 14px; }
     .req-row {
@@ -206,9 +216,17 @@
         <label data-i18n="notesL">備考</label>
         <textarea id="notes" placeholder="Invoice number, lead source, payment method, etc."></textarea>
 
-        <button type="submit" class="submit-btn" id="submitBtn">
-          <span data-i18n="submit">申請を送信 (PDF添付)</span>
-        </button>
+        <div class="btn-row">
+          <button type="button" class="ghost-btn" id="previewBtn" onclick="previewPdf()">
+            <span data-i18n="preview">📄 PDFをプレビュー</span>
+          </button>
+          <button type="submit" class="submit-btn" id="submitBtn">
+            <span data-i18n="submit">申請を送信</span>
+          </button>
+        </div>
+        <p class="help-line" style="margin-top:10px;margin-bottom:0;" data-i18n="splitHelp">
+          まず PDF を確認してから送信できます。送信時には自動で同じ PDF がメール添付されます。
+        </p>
       </form>
     </div>
 
@@ -246,7 +264,10 @@
         categoryL: 'カテゴリー',
         purposeL: '用途 (短く) *',
         notesL: '備考',
-        submit: '申請を送信 (PDF添付)',
+        preview: '📄 PDFをプレビュー',
+        submit: '申請を送信',
+        splitHelp: 'まず PDF を確認してから送信できます。送信時には自動で同じ PDF がメール添付されます。',
+        previewMissing: '金額・送金先・用途を入力してから PDF を生成してください。',
         submitting: '送信中…',
         myReqs: '自分の申請',
         loading: '読み込み中…',
@@ -271,7 +292,10 @@
         categoryL: 'Category',
         purposeL: 'Purpose (short) *',
         notesL: 'Notes',
-        submit: 'Submit (PDF attached)',
+        preview: '📄 Preview PDF',
+        submit: 'Submit request',
+        splitHelp: 'Preview the PDF first, then submit. The same PDF is auto-attached to the approval email.',
+        previewMissing: 'Fill amount, recipient and purpose before previewing.',
         submitting: 'Sending…',
         myReqs: 'My requests',
         loading: 'Loading…',
@@ -329,6 +353,46 @@
         tier.classList.remove('high');
         tier.innerHTML = I18N[currentLang].tierLow;
       }
+    };
+
+    /* ----- Form → payload helpers ----- */
+    function readFormPayload() {
+      const amount = parseFloat(document.getElementById('amount').value);
+      const dueDate = document.getElementById('dueDate').value;
+      const recipient = document.getElementById('recipient').value.trim();
+      const category = document.getElementById('category').value;
+      const purpose = document.getElementById('purpose').value.trim();
+      const notes = document.getElementById('notes').value.trim();
+      if (!amount || amount <= 0 || !recipient || !purpose) return null;
+      const requesterName = ((myProfile && (myProfile.firstName || myProfile.lastName))
+        ? `${myProfile.firstName || ''} ${myProfile.lastName || ''}`.trim()
+        : (me ? (me.displayName || me.email) : ''));
+      return {
+        amount, dueDate, recipient, category, purpose, notes,
+        requesterUid: me ? me.uid : null,
+        requesterEmail: me ? (me.email || '').toLowerCase() : '',
+        requesterName,
+        status: 'submitted',
+        tier: amount > SMALL_AMOUNT_AED ? 'high' : 'low'
+      };
+    }
+
+    /* Preview-only: generates the PDF and triggers a download, no Firestore write. */
+    window.previewPdf = function() {
+      const dict = I18N[currentLang];
+      const payload = readFormPayload();
+      if (!payload) { showToast(dict.previewMissing, true); return; }
+      const fakeId = 'preview-' + Date.now().toString(36);
+      const b64 = buildPaymentPdfBase64(payload, fakeId);
+      const blob = new Blob(
+        [Uint8Array.from(atob(b64), c => c.charCodeAt(0))],
+        { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Payment-Request-Preview.pdf`;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 0);
     };
 
     /* ----- PDF generation (jsPDF) ----- */
