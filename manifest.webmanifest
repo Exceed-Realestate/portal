@@ -1,0 +1,54 @@
+{
+  "name": "Exceed Real Estate Portal",
+  "short_name": "Exceed",
+  "description": "Internal staff portal for Exceed Real Estate, Dubai — customer registration, deal alerts, IRR simulator, calendar, payment approvals and more.",
+  "start_url": "./agent.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#051428",
+  "theme_color": "#0a1f3d",
+  "lang": "ja",
+  "dir": "ltr",
+  "categories": ["business", "productivity"],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Register customer",
+      "short_name": "Customer",
+      "url": "./customer-register.html",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Book company car",
+      "short_name": "Book car",
+      "url": "./book-car.html",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Payment approval",
+      "short_name": "Payment",
+      "url": "./payment.html",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ]
+}
