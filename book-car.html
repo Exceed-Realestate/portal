@@ -234,6 +234,13 @@
       border-color: rgba(255,107,107,0.35);
     }
     .row-btn.cancel:hover { background: rgba(255,107,107,0.20); }
+    .row-btn.withdraw {
+      background: rgba(255,184,74,0.10); color: #ffb84a;
+      border-color: rgba(255,184,74,0.35);
+    }
+    .row-btn.withdraw:hover { background: rgba(255,184,74,0.20); }
+    .booking-item.withdrawn { border-color: rgba(154,168,194,0.3); background: rgba(154,168,194,0.06); opacity: 0.6; }
+    .status.withdrawn { background: rgba(154,168,194,0.16); color: #c1c9da; border: 1px solid rgba(154,168,194,0.4); }
     .row-btn:disabled { opacity: 0.5; cursor: wait; }
     .booking-item .when {
       font-family: ui-monospace, 'SF Mono', monospace;
@@ -545,7 +552,7 @@
   <script type="module">
     import { auth, db, isAdmin, can } from './firebase-init.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-    import { collection, addDoc, getDoc, getDocs, doc, updateDoc, query, orderBy, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    import { collection, addDoc, getDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
     import { sendCarBookingNotifications, driverWhatsappUrl } from './car-notify.js';
 
     // Same approver list as car-approve.html — only ceo/md + named approvers
@@ -821,13 +828,22 @@ ${url}`;
       if (email && CAR_APPROVER_EMAILS.has(email.toLowerCase())) return true;
       return !!(role && CAR_APPROVER_ROLES.includes(role));
     }
-    function canCancelBooking(b) {
-      // Already cancelled? Done. Past? Don't allow.
-      if (b.status === 'cancelled') return false;
+    function canActOnBooking(b) {
+      // Past bookings (already happened): no actions
       if (new Date(b.endISO) < new Date()) return false;
-      // Requester can always cancel their own. Approvers can cancel anyone's.
+      // Already actioned to a final state
+      if (b.status === 'cancelled' || b.status === 'withdrawn') return false;
+      // Requester can always act on their own. Approvers can act on anyone's.
       if (currentUser && b.requesterUid === currentUser.uid) return true;
       return canApproveCarBooking(_userRole, currentUser && currentUser.email);
+    }
+    // What button label / action does this booking get?
+    function rowActionFor(b) {
+      if (!canActOnBooking(b)) return null;
+      if (b.status === 'approved') return 'cancel';   // soft + email notify
+      if (b.status === 'pending')  return 'withdraw'; // soft + no notify
+      if (b.status === 'declined') return 'delete';   // hard + no notify
+      return null;
     }
 
     async function loadBookings() {
@@ -858,10 +874,21 @@ ${url}`;
               Driver
             </a>`);
           }
-          if (canCancelBooking(b)) {
-            actions.push(`<button class="row-btn cancel" onclick="cancelBookingPrompt('${b.id}')" title="Cancel booking">
+          const action = rowActionFor(b);
+          if (action === 'cancel') {
+            actions.push(`<button class="row-btn cancel" onclick="actOnBookingRow('${b.id}','cancel')" title="Cancel booking (notifies requester + Shoya)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
               Cancel
+            </button>`);
+          } else if (action === 'withdraw') {
+            actions.push(`<button class="row-btn withdraw" onclick="actOnBookingRow('${b.id}','withdraw')" title="Withdraw pending request">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9"/><polyline points="3 4 3 12 11 12"/></svg>
+              Withdraw
+            </button>`);
+          } else if (action === 'delete') {
+            actions.push(`<button class="row-btn cancel" onclick="actOnBookingRow('${b.id}','delete')" title="Delete declined booking">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+              Delete
             </button>`);
           }
           const actionsHtml = actions.length
@@ -882,36 +909,64 @@ ${url}`;
       }
     }
 
-    /* ----- Cancel handler -----
-       Confirms with the user, writes 'cancelled' status to Firestore (with
-       cancelledBy + cancelledAt audit fields), then fires the shared
-       email + in-portal notification dispatcher. */
-    window.cancelBookingPrompt = async function(bookingId) {
+    /* ----- Row action handler (cancel / withdraw / delete) -----
+       cancel   → status='cancelled' on approved bookings, fires email
+       withdraw → status='withdrawn' on pending requests, no email
+       delete   → deleteDoc on declined bookings, no email */
+    window.actOnBookingRow = async function(bookingId, kind) {
       const b = bookings.find(x => x.id === bookingId);
       if (!b) return;
       const carName = b.car === 'phantom' ? 'Rolls-Royce Phantom' : 'Cadillac Escalade';
       const when = new Date(b.startISO).toLocaleString();
-      const msg = `Cancel ${carName} booking for ${when}?\n\nThe requester and Shoya (plus Malik if applicable) will be notified by email.`;
-      if (!confirm(msg)) return;
+      const u = currentUser;
+      const actorName = u.displayName || (u.email ? u.email.split('@')[0] : 'Team');
+
+      let confirmMsg, successMsg, failPrefix;
+      if (kind === 'cancel') {
+        confirmMsg  = `Cancel ${carName} booking for ${when}?\n\nThe requester and Shoya (plus Malik if applicable) will be notified by email.`;
+        successMsg  = '✓ Cancelled — notifications sent';
+        failPrefix  = 'Cancel failed: ';
+      } else if (kind === 'withdraw') {
+        confirmMsg  = `Withdraw your pending request for the ${carName} on ${when}?\n\nNo notifications will be sent.`;
+        successMsg  = '✓ Request withdrawn';
+        failPrefix  = 'Withdraw failed: ';
+      } else if (kind === 'delete') {
+        confirmMsg  = `Delete this declined ${carName} booking?\n\nThis removes the record permanently.`;
+        successMsg  = '✓ Deleted';
+        failPrefix  = 'Delete failed: ';
+      } else { return; }
+
+      if (!confirm(confirmMsg)) return;
+
       try {
-        const u = currentUser;
-        const actorName = u.displayName || (u.email ? u.email.split('@')[0] : 'Team');
-        await updateDoc(doc(db, 'carBookings', bookingId), {
-          status: 'cancelled',
-          cancelledAt: serverTimestamp(),
-          cancelledByUid: u.uid,
-          cancelledByEmail: u.email,
-          cancelledByName: actorName
-        });
-        // Fire-and-forget — don't make the user wait on email queue
-        sendCarBookingNotifications(db, {
-          booking: b, bookingId, status: 'cancelled', actorName
-        }).catch(err => console.warn('cancellation notifications failed', err));
-        showToast(`✓ Cancelled — notifications sent`);
+        if (kind === 'cancel') {
+          await updateDoc(doc(db, 'carBookings', bookingId), {
+            status: 'cancelled',
+            cancelledAt: serverTimestamp(),
+            cancelledByUid: u.uid,
+            cancelledByEmail: u.email,
+            cancelledByName: actorName
+          });
+          // Fire-and-forget email + in-portal notification
+          sendCarBookingNotifications(db, {
+            booking: b, bookingId, status: 'cancelled', actorName
+          }).catch(err => console.warn('cancellation notifications failed', err));
+        } else if (kind === 'withdraw') {
+          await updateDoc(doc(db, 'carBookings', bookingId), {
+            status: 'withdrawn',
+            withdrawnAt: serverTimestamp(),
+            withdrawnByUid: u.uid,
+            withdrawnByEmail: u.email,
+            withdrawnByName: actorName
+          });
+        } else if (kind === 'delete') {
+          await deleteDoc(doc(db, 'carBookings', bookingId));
+        }
+        showToast(successMsg);
         loadBookings();
       } catch (err) {
         console.error(err);
-        showToast('Cancel failed: ' + (err.message || err.code || 'unknown'));
+        showToast(failPrefix + (err.message || err.code || 'unknown'));
       }
     };
 
