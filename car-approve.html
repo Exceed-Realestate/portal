@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Car Booking Approval — Exceed Real Estate</title>
+  <link rel="icon" type="image/jpeg" href="logo.jpg">
+  <script src="theme-init.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="liquid.css">
+  <style>
+    :root {
+      --navy-0:#051428; --navy-1:#0a1f3d; --navy-2:#102a4f;
+      --line:rgba(255,255,255,0.10); --line-strong:rgba(255,255,255,0.18);
+      --text:#f5f7fb; --muted:#9aa8c2; --gold:#d4b87a; --cream:#f1ead8;
+      --green:#5cc98f; --wa:#25d366; --radius:14px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    html { background: var(--navy-0); }
+    body {
+      font-family: 'Noto Sans JP', 'Inter', sans-serif;
+      background:
+        radial-gradient(1100px 600px at 80% -10%, rgba(212,184,122,0.10), transparent 60%),
+        radial-gradient(900px 700px at -10% 110%, rgba(23,54,99,0.6), transparent 60%),
+        var(--navy-0);
+      color: var(--text); min-height: 100vh;
+    }
+
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 32px; border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(8px); background: rgba(5,20,40,0.7);
+      position: sticky; top: 0; z-index: 10;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; cursor: pointer; text-decoration: none; color: inherit; }
+    .brand img { width: 40px; height: 40px; border-radius: 8px; }
+    .brand-name { font-family: 'Playfair Display', serif; letter-spacing: 2px; font-weight: 600; }
+    .brand-name span { color: var(--gold); font-weight: 400; }
+    .topbar-right { display: flex; align-items: center; gap: 14px; color: var(--muted); font-size: 13px; }
+    .topbar-right strong { color: var(--cream); font-weight: 600; }
+    .icon-btn {
+      background: rgba(255,255,255,0.05); border: 1px solid var(--line);
+      color: var(--text); padding: 8px 14px; border-radius: 8px; cursor: pointer;
+      font-family: inherit; font-size: 12px; letter-spacing: 1px; text-transform: uppercase;
+      transition: background .2s; display: inline-flex; align-items: center; gap: 8px;
+      text-decoration: none;
+    }
+    .icon-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--line-strong); }
+    .icon-btn svg { width: 14px; height: 14px; }
+
+    .page-head { max-width: 760px; margin: 0 auto; padding: 36px 32px 0; }
+    .page-head .eyebrow { color: var(--gold); letter-spacing: 5px; font-size: 11px; text-transform: uppercase; margin-bottom: 10px; }
+    .page-head h1 { font-family: 'Playfair Display', 'Noto Serif JP', serif; font-weight: 600; font-size: clamp(28px, 4vw, 40px); margin: 0 0 8px; }
+    .page-head .lede { color: var(--muted); font-size: 14px; margin: 0; line-height: 1.6; }
+
+    main { max-width: 760px; margin: 0 auto; padding: 28px 32px 80px; }
+
+    .booking-card {
+      background: linear-gradient(180deg, rgba(16,42,79,0.85), rgba(10,31,61,0.85));
+      backdrop-filter: blur(18px) saturate(160%);
+      border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 28px; position: relative;
+    }
+    .car-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 12px; border-radius: 999px;
+      background: rgba(212,184,122,0.14); color: var(--gold);
+      border: 1px solid rgba(212,184,122,0.4);
+      font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .booking-card h2 {
+      font-family: 'Playfair Display', serif; font-weight: 600;
+      font-size: 26px; margin: 0 0 6px; color: var(--cream);
+    }
+    .booking-when { color: var(--gold); font-size: 16px; font-weight: 600; margin-bottom: 18px; font-variant-numeric: tabular-nums; }
+    .urgent-banner {
+      background: rgba(255,107,107,0.12); border: 1px solid rgba(255,107,107,0.4);
+      color: #ff8a78; padding: 10px 14px; border-radius: 10px;
+      font-size: 12.5px; line-height: 1.5; margin-bottom: 18px;
+    }
+    .urgent-banner strong { color: #ffb3a8; }
+
+    .field-grid { display: grid; gap: 12px; margin-bottom: 22px; }
+    .field-row { display: grid; grid-template-columns: 130px 1fr; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
+    .field-row:last-child { border-bottom: none; }
+    .field-key { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+    .field-val { font-size: 14px; color: var(--cream); line-height: 1.5; word-break: break-word; }
+    .field-val.muted { color: var(--muted); }
+
+    .status-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border-radius: 999px;
+      font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    }
+    .status-pill.pending  { background: rgba(255,209,102,0.14); color: #ffd166; border: 1px solid rgba(255,209,102,0.4); }
+    .status-pill.approved { background: rgba(92,201,143,0.14); color: var(--green); border: 1px solid rgba(92,201,143,0.4); }
+    .status-pill.declined { background: rgba(255,107,107,0.14); color: #ff8a78; border: 1px solid rgba(255,107,107,0.4); }
+
+    .actions { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
+    .btn {
+      flex: 1; min-width: 160px;
+      padding: 14px 22px; border-radius: 10px; border: none;
+      font-family: inherit; font-size: 13px; font-weight: 700;
+      letter-spacing: 1px; text-transform: uppercase;
+      cursor: pointer; transition: transform .15s, box-shadow .2s;
+    }
+    .btn:disabled { opacity: 0.5; cursor: wait; }
+    .btn-approve {
+      background: linear-gradient(180deg, #6dd99c, #4aaf6f);
+      color: #062013;
+      box-shadow: 0 12px 28px -10px rgba(92,201,143,0.55), inset 0 1px 0 rgba(255,255,255,0.4);
+    }
+    .btn-approve:hover { transform: translateY(-1px); box-shadow: 0 18px 36px -12px rgba(92,201,143,0.7), inset 0 1px 0 rgba(255,255,255,0.5); }
+    .btn-decline {
+      background: rgba(255,107,107,0.14); color: #ff8a78; border: 1px solid rgba(255,107,107,0.4);
+    }
+    .btn-decline:hover { background: rgba(255,107,107,0.22); }
+
+    .decision-info {
+      margin-top: 24px; padding: 18px;
+      background: rgba(5,15,30,0.6); border: 1px solid var(--line); border-radius: 10px;
+      font-size: 13px; color: var(--muted); line-height: 1.6;
+    }
+    .decision-info strong { color: var(--cream); }
+
+    .denied {
+      max-width: 520px; margin: 60px auto; text-align: center;
+      padding: 36px 28px;
+      background: rgba(16,42,79,0.6); border: 1px solid var(--line); border-radius: var(--radius);
+    }
+    .denied .icon { width: 56px; height: 56px; margin: 0 auto 18px; border-radius: 50%; background: rgba(255,107,107,0.14); border: 1px solid rgba(255,107,107,0.4); display: grid; place-items: center; color: #ff8a78; }
+    .denied h2 { font-family: 'Playfair Display', serif; font-size: 22px; margin: 0 0 10px; color: var(--cream); }
+    .denied p { color: var(--muted); font-size: 13.5px; line-height: 1.6; margin: 0 0 20px; }
+
+    .loading { text-align: center; padding: 60px 20px; color: var(--muted); font-size: 13px; }
+    .loading::after { content: '…'; animation: dots 1.4s infinite; }
+    @keyframes dots { 0%,20% { content: '.'; } 40% { content: '..'; } 60%,100% { content: '...'; } }
+
+    .toast {
+      position: fixed; bottom: 30px; left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: rgba(5,15,30,0.95); border: 1px solid rgba(212,184,122,0.4);
+      padding: 14px 22px; border-radius: 10px; color: var(--cream);
+      font-size: 13.5px; transition: transform .35s cubic-bezier(.34,1.56,.64,1);
+      z-index: 100; box-shadow: 0 20px 50px -10px rgba(0,0,0,0.7); max-width: 90%;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.error { border-color: rgba(255,107,107,0.5); color: #ff8a78; }
+
+    .lang-toggle { display: inline-flex; align-items: center; background: rgba(255,255,255,0.05); border: 1px solid var(--line); border-radius: 999px; padding: 4px; position: relative; }
+    .lang-toggle button { background: transparent; border: none; color: var(--muted); font-family: inherit; font-size: 12px; font-weight: 600; letter-spacing: 1px; padding: 6px 12px; border-radius: 999px; cursor: pointer; transition: color .25s; position: relative; z-index: 1; }
+    .lang-toggle button.active { color: var(--navy-0); }
+    .lang-toggle .pill { position: absolute; top: 4px; bottom: 4px; background: var(--cream); border-radius: 999px; transition: transform .35s cubic-bezier(.34,1.56,.64,1), width .35s ease; z-index: 0; }
+
+    @media (max-width: 600px) {
+      .page-head, main { padding-left: 18px; padding-right: 18px; }
+      .field-row { grid-template-columns: 1fr; gap: 2px; padding: 10px 0; }
+      .field-key { font-size: 9px; }
+      .booking-card { padding: 22px; }
+      .actions .btn { flex: 1 1 100%; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="agent.html">
+      <img src="logo.jpg" alt="">
+      <div class="brand-name">EXCEED <span>Real Estate</span></div>
+    </a>
+    <div class="topbar-right">
+      <div class="lang-toggle" id="langToggle">
+        <span class="pill" id="langPill"></span>
+        <button data-lang="ja" class="active">日本語</button>
+        <button data-lang="en">EN</button>
+      </div>
+      <span><span data-i18n="hello">こんにちは、</span><strong id="userName">—</strong></span>
+      <a class="icon-btn" href="agent.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        <span data-i18n="back">ダッシュボード</span>
+      </a>
+    </div>
+  </header>
+
+  <div class="page-head">
+    <div class="eyebrow" data-i18n="eyebrow">Car Booking</div>
+    <h1 data-i18n="title">承認リクエスト</h1>
+    <p class="lede" data-i18n="lede">下記の予約内容を確認し、承認または却下してください。</p>
+  </div>
+
+  <main>
+    <div id="content"><div class="loading" data-i18n="loading">読み込み中</div></div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script type="module">
+    import { auth, db, isAdmin, can } from './firebase-init.js';
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+    import { doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+    const I18N = {
+      ja: {
+        back: 'ダッシュボード', hello: 'こんにちは、',
+        eyebrow: 'Car Booking',
+        title: '承認リクエスト',
+        lede: '下記の予約内容を確認し、承認または却下してください。',
+        loading: '読み込み中',
+        invalidLink: 'リンクが無効です',
+        invalidLinkBody: '予約IDが含まれていません。WhatsAppで送られたリンクを再度ご確認ください。',
+        notFound: '予約が見つかりません',
+        notFoundBody: 'この予約は削除されたか、リンクが正しくありません。',
+        loadFailed: '読み込みに失敗しました',
+        loadFailedBody: '予約の取得中にエラーが発生しました。しばらくしてから再度お試しください。',
+        deniedTitle: '承認権限がありません',
+        deniedBody: '車両予約を承認できるのは、CEO・MD・マネージャー・管理者のみです。',
+        car: '車両', when: '日時', requester: '申請者', email: 'メール',
+        property: '物件', area: 'エリア', leadSource: 'リード元',
+        client: 'クライアント', budget: '予算 (AED)', notes: 'メモ',
+        urgentBanner: '<strong>⚠ 3日前ルール外の緊急申請です。</strong>例外として承認をご検討ください。',
+        statusPending: '承認待ち', statusApproved: '承認済', statusDeclined: '却下',
+        approve: '承認する', decline: '却下する',
+        approving: '承認中…', declining: '却下中…',
+        approvedToast: '✓ 承認しました',
+        declinedToast: '✗ 却下しました',
+        actionFailed: '更新に失敗しました: ',
+        decisionByApprovedJa: 'この予約は <strong>{name}</strong> によって <strong>{when}</strong> に承認されました。',
+        decisionByDeclinedJa: 'この予約は <strong>{name}</strong> によって <strong>{when}</strong> に却下されました。',
+        loginRequired: 'ログインが必要です',
+        loginBody: '承認するには、@exceed-re.ae のアカウントでログインしてください。',
+        signInBtn: 'ログインへ →'
+      },
+      en: {
+        back: 'Dashboard', hello: 'Hi, ',
+        eyebrow: 'Car Booking',
+        title: 'Approval request',
+        lede: 'Review the booking below and approve or decline.',
+        loading: 'Loading',
+        invalidLink: 'Invalid link',
+        invalidLinkBody: 'No booking ID in the URL. Please use the link from WhatsApp.',
+        notFound: 'Booking not found',
+        notFoundBody: 'This booking was deleted or the link is incorrect.',
+        loadFailed: 'Load failed',
+        loadFailedBody: 'Something went wrong fetching the booking. Please try again later.',
+        deniedTitle: 'You don\'t have approval permission',
+        deniedBody: 'Only CEO / MD / Manager / Admin roles can approve car bookings.',
+        car: 'Vehicle', when: 'When', requester: 'Requester', email: 'Email',
+        property: 'Property', area: 'Area', leadSource: 'Lead source',
+        client: 'Client', budget: 'Budget (AED)', notes: 'Notes',
+        urgentBanner: '<strong>⚠ Urgent — outside the 3-day notice rule.</strong> Please consider as an exception.',
+        statusPending: 'Pending', statusApproved: 'Approved', statusDeclined: 'Declined',
+        approve: 'Approve', decline: 'Decline',
+        approving: 'Approving…', declining: 'Declining…',
+        approvedToast: '✓ Approved',
+        declinedToast: '✗ Declined',
+        actionFailed: 'Update failed: ',
+        decisionByApprovedJa: 'Approved by <strong>{name}</strong> on <strong>{when}</strong>.',
+        decisionByDeclinedJa: 'Declined by <strong>{name}</strong> on <strong>{when}</strong>.',
+        loginRequired: 'Login required',
+        loginBody: 'Sign in with your @exceed-re.ae account to approve this booking.',
+        signInBtn: 'Sign in →'
+      }
+    };
+    let currentLang = 'ja';
+    function setLang(lang) {
+      currentLang = lang;
+      const dict = I18N[lang];
+      document.documentElement.lang = lang;
+      document.querySelectorAll('[data-i18n]').forEach(el => { const k = el.getAttribute('data-i18n'); if (dict[k]) el.textContent = dict[k]; });
+      document.querySelectorAll('.lang-toggle button').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+      positionPill();
+      // Re-render the body so all internal copy translates
+      if (window._bookingState) renderBooking(window._bookingState);
+    }
+    function positionPill() {
+      const pill = document.getElementById('langPill');
+      const active = document.querySelector('.lang-toggle button.active');
+      if (!active || !pill) return;
+      const r = active.getBoundingClientRect();
+      const pr = active.parentElement.getBoundingClientRect();
+      pill.style.width = r.width + 'px';
+      pill.style.transform = `translateX(${r.left - pr.left - 4}px)`;
+    }
+    document.querySelectorAll('.lang-toggle button').forEach(b => b.addEventListener('click', () => setLang(b.dataset.lang)));
+
+    function showToast(msg, isError) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.toggle('error', !!isError);
+      t.classList.add('show');
+      clearTimeout(t._tm);
+      t._tm = setTimeout(() => t.classList.remove('show'), 3200);
+    }
+
+    function escHtml(s) {
+      return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+    function fmtRange(b) {
+      const start = new Date(b.startISO);
+      const end = new Date(b.endISO);
+      const datePart = new Intl.DateTimeFormat(currentLang === 'ja' ? 'ja-JP' : 'en-GB', { year: 'numeric', month: 'short', day: 'numeric', weekday: 'short' }).format(start);
+      const timeFmt = new Intl.DateTimeFormat(currentLang === 'ja' ? 'ja-JP' : 'en-GB', { hour: '2-digit', minute: '2-digit' });
+      return `${datePart} · ${timeFmt.format(start)} – ${timeFmt.format(end)}`;
+    }
+    function fmtWhen(ts) {
+      if (!ts) return '—';
+      const d = ts.toDate ? ts.toDate() : new Date(ts);
+      return new Intl.DateTimeFormat(currentLang === 'ja' ? 'ja-JP' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' }).format(d);
+    }
+
+    /* ----- Permission gate -----
+       Approval allowed for: admin emails, role admin/ceo/md/manager.
+       Capability map already covers this via 'approveAgents' but car-bookings
+       deserve their own check — using 'changeRoles' would be too tight,
+       'approveAgents' is the closest existing gate. */
+    function canApprove(role, email) {
+      if (isAdmin(email)) return true;
+      // approveAgents is admin/ceo/md — that's the right tier for company assets
+      return can(role, 'approveAgents', email);
+    }
+
+    function renderInvalid(titleKey, bodyKey) {
+      const dict = I18N[currentLang];
+      document.getElementById('content').innerHTML = `
+        <div class="denied">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="26" height="26"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+          <h2>${dict[titleKey]}</h2>
+          <p>${dict[bodyKey]}</p>
+          <a class="icon-btn" href="agent.html"><span>${dict.back}</span></a>
+        </div>`;
+    }
+
+    function renderLoginRequired() {
+      const dict = I18N[currentLang];
+      const here = encodeURIComponent(location.pathname + location.search);
+      document.getElementById('content').innerHTML = `
+        <div class="denied">
+          <div class="icon" style="background:rgba(212,184,122,0.14); border-color:rgba(212,184,122,0.4); color:var(--gold)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="26" height="26"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+          <h2>${dict.loginRequired}</h2>
+          <p>${dict.loginBody}</p>
+          <a class="icon-btn" href="index.html?return=${here}" style="background:rgba(212,184,122,0.14);border-color:rgba(212,184,122,0.4);color:var(--gold)">${dict.signInBtn}</a>
+        </div>`;
+    }
+
+    function renderDenied() {
+      const dict = I18N[currentLang];
+      document.getElementById('content').innerHTML = `
+        <div class="denied">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="26" height="26"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+          <h2>${dict.deniedTitle}</h2>
+          <p>${dict.deniedBody}</p>
+          <a class="icon-btn" href="agent.html">${dict.back}</a>
+        </div>`;
+    }
+
+    function renderBooking(state) {
+      const dict = I18N[currentLang];
+      const b = state.booking;
+      const carName = b.car === 'phantom' ? 'Rolls-Royce Phantom' : 'Cadillac Escalade';
+      const statusKey = b.status === 'approved' ? 'statusApproved' : b.status === 'declined' ? 'statusDeclined' : 'statusPending';
+
+      // Decision info card if already actioned
+      let decisionHtml = '';
+      if (b.status === 'approved' || b.status === 'declined') {
+        const tmplKey = b.status === 'approved' ? 'decisionByApprovedJa' : 'decisionByDeclinedJa';
+        const html = (dict[tmplKey] || '')
+          .replace('{name}', escHtml(b.decidedByName || b.decidedByEmail || '—'))
+          .replace('{when}', escHtml(fmtWhen(b.decidedAt)));
+        decisionHtml = `<div class="decision-info">${html}</div>`;
+      }
+
+      // Action buttons (only if pending and user can approve)
+      let actionsHtml = '';
+      if (b.status === 'pending' && state.canApprove) {
+        actionsHtml = `
+          <div class="actions">
+            <button class="btn btn-approve" onclick="actOnBooking('approved')" id="approveBtn">${dict.approve}</button>
+            <button class="btn btn-decline" onclick="actOnBooking('declined')" id="declineBtn">${dict.decline}</button>
+          </div>`;
+      } else if (b.status === 'pending' && !state.canApprove) {
+        actionsHtml = `<div class="decision-info">${dict.deniedBody}</div>`;
+      }
+
+      const urgent = b.urgent ? `<div class="urgent-banner">${dict.urgentBanner}</div>` : '';
+
+      const fields = [
+        ['car',         carName],
+        ['when',        fmtRange(b)],
+        ['requester',   b.requesterName || '—'],
+        ['email',       b.requesterEmail || '—'],
+        ['property',    b.property || '—'],
+        ['area',        b.area || '—'],
+        ['leadSource',  b.leadSource || '—'],
+        ['client',      b.client || '—'],
+        ['budget',      b.budget ? Number(b.budget).toLocaleString() : '—'],
+        ['notes',       b.notes || '—']
+      ];
+      const rowsHtml = fields.map(([k, v]) =>
+        `<div class="field-row"><div class="field-key">${dict[k] || k}</div><div class="field-val${v === '—' ? ' muted' : ''}">${escHtml(v)}</div></div>`
+      ).join('');
+
+      document.getElementById('content').innerHTML = `
+        <div class="booking-card">
+          <div class="car-badge">${carName}</div>
+          <h2>${dict.title}</h2>
+          <div class="booking-when">${fmtRange(b)}</div>
+          <div style="margin-bottom:18px"><span class="status-pill ${b.status}">${dict[statusKey]}</span></div>
+          ${urgent}
+          <div class="field-grid">${rowsHtml}</div>
+          ${actionsHtml}
+          ${decisionHtml}
+        </div>`;
+    }
+
+    window.actOnBooking = async function(newStatus) {
+      const state = window._bookingState;
+      if (!state) return;
+      const dict = I18N[currentLang];
+      const aBtn = document.getElementById('approveBtn');
+      const dBtn = document.getElementById('declineBtn');
+      [aBtn, dBtn].forEach(b => { if (b) b.disabled = true; });
+      if (aBtn) aBtn.textContent = newStatus === 'approved' ? dict.approving : dict.approve;
+      if (dBtn) dBtn.textContent = newStatus === 'declined' ? dict.declining : dict.decline;
+      try {
+        const u = state.user;
+        await updateDoc(doc(db, 'carBookings', state.id), {
+          status: newStatus,
+          decidedAt: serverTimestamp(),
+          decidedByUid: u.uid,
+          decidedByEmail: u.email,
+          decidedByName: u.displayName || (u.email ? u.email.split('@')[0] : '—')
+        });
+        showToast(newStatus === 'approved' ? dict.approvedToast : dict.declinedToast);
+        // Reload the doc to show the decision info
+        const snap = await getDoc(doc(db, 'carBookings', state.id));
+        state.booking = { ...snap.data() };
+        renderBooking(state);
+      } catch (err) {
+        console.error(err);
+        showToast(dict.actionFailed + (err.message || err.code || 'unknown'), true);
+        [aBtn, dBtn].forEach(b => { if (b) b.disabled = false; });
+        if (aBtn) aBtn.textContent = dict.approve;
+        if (dBtn) dBtn.textContent = dict.decline;
+      }
+    };
+
+    async function loadBooking(user) {
+      const params = new URLSearchParams(location.search);
+      const id = params.get('id');
+      const action = params.get('action'); // approve | decline (auto-action from WhatsApp link)
+      if (!id) { renderInvalid('invalidLink', 'invalidLinkBody'); return; }
+
+      try {
+        const snap = await getDoc(doc(db, 'carBookings', id));
+        if (!snap.exists()) { renderInvalid('notFound', 'notFoundBody'); return; }
+        const booking = { ...snap.data() };
+
+        // Resolve user role via agent doc to gate the action buttons
+        let role = null;
+        try {
+          const aSnap = await getDoc(doc(db, 'agents', user.uid));
+          if (aSnap.exists()) role = aSnap.data().role || null;
+        } catch (_) {}
+
+        const state = { id, booking, user, role, canApprove: canApprove(role, user.email) };
+        window._bookingState = state;
+        renderBooking(state);
+
+        // If the WhatsApp link included ?action=approve|decline AND the user
+        // has permission AND the booking is still pending, auto-execute.
+        if (booking.status === 'pending' && state.canApprove && (action === 'approve' || action === 'decline')) {
+          // Tiny delay so the user sees the booking briefly before the toast lands
+          setTimeout(() => actOnBooking(action === 'approve' ? 'approved' : 'declined'), 300);
+        }
+      } catch (err) {
+        console.error(err);
+        renderInvalid('loadFailed', 'loadFailedBody');
+      }
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { renderLoginRequired(); return; }
+      let firstName = (user.displayName || '').trim().split(/\s+/)[0];
+      try {
+        const snap = await getDoc(doc(db, 'agents', user.uid));
+        if (snap.exists() && snap.data().firstName) firstName = snap.data().firstName;
+      } catch (_) {}
+      if (!firstName && user.email) {
+        const local = user.email.split('@')[0].split(/[._-]/)[0];
+        firstName = local.charAt(0).toUpperCase() + local.slice(1);
+      }
+      document.getElementById('userName').textContent = firstName || 'Agent';
+      loadBooking(user);
+    });
+
+    window.addEventListener('load', () => { setLang('ja'); });
+    window.addEventListener('resize', positionPill);
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'e') {
+        e.preventDefault();
+        setLang(currentLang === 'ja' ? 'en' : 'ja');
+      }
+    });
+  </script>
+</body>
+</html>
