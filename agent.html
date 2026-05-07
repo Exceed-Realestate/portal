@@ -929,10 +929,13 @@
     .tile {
       /* Each tile carries its own accent palette via custom properties.
          Defaults below are gold; per-tile overrides further down change
-         the wash, the icon chip, the SVG art tint and the hover halo. */
+         the wash, the icon chip, the SVG art tint and the hover halo.
+         --tile-bg points at the per-tile photo (or stays empty for the
+         CSS-only fallback used by tiles without a card image yet). */
       --tile-accent:        rgba(212,184,122,0.20);
       --tile-accent-strong: rgba(212,184,122,0.50);
       --tile-accent-color:  #d4b87a;
+      --tile-bg:            none;
 
       background:
         radial-gradient(140% 100% at 100% 100%, var(--tile-accent), transparent 62%),
@@ -949,6 +952,43 @@
       overflow: hidden;
       min-height: 132px;
     }
+    /* Photo background layer — sits BEHIND the gradient/text. Uses ::before
+       so we can independently tune brightness, position and a darkening
+       gradient that keeps the upper-left text legible. Tiles without a
+       --tile-bg URL fall back to the gradient-only look. */
+    .tile.has-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(135deg,
+          rgba(10,31,61,0.92) 0%,
+          rgba(10,31,61,0.62) 40%,
+          rgba(10,31,61,0.30) 100%),
+        var(--tile-bg);
+      background-size: cover, cover;
+      background-position: center, center;
+      background-repeat: no-repeat;
+      transition: transform .5s ease, filter .3s ease;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .tile.has-card:hover::before {
+      transform: scale(1.04);
+      filter: brightness(1.08) saturate(1.1);
+    }
+    /* Hide the SVG tile-art when a photo is in use — the photo IS the art. */
+    .tile.has-card .tile-art { display: none; }
+    /* Per-tile photo URLs */
+    .tile[data-key="customer-register"] { --tile-bg: url('cards/customer-register.jpg'); }
+    .tile[data-key="irr"]               { --tile-bg: url('cards/irr.jpg'); }
+    .tile[data-key="availability"]      { --tile-bg: url('cards/availability.jpg'); }
+    .tile[data-key="travel"]            { --tile-bg: url('cards/travel.jpg'); }
+    .tile[data-key="team"]              { --tile-bg: url('cards/team.jpg'); }
+    .tile[data-key="deal-alert"]        { --tile-bg: url('cards/deal-alert.jpg'); }
+    .tile[data-key="book-car"]          { --tile-bg: url('cards/book-car.jpg'); }
+    .tile[data-key="payment"]           { --tile-bg: url('cards/payment.jpg'); }
+    .tile[data-key="manage-access"]     { --tile-bg: url('cards/manage-access.jpg'); }
+    .tile[data-key="listings"]          { --tile-bg: url('cards/listings.jpg'); }
 
     /* ---- Per-tile accent palette ----
        Hues are kept in the same low-saturation, dusk-inspired family so
@@ -2024,6 +2064,13 @@
       'admin-customers':   `<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M50 12 L78 24 L78 48 Q78 70 50 84 Q22 70 22 48 L22 24 Z"/><path d="M38 50 L46 58 L62 42"/></svg>`
     };
 
+    /* Keys that have a photo card in /cards/{key}.jpg — these tiles also
+       get the .has-card class so the CSS layers in the photo background. */
+    const TILES_WITH_CARD = new Set([
+      'customer-register', 'irr', 'availability', 'travel', 'team',
+      'deal-alert', 'book-car', 'payment', 'manage-access', 'listings'
+    ]);
+
     function renderTileGrid() {
       const grid = document.getElementById('tileGrid');
       const lang = I18N[currentLang];
@@ -2037,7 +2084,8 @@
         //   - otherwise nothing (active tools speak for themselves)
         const badgeKey = t.action === 'soon' ? 'soon' : (t.badge || '');
         const art = TILE_ART[t.key] || '';
-        return `<a class="tile ${dis} ${i === 0 ? 'active' : ''} ${badgeKey ? 'has-corner-badge' : ''}" data-key="${t.key}" href="#">
+        const hasCard = TILES_WITH_CARD.has(t.key) ? 'has-card' : '';
+        return `<a class="tile ${dis} ${i === 0 ? 'active' : ''} ${badgeKey ? 'has-corner-badge' : ''} ${hasCard}" data-key="${t.key}" href="#">
           ${art ? `<div class="tile-art">${art}</div>` : ''}
           ${badgeKey ? `<span class="tile-corner-badge ${badgeKey}">${lang[badgeKey] || badgeKey.toUpperCase()}</span>` : ''}
           <span class="tile-hover-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></span>
