@@ -249,6 +249,30 @@
     .feature .sub { color: var(--muted); font-size: 13px; margin: -12px 0 22px; }
 
     /* Empty state with stub button */
+    /* ----- Calendar ----- */
+    .cal-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
+    .cal-actions { display: flex; gap: 8px; }
+    .cal-connect { text-align: center; padding: 48px 28px; border: 1px dashed rgba(212,184,122,0.4); border-radius: 14px; background: rgba(212,184,122,0.04); }
+    .cal-connect-icon { width: 56px; height: 56px; margin: 0 auto 18px; border-radius: 50%; background: linear-gradient(135deg, #f6ecc8, #d4b87a); display: grid; place-items: center; box-shadow: 0 14px 32px -10px rgba(212,184,122,0.5); }
+    .cal-connect-title { color: var(--cream); font-size: 18px; font-weight: 600; margin: 0 0 8px; font-family: 'Playfair Display', serif; }
+    .cal-connect p { font-size: 13.5px; color: var(--muted); line-height: 1.55; max-width: 460px; margin: 0 auto 22px; }
+    .cal-connect .btn-primary { padding: 12px 28px; }
+    .cal-day { padding: 16px 0; border-bottom: 1px solid var(--line); }
+    .cal-day:last-child { border-bottom: none; }
+    .cal-day-head { font-family: 'Playfair Display', serif; font-size: 15px; color: var(--cream); margin: 0 0 10px; display: flex; align-items: baseline; gap: 10px; }
+    .cal-day-head .meta { font-family: 'Inter', sans-serif; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+    .cal-event { display: grid; grid-template-columns: 90px 1fr; gap: 14px; padding: 8px 0; align-items: baseline; }
+    .cal-event-time { font-size: 12px; color: var(--gold); font-variant-numeric: tabular-nums; font-weight: 600; letter-spacing: 0.3px; }
+    .cal-event-time.allday { color: var(--muted); font-weight: 500; letter-spacing: 1px; text-transform: uppercase; font-size: 10px; }
+    .cal-event-title { font-size: 13.5px; color: var(--cream); }
+    .cal-event-loc { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+    .cal-empty { padding: 22px; text-align: center; color: var(--muted); font-size: 13px; border: 1px dashed var(--line); border-radius: 10px; }
+    .cal-error { padding: 22px; text-align: center; color: #ff8a8a; font-size: 13px; border: 1px solid rgba(255,107,107,0.35); border-radius: 10px; background: rgba(255,107,107,0.06); }
+    .cal-error button { margin-top: 12px; }
+    .cal-loading { padding: 30px; text-align: center; color: var(--muted); font-size: 13px; }
+    .cal-loading::after { content: '…'; animation: dots 1.4s infinite; }
+    @keyframes dots { 0%,20% { content: '.'; } 40% { content: '..'; } 60%,100% { content: '...'; } }
+
     .stub {
       text-align: center;
       padding: 48px 24px;
@@ -406,20 +430,18 @@
     </div>
 
     <div class="feature">
-      <h2 data-i18n="featTitle1">Googleカレンダー連携</h2>
-      <p class="sub" data-i18n="featSub1">読み取り専用の安全な連携です（書き込み権限は将来追加予定）。</p>
-
-      <div class="stub">
-        <div class="stub-title" data-i18n="stubTitle1">まだ連携されていません</div>
-        <p data-i18n="stubBody1">管理者がGoogle OAuth Client IDを設定するとこのボタンが有効になります。設定完了後、各自で「連携」ボタンを押して許可してください。</p>
-        <span class="stub-status" data-i18n="stubStatus">⚙ 管理者の設定待ち</span>
+      <div class="cal-header">
+        <div>
+          <h2 data-i18n="featTitle1">Googleカレンダー</h2>
+          <p class="sub" id="calStatus" data-i18n="calStatusLoading">読み込み中…</p>
+        </div>
+        <div class="cal-actions">
+          <button class="icon-btn" id="calRefreshBtn" onclick="refreshCalendar()" data-i18n="btnRefresh" hidden>更新</button>
+          <button class="icon-btn" id="calDisconnectBtn" onclick="disconnectCalendar()" data-i18n="btnDisconnect" hidden>切断</button>
+        </div>
       </div>
 
-      <div style="display:flex; gap:14px; flex-wrap:wrap; margin-top:22px;">
-        <button class="btn-primary" disabled data-i18n="btnConnect">Googleカレンダーを連携</button>
-        <button class="icon-btn" disabled data-i18n="btnPickWeek">期間を選択</button>
-        <button class="icon-btn" disabled data-i18n="btnPickPerson">チームメンバーを選択</button>
-      </div>
+      <div id="calBody"></div>
     </div>
   </section>
 
@@ -532,8 +554,10 @@
 
   <script type="module">
     import { auth, db } from './firebase-init.js';
-    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+    import { onAuthStateChanged, GoogleAuthProvider, signInWithPopup, reauthenticateWithPopup } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
     import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+    const CALENDAR_SCOPE = 'https://www.googleapis.com/auth/calendar.readonly';
 
     // ----- i18n -----
     const I18N = {
@@ -552,11 +576,23 @@
         'a-s5': '空きスロットをクリック → <strong>「この時間で予約」</strong> でミーティング依頼を送信。相手が承認するとカレンダーに自動登録されます。',
         'a-s6': '表示時間は<strong>あなたの現地時間</strong>です。相手のホームタイムゾーンも併記されるため混乱しません。',
         'a-tip': '<strong>ヒント:</strong> 出張中の場合は「出張」タブで滞在国を登録してください。あなたの空き時間は自動的に滞在国のタイムゾーンに切り替わります。',
-        featTitle1: 'Googleカレンダー連携', featSub1: '読み取り専用の安全な連携です（書き込み権限は将来追加予定）。',
-        stubTitle1: 'まだ連携されていません',
-        stubBody1: '管理者がGoogle OAuth Client IDを設定するとこのボタンが有効になります。設定完了後、各自で「連携」ボタンを押して許可してください。',
-        stubStatus: '⚙ 管理者の設定待ち',
-        btnConnect: 'Googleカレンダーを連携', btnPickWeek: '期間を選択', btnPickPerson: 'チームメンバーを選択',
+        featTitle1: 'Googleカレンダー', featSub1: '読み取り専用の安全な連携です。あなたのカレンダー情報のみが表示されます。',
+        calStatusLoading: '読み込み中…',
+        calStatusNotConnected: '未連携',
+        calStatusConnected: '連携済',
+        calStatusExpired: '期限切れ — 再連携してください',
+        calConnectTitle: 'Googleカレンダーを連携',
+        calConnectBody: 'あなたの@exceed-re.aeカレンダーをこの画面に表示します。読み取り専用です。',
+        calConnecting: '接続中',
+        calConnectFailed: '連携に失敗しました。',
+        calLoading: '読み込み中',
+        calFetchFailed: 'カレンダーの取得に失敗しました。',
+        calExpired: 'カレンダー連携の有効期限が切れました。',
+        calEmpty: '今後7日間に予定はありません。',
+        allDay: '終日',
+        btnRefresh: '更新', btnDisconnect: '切断', btnConnect: 'Googleカレンダーを連携',
+        btnRetry: '再試行', btnReconnect: '再連携',
+        btnPickWeek: '期間を選択', btnPickPerson: 'チームメンバーを選択',
         'w-s1': '毎週<strong>金曜日</strong>に、来週の予定・重点項目・主要ミーティングを投稿してください。',
         'w-s2': 'フォーマットは自由です。例: <code>月: Tiger視察 / 火: 内見3件 / 水: 役員MTG…</code>',
         'w-s3': '投稿はチーム全員に表示されます。コメント・リアクション可能。',
@@ -595,11 +631,23 @@
         'a-s5': 'Click any free slot → <strong>"Book this slot"</strong> sends a meeting request. Once they accept, it\'s added to both calendars.',
         'a-s6': 'All times shown in <strong>your local time</strong>. The other person\'s home timezone is shown next to their name.',
         'a-tip': '<strong>Tip:</strong> If you\'re traveling, register your trip in the Travel tab — your availability automatically switches to the destination timezone.',
-        featTitle1: 'Google Calendar', featSub1: 'Secure read-only integration (write access coming later).',
-        stubTitle1: 'Not connected yet',
-        stubBody1: 'Once an admin sets the Google OAuth Client ID, this button becomes active. Each team member then clicks "Connect" once to grant access.',
-        stubStatus: '⚙ Awaiting admin setup',
-        btnConnect: 'Connect Google Calendar', btnPickWeek: 'Pick a range', btnPickPerson: 'Pick a teammate',
+        featTitle1: 'Google Calendar', featSub1: 'Secure read-only integration. Only your own calendar appears here.',
+        calStatusLoading: 'Loading…',
+        calStatusNotConnected: 'Not connected',
+        calStatusConnected: 'Connected',
+        calStatusExpired: 'Session expired — reconnect',
+        calConnectTitle: 'Connect Google Calendar',
+        calConnectBody: 'Show your @exceed-re.ae calendar events here. Read-only.',
+        calConnecting: 'Connecting',
+        calConnectFailed: 'Failed to connect.',
+        calLoading: 'Loading',
+        calFetchFailed: 'Failed to load calendar.',
+        calExpired: 'Your calendar session expired.',
+        calEmpty: 'No events in the next 7 days.',
+        allDay: 'All day',
+        btnRefresh: 'Refresh', btnDisconnect: 'Disconnect', btnConnect: 'Connect Google Calendar',
+        btnRetry: 'Retry', btnReconnect: 'Reconnect',
+        btnPickWeek: 'Pick a range', btnPickPerson: 'Pick a teammate',
         'w-s1': 'Every <strong>Friday</strong>, post your plan for next week — focus areas and key meetings.',
         'w-s2': 'Free-form. e.g. <code>Mon: Tiger inspection / Tue: 3 viewings / Wed: exec MTG…</code>',
         'w-s3': 'Posts are visible to the whole team. Comment, react, riff.',
@@ -716,7 +764,206 @@
         firstName = local.charAt(0).toUpperCase() + local.slice(1);
       }
       document.getElementById('userName').textContent = firstName || 'Agent';
+      window._currentUser = user;
+      renderCalendar();
     });
+
+    /* ---------- Google Calendar ----------
+       Reads the access token stashed by index.html (Google sign-in path β).
+       If it's missing or expired, prompts the user to reconnect via popup.
+       Tokens are short-lived (~1 hour) so we never persist them past session. */
+
+    function getStoredToken() {
+      try {
+        const tok = sessionStorage.getItem('gcal_token');
+        const exp = +sessionStorage.getItem('gcal_token_exp') || 0;
+        if (tok && Date.now() < exp) return tok;
+      } catch (e) {}
+      return null;
+    }
+    function clearStoredToken() {
+      try {
+        sessionStorage.removeItem('gcal_token');
+        sessionStorage.removeItem('gcal_token_exp');
+        sessionStorage.removeItem('gcal_email');
+      } catch (e) {}
+    }
+    async function requestNewToken() {
+      const provider = new GoogleAuthProvider();
+      provider.addScope(CALENDAR_SCOPE);
+      provider.setCustomParameters({ hd: 'exceed-re.ae', prompt: 'consent' });
+      let result;
+      try {
+        // If user signed in with email/password, popup a fresh Google sign-in.
+        // If signed in with Google already, reauth picks up the new scope.
+        const u = auth.currentUser;
+        const hasGoogleProvider = u && u.providerData.some(p => p.providerId === 'google.com');
+        result = hasGoogleProvider
+          ? await reauthenticateWithPopup(u, provider)
+          : await signInWithPopup(auth, provider);
+      } catch (err) {
+        if (err && (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request')) return null;
+        throw err;
+      }
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      const token = credential && credential.accessToken;
+      if (!token) return null;
+      try {
+        sessionStorage.setItem('gcal_token', token);
+        sessionStorage.setItem('gcal_token_exp', String(Date.now() + 55 * 60 * 1000));
+        if (result.user && result.user.email) sessionStorage.setItem('gcal_email', result.user.email);
+      } catch (e) {}
+      return token;
+    }
+
+    window.connectCalendar = async function() {
+      const dict = I18N[currentLang];
+      const body = document.getElementById('calBody');
+      body.innerHTML = `<div class="cal-loading">${dict.calConnecting || 'Connecting'}</div>`;
+      try {
+        const token = await requestNewToken();
+        if (!token) { renderCalendar(); return; }
+        renderCalendar();
+      } catch (err) {
+        console.error(err);
+        body.innerHTML = `<div class="cal-error">${dict.calConnectFailed || 'Failed to connect.'}<br><button class="icon-btn" onclick="connectCalendar()">${dict.btnRetry || 'Retry'}</button></div>`;
+      }
+    };
+
+    window.disconnectCalendar = function() {
+      clearStoredToken();
+      renderCalendar();
+    };
+
+    window.refreshCalendar = function() { renderCalendar(); };
+
+    async function fetchEvents(token) {
+      const now = new Date();
+      const end = new Date(now); end.setDate(end.getDate() + 7);
+      const params = new URLSearchParams({
+        timeMin: now.toISOString(),
+        timeMax: end.toISOString(),
+        singleEvents: 'true',
+        orderBy: 'startTime',
+        maxResults: '50'
+      });
+      const res = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events?' + params, {
+        headers: { Authorization: 'Bearer ' + token }
+      });
+      if (res.status === 401 || res.status === 403) {
+        clearStoredToken();
+        const err = new Error('expired');
+        err.expired = true;
+        throw err;
+      }
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      return data.items || [];
+    }
+
+    function fmtTime(date) {
+      return new Intl.DateTimeFormat(currentLang === 'ja' ? 'ja-JP' : 'en-GB', { hour: '2-digit', minute: '2-digit' }).format(date);
+    }
+    function fmtDateHead(date) {
+      const wk = new Intl.DateTimeFormat(currentLang === 'ja' ? 'ja-JP' : 'en-GB', { weekday: 'long' }).format(date);
+      const md = new Intl.DateTimeFormat(currentLang === 'ja' ? 'ja-JP' : 'en-GB', { month: 'short', day: 'numeric' }).format(date);
+      return { wk, md };
+    }
+    function dayKey(date) {
+      return date.getFullYear() + '-' + String(date.getMonth()+1).padStart(2,'0') + '-' + String(date.getDate()).padStart(2,'0');
+    }
+
+    function renderEvents(events) {
+      const dict = I18N[currentLang];
+      if (!events.length) {
+        return `<div class="cal-empty">${dict.calEmpty || 'No events in the next 7 days.'}</div>`;
+      }
+      // Group by day key
+      const byDay = new Map();
+      events.forEach(ev => {
+        const startStr = ev.start.dateTime || ev.start.date;
+        if (!startStr) return;
+        const allDay = !ev.start.dateTime;
+        const start = new Date(startStr);
+        const k = dayKey(start);
+        if (!byDay.has(k)) byDay.set(k, []);
+        byDay.get(k).push({ ev, start, allDay });
+      });
+      const html = [...byDay.entries()].map(([k, items]) => {
+        const date = items[0].start;
+        const head = fmtDateHead(date);
+        const rows = items.map(({ ev, start, allDay }) => {
+          const end = ev.end && (ev.end.dateTime || ev.end.date) ? new Date(ev.end.dateTime || ev.end.date) : null;
+          const time = allDay
+            ? `<div class="cal-event-time allday">${dict.allDay || 'All day'}</div>`
+            : `<div class="cal-event-time">${fmtTime(start)}${end ? ' – ' + fmtTime(end) : ''}</div>`;
+          const loc = ev.location ? `<div class="cal-event-loc">${escapeHtml(ev.location)}</div>` : '';
+          return `<div class="cal-event">${time}<div><div class="cal-event-title">${escapeHtml(ev.summary || '(untitled)')}</div>${loc}</div></div>`;
+        }).join('');
+        return `<div class="cal-day"><h3 class="cal-day-head">${head.wk}<span class="meta">${head.md}</span></h3>${rows}</div>`;
+      }).join('');
+      return html;
+    }
+
+    function escapeHtml(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    async function renderCalendar() {
+      const dict = I18N[currentLang];
+      const body = document.getElementById('calBody');
+      const status = document.getElementById('calStatus');
+      const refreshBtn = document.getElementById('calRefreshBtn');
+      const disconnectBtn = document.getElementById('calDisconnectBtn');
+      if (!body) return;
+
+      const token = getStoredToken();
+      const email = (() => { try { return sessionStorage.getItem('gcal_email') || ''; } catch (e) { return ''; } })();
+
+      if (!token) {
+        // Not connected — show the connect card
+        refreshBtn.hidden = true;
+        disconnectBtn.hidden = true;
+        status.textContent = dict.calStatusNotConnected || '未連携';
+        body.innerHTML = `
+          <div class="cal-connect">
+            <div class="cal-connect-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#0a1f3d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="26" height="26"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            <h3 class="cal-connect-title">${dict.calConnectTitle || 'Googleカレンダーを連携'}</h3>
+            <p>${dict.calConnectBody || 'あなたの@exceed-re.aeカレンダーをこの画面に表示します。'}</p>
+            <button class="btn-primary" onclick="connectCalendar()">${dict.btnConnect || 'Googleカレンダーを連携'}</button>
+          </div>`;
+        return;
+      }
+
+      refreshBtn.hidden = false;
+      disconnectBtn.hidden = false;
+      status.textContent = (dict.calStatusConnected || '連携済') + (email ? ' · ' + email : '');
+      body.innerHTML = `<div class="cal-loading">${dict.calLoading || '読み込み中'}</div>`;
+      try {
+        const events = await fetchEvents(token);
+        body.innerHTML = renderEvents(events);
+      } catch (err) {
+        if (err && err.expired) {
+          // Token expired — show reconnect prompt
+          status.textContent = dict.calStatusExpired || '期限切れ — 再連携してください';
+          refreshBtn.hidden = true;
+          disconnectBtn.hidden = true;
+          body.innerHTML = `
+            <div class="cal-error">
+              ${dict.calExpired || 'カレンダー連携の有効期限が切れました。'}<br>
+              <button class="icon-btn" onclick="connectCalendar()">${dict.btnReconnect || '再連携'}</button>
+            </div>`;
+        } else {
+          console.error(err);
+          body.innerHTML = `<div class="cal-error">${dict.calFetchFailed || 'カレンダーの取得に失敗しました。'}<br><button class="icon-btn" onclick="renderCalendar()">${dict.btnRetry || '再試行'}</button></div>`;
+        }
+      }
+    }
+    // Re-render calendar UI when language switches
+    document.querySelectorAll('.lang-toggle button').forEach(b => b.addEventListener('click', () => setTimeout(renderCalendar, 0)));
 
     // ----- Init -----
     window.addEventListener('load', () => { setLang('ja'); });
