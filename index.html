@@ -1297,7 +1297,10 @@
           } catch (e) { /* sessionStorage may fail in incognito; non-fatal */ }
         }
 
-        // First sign-in: create the agents/{uid} doc from Google profile
+        // First sign-in: create the agents/{uid} doc from Google profile.
+        // Firestore rules require status='pending' on initial create — admins
+        // get auto-promoted to active+admin role in a follow-up update (which
+        // the rules allow because isAdminEmail() can update any doc).
         const ref = doc(db, 'agents', user.uid);
         const snap = await getDoc(ref);
         if (!snap.exists()) {
@@ -1309,11 +1312,15 @@
             phone:     '',
             role:      DEFAULT_ROLE,
             uid:       user.uid,
-            status:    isAdmin(user.email) ? 'active' : 'pending',
+            status:    'pending',
             photoURL:  user.photoURL || '',
             createdAt: serverTimestamp()
           });
-          // Pending agents can sign in but pages will gate them; admins active immediately
+          if (isAdmin(user.email)) {
+            try {
+              await setDoc(ref, { status: 'active', role: 'admin' }, { merge: true });
+            } catch (e) { console.warn('admin auto-promote failed', e); }
+          }
         } else {
           // Existing user — refresh photo if Google has one
           const data = snap.data();
