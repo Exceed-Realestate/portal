@@ -217,7 +217,7 @@
         <textarea id="notes" placeholder="Invoice number, lead source, payment method, etc."></textarea>
 
         <div class="btn-row">
-          <button type="button" class="ghost-btn" id="previewBtn" onclick="previewPdf()">
+          <button type="button" class="ghost-btn" id="previewBtn">
             <span data-i18n="preview">📄 PDFをプレビュー</span>
           </button>
           <button type="submit" class="submit-btn" id="submitBtn">
@@ -377,23 +377,38 @@
       };
     }
 
-    /* Preview-only: generates the PDF and triggers a download, no Firestore write. */
-    window.previewPdf = function() {
+    /* Preview-only: generates the PDF and opens it in a new tab.
+       No Firestore write, no email. Errors are surfaced via toast + console. */
+    function runPreviewPdf() {
       const dict = I18N[currentLang];
-      const payload = readFormPayload();
-      if (!payload) { showToast(dict.previewMissing, true); return; }
-      const fakeId = 'preview-' + Date.now().toString(36);
-      const b64 = buildPaymentPdfBase64(payload, fakeId);
-      const blob = new Blob(
-        [Uint8Array.from(atob(b64), c => c.charCodeAt(0))],
-        { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `Payment-Request-Preview.pdf`;
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 0);
-    };
+      try {
+        if (!(window.jspdf && window.jspdf.jsPDF)) {
+          throw new Error('jsPDF library not loaded yet — try again in a moment.');
+        }
+        const payload = readFormPayload();
+        if (!payload) { showToast(dict.previewMissing, true); return; }
+        const fakeId = 'preview-' + Date.now().toString(36);
+        const b64 = buildPaymentPdfBase64(payload, fakeId);
+        const blob = new Blob(
+          [Uint8Array.from(atob(b64), c => c.charCodeAt(0))],
+          { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        // Open the PDF inline in a new tab — most browsers render it there.
+        // If the popup gets blocked, fall back to a direct download.
+        const win = window.open(url, '_blank');
+        if (!win) {
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `Payment-Request-Preview.pdf`;
+          document.body.appendChild(a); a.click(); a.remove();
+        }
+        setTimeout(() => URL.revokeObjectURL(url), 30 * 1000);
+      } catch (err) {
+        console.error('previewPdf failed', err);
+        showToast('PDF preview failed: ' + (err.message || err), true);
+      }
+    }
+    document.getElementById('previewBtn').addEventListener('click', runPreviewPdf);
 
     /* ----- PDF generation (jsPDF) ----- */
     function buildPaymentPdfBase64(p, paymentId) {
