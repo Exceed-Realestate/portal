@@ -248,6 +248,7 @@
       orderBy, getDocs, serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
     import { sendPaymentNotifications, SMALL_AMOUNT_AED } from './payment-notify.js';
+    import { buildPaymentPdfBase64, downloadPaymentPdf } from './payment-pdf.js';
 
     /* ----- i18n ----- */
     const I18N = {
@@ -379,7 +380,7 @@
 
     /* Preview-only: generates the PDF and opens it in a new tab.
        No Firestore write, no email. Errors are surfaced via toast + console. */
-    function runPreviewPdf() {
+    async function runPreviewPdf() {
       const dict = I18N[currentLang];
       try {
         if (!(window.jspdf && window.jspdf.jsPDF)) {
@@ -388,21 +389,11 @@
         const payload = readFormPayload();
         if (!payload) { showToast(dict.previewMissing, true); return; }
         const fakeId = 'preview-' + Date.now().toString(36);
-        const b64 = buildPaymentPdfBase64(payload, fakeId);
-        const blob = new Blob(
-          [Uint8Array.from(atob(b64), c => c.charCodeAt(0))],
-          { type: 'application/pdf' });
-        const url = URL.createObjectURL(blob);
-        // Open the PDF inline in a new tab — most browsers render it there.
-        // If the popup gets blocked, fall back to a direct download.
-        const win = window.open(url, '_blank');
-        if (!win) {
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `Payment-Request-Preview.pdf`;
-          document.body.appendChild(a); a.click(); a.remove();
-        }
-        setTimeout(() => URL.revokeObjectURL(url), 30 * 1000);
+        await downloadPaymentPdf(
+          { ...payload, createdAtMs: Date.now() },
+          fakeId,
+          'Payment-Request-Preview.pdf'
+        );
       } catch (err) {
         console.error('previewPdf failed', err);
         showToast('PDF preview failed: ' + (err.message || err), true);
@@ -410,105 +401,7 @@
     }
     document.getElementById('previewBtn').addEventListener('click', runPreviewPdf);
 
-    /* ----- PDF generation (jsPDF) ----- */
-    function buildPaymentPdfBase64(p, paymentId) {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({ unit: 'pt', format: 'a4' });
-      const pageW = doc.internal.pageSize.getWidth();
-
-      // Header band
-      doc.setFillColor(10, 31, 61);
-      doc.rect(0, 0, pageW, 110, 'F');
-      doc.setTextColor(212, 184, 122);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(20);
-      doc.text('EXCEED REAL ESTATE', 40, 50);
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(10);
-      doc.setTextColor(241, 234, 216);
-      doc.text('Dubai · Finance · Payment Request', 40, 70);
-      doc.setFontSize(9);
-      doc.setTextColor(154, 168, 194);
-      doc.text(`Reference: ${paymentId}`, 40, 90);
-
-      // Body
-      doc.setTextColor(10, 31, 61);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(16);
-      doc.text('Payment Request', 40, 150);
-
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(10);
-      doc.setTextColor(80, 80, 80);
-      doc.text(`Submitted: ${new Date().toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })}`, 40, 168);
-
-      // Status pill
-      doc.setFillColor(212, 184, 122);
-      doc.roundedRect(40, 184, 130, 22, 4, 4, 'F');
-      doc.setTextColor(10, 31, 61);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(10);
-      doc.text('PENDING APPROVAL', 50, 199);
-
-      // Amount large
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(28);
-      doc.setTextColor(10, 31, 61);
-      doc.text(fmtAmount(p.amount), 40, 250);
-
-      // Field rows
-      const rows = [
-        ['Requester',   `${p.requesterName || ''}`],
-        ['Email',       `${p.requesterEmail || ''}`],
-        ['Pay to',      p.recipient || '—'],
-        ['Purpose',     p.purpose || '—'],
-        ['Category',    p.category || '—'],
-        ['Due date',    fmtDate(p.dueDate) || '—'],
-        ['Notes',       p.notes || '—'],
-        ['Approval tier', (p.amount || 0) > SMALL_AMOUNT_AED
-          ? '> 1,000 AED · CEO approval required'
-          : '≤ 1,000 AED · Mouad / Hira (CEO cc)']
-      ];
-      let y = 290;
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      for (const [k, v] of rows) {
-        doc.setTextColor(154, 168, 194);
-        doc.text(k.toUpperCase(), 40, y);
-        doc.setTextColor(10, 31, 61);
-        doc.setFont('helvetica', 'bold');
-        const lines = doc.splitTextToSize(String(v), pageW - 200);
-        doc.text(lines, 200, y);
-        doc.setFont('helvetica', 'normal');
-        y += Math.max(20, lines.length * 12 + 8);
-      }
-
-      // Approval signatures footer
-      y += 20;
-      doc.setDrawColor(212, 184, 122);
-      doc.setLineWidth(0.5);
-      doc.line(40, y, pageW - 40, y);
-      y += 22;
-      doc.setTextColor(154, 168, 194);
-      doc.setFontSize(9);
-      doc.text('Approved by:', 40, y);
-      doc.text('Date:', 280, y);
-      doc.text('Signature:', 410, y);
-      y += 26;
-      doc.line(40, y, 250, y);
-      doc.line(280, y, 380, y);
-      doc.line(410, y, pageW - 40, y);
-
-      // Footer
-      doc.setFontSize(8);
-      doc.setTextColor(154, 168, 194);
-      doc.text('Generated automatically by the Exceed Portal — exceed-realestate.github.io/portal',
-        40, doc.internal.pageSize.getHeight() - 30);
-
-      // datauristring → strip prefix → base64 only
-      const datauri = doc.output('datauristring');
-      return datauri.split(',')[1] || '';
-    }
+    /* PDF generation lives in payment-pdf.js — shared with payment-approve.html. */
 
     /* ----- Submit ----- */
     let me = null, myProfile = null;
@@ -543,7 +436,8 @@
         };
         const ref = await addDoc(collection(db, 'payments'), payload);
 
-        const pdfBase64 = buildPaymentPdfBase64(payload, ref.id);
+        const pdfBase64 = await buildPaymentPdfBase64(
+          { ...payload, createdAtMs: Date.now() }, ref.id);
         await sendPaymentNotifications(db, {
           payment: payload,
           paymentId: ref.id,
