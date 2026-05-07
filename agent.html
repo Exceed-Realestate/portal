@@ -952,44 +952,81 @@
       overflow: hidden;
       min-height: 132px;
     }
-    /* Photo background layer — sits BEHIND the gradient/text. Uses ::before
-       so we can independently tune brightness, position and a darkening
-       gradient that keeps the upper-left text legible. Tiles without a
-       --tile-bg URL fall back to the gradient-only look. */
-    .tile.has-card::before {
-      content: '';
-      position: absolute; inset: 0;
-      background-image:
-        linear-gradient(135deg,
-          rgba(10,31,61,0.78) 0%,
-          rgba(10,31,61,0.45) 45%,
-          rgba(10,31,61,0.12) 100%),
-        var(--tile-bg);
-      background-size: cover, cover;
-      background-position: center, center;
-      background-repeat: no-repeat;
-      transition: transform .5s ease, filter .3s ease;
-      z-index: 0;
-      pointer-events: none;
-    }
-    .tile.has-card:hover::before {
-      transform: scale(1.04);
-      filter: brightness(1.08) saturate(1.1);
-    }
-    /* Hide the SVG tile-art when a photo is in use — the photo IS the art. */
+    /* Photo background — applied directly to .tile.has-card[data-key].
+       Each rule stacks: a diagonal navy darkening gradient on top, the
+       photo behind it, and the navy fallback gradient at the very back
+       so legibility is guaranteed even if the image fails to load.
+       Stacking pseudo-elements with var(url(...)) was unreliable on
+       some iOS Safari versions, so the URL is inlined per rule. */
+    .tile.has-card { background-position: center; background-repeat: no-repeat; }
     .tile.has-card .tile-art { display: none; }
-    /* Per-tile photo URLs */
-    .tile[data-key="customer-register"] { --tile-bg: url('cards/customer-register.jpg'); }
-    .tile[data-key="irr"]               { --tile-bg: url('cards/irr.jpg'); }
-    .tile[data-key="availability"]      { --tile-bg: url('cards/availability.jpg'); }
-    .tile[data-key="travel"]            { --tile-bg: url('cards/travel.jpg'); }
-    .tile[data-key="team"]              { --tile-bg: url('cards/team.jpg'); }
-    .tile[data-key="deal-alert"]        { --tile-bg: url('cards/deal-alert.jpg'); }
-    .tile[data-key="book-car"]          { --tile-bg: url('cards/book-car.jpg'); }
-    .tile[data-key="payment"]           { --tile-bg: url('cards/payment.jpg'); }
-    .tile[data-key="manage-access"]     { --tile-bg: url('cards/manage-access.jpg'); }
-    .tile[data-key="listings"]          { --tile-bg: url('cards/listings.jpg'); }
-    .tile[data-key="database"]          { --tile-bg: url('cards/database.jpg'); }
+
+    .tile.has-card[data-key="customer-register"] {
+      background-image:
+        linear-gradient(135deg, rgba(10,31,61,0.80) 0%, rgba(10,31,61,0.45) 45%, rgba(10,31,61,0.12) 100%),
+        url('cards/customer-register.jpg');
+      background-size: cover, cover;
+    }
+    .tile.has-card[data-key="irr"] {
+      background-image:
+        linear-gradient(135deg, rgba(10,31,61,0.80) 0%, rgba(10,31,61,0.45) 45%, rgba(10,31,61,0.12) 100%),
+        url('cards/irr.jpg');
+      background-size: cover, cover;
+    }
+    .tile.has-card[data-key="availability"] {
+      background-image:
+        linear-gradient(135deg, rgba(10,31,61,0.80) 0%, rgba(10,31,61,0.45) 45%, rgba(10,31,61,0.12) 100%),
+        url('cards/availability.jpg');
+      background-size: cover, cover;
+    }
+    .tile.has-card[data-key="travel"] {
+      background-image:
+        linear-gradient(135deg, rgba(10,31,61,0.80) 0%, rgba(10,31,61,0.45) 45%, rgba(10,31,61,0.12) 100%),
+        url('cards/travel.jpg');
+      background-size: cover, cover;
+    }
+    .tile.has-card[data-key="team"] {
+      background-image:
+        linear-gradient(135deg, rgba(10,31,61,0.80) 0%, rgba(10,31,61,0.45) 45%, rgba(10,31,61,0.12) 100%),
+        url('cards/team.jpg');
+      background-size: cover, cover;
+    }
+    .tile.has-card[data-key="deal-alert"] {
+      background-image:
+        linear-gradient(135deg, rgba(10,31,61,0.80) 0%, rgba(10,31,61,0.45) 45%, rgba(10,31,61,0.12) 100%),
+        url('cards/deal-alert.jpg');
+      background-size: cover, cover;
+    }
+    .tile.has-card[data-key="book-car"] {
+      background-image:
+        linear-gradient(135deg, rgba(10,31,61,0.80) 0%, rgba(10,31,61,0.45) 45%, rgba(10,31,61,0.12) 100%),
+        url('cards/book-car.jpg');
+      background-size: cover, cover;
+    }
+    .tile.has-card[data-key="payment"] {
+      background-image:
+        linear-gradient(135deg, rgba(10,31,61,0.80) 0%, rgba(10,31,61,0.45) 45%, rgba(10,31,61,0.12) 100%),
+        url('cards/payment.jpg');
+      background-size: cover, cover;
+    }
+    .tile.has-card[data-key="manage-access"] {
+      background-image:
+        linear-gradient(135deg, rgba(10,31,61,0.80) 0%, rgba(10,31,61,0.45) 45%, rgba(10,31,61,0.12) 100%),
+        url('cards/manage-access.jpg');
+      background-size: cover, cover;
+    }
+    .tile.has-card[data-key="listings"] {
+      background-image:
+        linear-gradient(135deg, rgba(10,31,61,0.80) 0%, rgba(10,31,61,0.45) 45%, rgba(10,31,61,0.12) 100%),
+        url('cards/listings.jpg');
+      background-size: cover, cover;
+    }
+    .tile.has-card[data-key="database"] {
+      background-image:
+        linear-gradient(135deg, rgba(10,31,61,0.80) 0%, rgba(10,31,61,0.45) 45%, rgba(10,31,61,0.12) 100%),
+        url('cards/database.jpg');
+      background-size: cover, cover;
+    }
 
     /* ---- Per-tile accent palette ----
        Hues are kept in the same low-saturation, dusk-inspired family so
