@@ -278,7 +278,7 @@
   <div class="toast" id="toast"></div>
 
   <script type="module">
-    import { auth, db, isAdmin, can, ROLES, DEFAULT_ROLE, roleLabel, isValidRole } from './firebase-init.js';
+    import { auth, db, isAdmin, can, loadCapabilityOverrides, ROLES, DEFAULT_ROLE, roleLabel, isValidRole } from './firebase-init.js';
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
     import { collection, getDocs, query, orderBy, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
@@ -453,12 +453,15 @@
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) { window.location.href = 'index.html'; return; }
+      await loadCapabilityOverrides(db);
       let role = null;
       try {
         const snap = await getDoc(doc(db, 'agents', user.uid));
         if (snap.exists()) role = snap.data().role || null;
       } catch (e) {}
-      if (!can(role, 'viewAllAgents', user.email)) { renderDenied(); return; }
+      // Per Balraj — Registered Agents page is admin-only. Use 'changeRoles'
+      // (admin) as the page gate, not the broader 'viewAllAgents'.
+      if (!can(role, 'changeRoles', user.email)) { renderDenied(); return; }
       canApprove      = can(role, 'approveAgents', user.email);
       canChangeRoles  = can(role, 'changeRoles',   user.email);
       renderLoading();
