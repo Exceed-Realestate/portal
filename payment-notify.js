@@ -23,6 +23,13 @@ export const FINANCE = {
 
 export const SMALL_AMOUNT_AED = 1000;
 
+/* Payment-email kill-switch — Balraj wants payment emails to come from a
+   dedicated finance address, not the portal's general SMTP sender. Until
+   that mailbox is set up, skip writing to /mail. The in-portal bell +
+   Firestore /payments record still work normally. Flip back to false to
+   re-enable email dispatch. */
+const SKIP_EMAIL = true;
+
 /* Who is allowed to approve a given payment request. */
 export function canApprovePayment(p, role, email) {
   const e = (email || '').toLowerCase();
@@ -207,7 +214,9 @@ export async function sendPaymentNotifications(db,
     ? `${payment.requesterName || 'Exceed team'} <${payment.requesterEmail}>`
     : undefined;
 
-  const writes = recipients.map(to => {
+  // Skip emails entirely while SKIP_EMAIL is true. The /payments doc and
+  // in-portal bell still fire — only the outbound mail queue is bypassed.
+  const writes = SKIP_EMAIL ? [] : recipients.map(to => {
     const message = { subject, html, text };
     if (attachments) message.attachments = attachments;
     const doc = {
