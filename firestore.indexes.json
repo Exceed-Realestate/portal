@@ -7,6 +7,14 @@
         { "fieldPath": "forUid",    "order": "ASCENDING" },
         { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "travel",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "uid",  "order": "ASCENDING" },
+        { "fieldPath": "from", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

@@ -669,21 +669,28 @@
     function subscribeTrips() {
       if (!_me) return;
       const todayISO = new Date().toISOString().slice(0, 10);
+      // Sort client-side to avoid needing a composite (uid, from) index
+      // — keeps things working immediately on a fresh deploy.
+      const byFromAsc = (a, b) => (a[1].from || '').localeCompare(b[1].from || '');
+
       const qMine = query(collection(db, 'travel'),
-        where('uid', '==', _me.uid),
-        orderBy('from', 'asc'));
+        where('uid', '==', _me.uid));
       onSnapshot(qMine, (snap) => {
         const list = [];
         snap.forEach(d => { const t = d.data(); if ((t.to || '') >= todayISO) list.push([d.id, t]); });
+        list.sort(byFromAsc);
         renderTrips('myTripsWrap', list, true, 'emptyTravel');
       }, (err) => console.warn('mine onSnapshot', err));
-      const qTeam = query(collection(db, 'travel'), orderBy('from', 'asc'));
+
+      // No where on team — just stream all and filter mine out client-side.
+      const qTeam = query(collection(db, 'travel'));
       onSnapshot(qTeam, (snap) => {
         const list = [];
         snap.forEach(d => {
           const t = d.data();
           if (t.uid !== _me.uid && (t.to || '') >= todayISO) list.push([d.id, t]);
         });
+        list.sort(byFromAsc);
         renderTrips('teamTripsWrap', list, false, 'emptyTeamTravel');
       }, (err) => console.warn('team onSnapshot', err));
     }
