@@ -66,8 +66,10 @@
         url('skyline.jpg') center/cover no-repeat;
       display: flex;
       flex-direction: column;
-      padding: 36px 48px;
+      padding: 32px 38px;
+      min-width: 0;     /* allows children to shrink when the col is narrow */
     }
+    @media (max-width: 1100px) { .auth-hero { padding: 28px 28px; } }
     @media (max-width: 880px) { .auth-hero { padding: 22px 22px 26px; } }
 
     .auth-hero::after {
@@ -82,26 +84,43 @@
     .hero-brand {
       display: inline-flex; align-items: center; gap: 12px;
       text-decoration: none; color: inherit;
+      max-width: 100%;
+      min-width: 0;
     }
     .hero-brand img {
       width: 44px; height: 44px; border-radius: 10px;
       box-shadow: 0 6px 18px -6px rgba(0,0,0,0.5);
+      flex: 0 0 44px;
     }
     .hero-brand .brand-name {
       font-family: 'Playfair Display', serif;
       font-weight: 600;
-      letter-spacing: 2.6px;
-      font-size: 16px;
+      letter-spacing: 2.2px;
+      font-size: 15px;
+      min-width: 0;
+      overflow: hidden;
+      white-space: normal;
+      line-height: 1.15;
     }
     .hero-brand .brand-name span { color: var(--gold); font-weight: 400; }
     .hero-brand .brand-name small {
       display: block;
       font-family: 'Inter', sans-serif;
       font-weight: 600;
-      letter-spacing: 3px;
-      font-size: 10px;
+      letter-spacing: 2.2px;
+      font-size: 9.5px;
       color: var(--muted);
       margin-top: 4px;
+      white-space: normal;
+    }
+    /* Tighten further on narrow viewports so it never overruns the column. */
+    @media (max-width: 1100px) {
+      .hero-brand .brand-name { font-size: 13.5px; letter-spacing: 1.8px; }
+      .hero-brand .brand-name small { font-size: 9px; letter-spacing: 1.8px; }
+    }
+    @media (max-width: 880px) {
+      .hero-brand img { width: 38px; height: 38px; flex: 0 0 38px; }
+      .hero-brand .brand-name { font-size: 13px; letter-spacing: 1.6px; }
     }
 
     .hero-content {
@@ -617,7 +636,9 @@
       ja: {
         brandSub: 'ドバイ · オフプラン & 中古',
         eyebrow: 'おかえりなさい',
-        welcomeTitle: 'Exceed<br>ポータルへ',
+        // Brand line stays in English even in JA — Balraj wants the
+        // "Welcome to Exceed Portal" headline as a consistent brand mark.
+        welcomeTitle: 'Welcome to<br>Exceed Portal',
         welcomeTag: 'ドバイで最も洗練された不動産ワークスペース — リスティング、案件管理、IRR シミュレーター、チーム共有まで一つに。',
         signinEyebrow: 'EXCEED PORTAL',
         signinTitle: 'サインイン',

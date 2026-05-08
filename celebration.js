@@ -578,21 +578,27 @@
     playFanfare(ctx, climax + 0.08);
   }
 
-  // Screen-recording — uses getDisplayMedia (user picks tab/screen, ~10s capture)
-  async function recordCelebration() {
+  // Download the celebration as a WebM video.
+  // Uses getDisplayMedia with preferCurrentTab so Chrome / Edge auto-pre-
+  // select the current tab in the share picker — user just clicks Share
+  // and the 11-second capture downloads automatically when it ends.
+  // Safari falls back to the standard picker (Safari 17+).
+  async function downloadCelebrationVideo() {
     if (!navigator.mediaDevices?.getDisplayMedia || !window.MediaRecorder) {
-      alert('Screen recording is not supported in this browser. Try Chrome/Edge/Brave.');
+      alert('Video download is not supported in this browser. Try Chrome / Edge.');
       return;
     }
     let stream;
     try {
       stream = await navigator.mediaDevices.getDisplayMedia({
         video: { frameRate: 30, displaySurface: 'browser' },
-        audio: true
+        audio: false,
+        // Chrome/Edge: pre-select this tab so user doesn't have to hunt for it.
+        preferCurrentTab: true,
+        selfBrowserSurface: 'include'
       });
     } catch (e) {
-      // User cancelled or denied
-      return;
+      return; // user cancelled
     }
     const recIndicator = document.querySelector('.celeb-recording');
     if (recIndicator) recIndicator.classList.add('active');
@@ -615,9 +621,7 @@
       if (recIndicator) recIndicator.classList.remove('active');
     };
     rec.start();
-    // Stream ended early (user clicked Stop sharing) → finalise
     stream.getVideoTracks()[0].addEventListener('ended', () => { if (rec.state !== 'inactive') rec.stop(); });
-    // Auto-stop after 11s (covers full celebration + a tail)
     setTimeout(() => { if (rec.state !== 'inactive') rec.stop(); }, 11000);
   }
 
@@ -693,11 +697,11 @@
 
     // Action buttons
     const actions = $el('div', { class: 'celeb-actions' });
-    const recBtn = $el('button', {
-      class: 'celeb-btn primary', onclick: recordCelebration
+    const dlBtn = $el('button', {
+      class: 'celeb-btn primary', onclick: downloadCelebrationVideo
     }, [
-      $el('span', { html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>' }),
-      'Record Video'
+      $el('span', { html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>' }),
+      'Download Video'
     ]);
     const replayBtn = $el('button', {
       class: 'celeb-btn', onclick: () => { close(); setTimeout(() => trigger(data), 450); }
@@ -705,7 +709,7 @@
       $el('span', { html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>' }),
       'Replay'
     ]);
-    actions.appendChild(recBtn);
+    actions.appendChild(dlBtn);
     actions.appendChild(replayBtn);
     left.appendChild(actions);
 
@@ -768,5 +772,6 @@
 
   window.triggerCelebration = trigger;
   window.closeCelebration = close;
-  window.recordCelebration = recordCelebration;
+  window.recordCelebration = downloadCelebrationVideo;        // legacy alias
+  window.downloadCelebrationVideo = downloadCelebrationVideo;
 })();
