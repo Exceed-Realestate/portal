@@ -367,7 +367,9 @@
               id: matchedAgent.id,
               name: m.name,
               nameJa: m.nameJa || '',
-              photo: m.photo || matchedAgent.photoURL || '',
+              // Prefer the agent's self-uploaded photo over the team-tree
+              // path, then fall back to a Firebase Auth photoURL.
+              photo: matchedAgent.photoBase64 || m.photo || matchedAgent.photoURL || '',
               role: m.role || matchedAgent.role,
               accessRole: matchedAgent.role,
               section: sec
@@ -387,7 +389,7 @@
           id: a.id,
           name: fullName,
           nameJa: '',
-          photo: a.photoURL || '',
+          photo: a.photoBase64 || a.photoURL || '',
           role: a.role,
           accessRole: a.role,
           section: '—'

@@ -1372,6 +1372,10 @@
         if (!merged.phoneDisplay) merged.phoneDisplay = a.phone;
       }
       if (!merged.uid && a.uid) merged.uid = a.uid;
+      // Prefer the user's self-uploaded profile photo over the team-config
+      // photo path. Lets each member control their own avatar via the
+      // dashboard "My Profile" modal.
+      if (a.photoBase64) merged.photo = a.photoBase64;
       // Name: upgrade short placeholders ("MOUAD") to the registered full
       // name from /agents ("Mouad Khaled"). Don't touch entries that
       // already look like a complete name (≥ 2 words AND ≥ 8 chars) so
