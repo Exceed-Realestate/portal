@@ -211,23 +211,11 @@
         display: inline-block;
         filter: drop-shadow(0 12px 24px rgba(0,0,0,.5));
       }
-      /* 3D layered shadow stack */
-      .celeb-amount::before {
-        content: attr(data-text);
-        position: absolute; left: 4px; top: 4px;
-        background: linear-gradient(135deg, rgba(0,0,0,0.4), rgba(0,0,0,0.1));
-        -webkit-background-clip: text; background-clip: text;
-        color: transparent;
-        z-index: -1;
-      }
-      .celeb-amount::after {
-        content: attr(data-text);
-        position: absolute; left: 8px; top: 8px;
-        background: linear-gradient(135deg, rgba(0,0,0,0.25), rgba(0,0,0,0));
-        -webkit-background-clip: text; background-clip: text;
-        color: transparent;
-        z-index: -2;
-      }
+      /* The 3D layered shadow stack used to render two more copies of
+         the amount text via ::before/::after — but on Safari with a
+         long number the offsets read as a ghosted duplicate beneath
+         the main text instead of a 3D effect. Dropped — the existing
+         filter:drop-shadow on the main element gives plenty of depth. */
 
       /* Floating $ particles around the amount */
       .celeb-cash-burst {
@@ -441,10 +429,10 @@
   }
 
   function fmtAmount(n, currency = 'AED') {
+    // Always show the full number with thousands separators — Balraj wants
+    // "1,000,000 AED" on the celebration screen, not "1M".
     const num = Number(n) || 0;
-    if (num >= 1_000_000) return (num / 1_000_000).toFixed(num % 1_000_000 ? 2 : 0).replace(/\.?0+$/, '') + 'M';
-    if (num >= 1_000)     return (num / 1_000).toFixed(num % 1_000 ? 1 : 0).replace(/\.?0+$/, '') + 'K';
-    return num.toLocaleString();
+    return num.toLocaleString('en-US');
   }
 
   function countUp(el, target, currency, durationMs) {
