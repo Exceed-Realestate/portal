@@ -182,11 +182,34 @@
       </div>
 
       <form id="dealForm" onsubmit="event.preventDefault(); submitDeal();">
+        <!-- Native HTML5 datalist powering the team-member typeahead. Populated
+             from teamConfig/main on load — auto-suggests as you type. -->
+        <datalist id="teamMembersDl"></datalist>
+
         <div class="row full">
           <div class="field">
             <label>Closer(s)</label>
             <div class="closers-input" id="closersInput"></div>
             <button type="button" class="add-closer-btn" onclick="addCloser()">+ Add another closer</button>
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Deal type</label>
+            <select id="dealType">
+              <option value="new">New deal</option>
+              <option value="secondary">Secondary</option>
+              <option value="rent">Rent</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Lead source</label>
+            <select id="leadSource">
+              <option value="marketing">Marketing</option>
+              <option value="personal">Personal lead</option>
+              <option value="referral">Referral</option>
+              <option value="other">Other</option>
+            </select>
           </div>
         </div>
         <div class="row">
@@ -215,11 +238,7 @@
             </select>
           </div>
         </div>
-        <div class="row">
-          <div class="field">
-            <label>Lead source</label>
-            <input type="text" id="leadSource" placeholder="Personal Lead / Marketing / Referral" />
-          </div>
+        <div class="row full">
           <div class="field">
             <label>Custom message (optional)</label>
             <input type="text" id="customMsg" placeholder="More to come, Insha'Allah 🤲🏼" />
@@ -253,7 +272,7 @@
   <script type="module">
     import { auth, db, isAdmin } from './firebase-init.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-    import { collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    import { doc as fdoc, getDoc, collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
     // Authorised submitters — admin emails plus explicit Malik/Shoya placeholders.
     // Update with their real @exceed-re.ae emails when known.
@@ -268,6 +287,50 @@
     let currentUser = null;
     let canSubmit = false;
     let closerCount = 0;
+    /* Team roster — populated from teamConfig/main on load. Powers the
+       closer typeahead and supplies the photo path for each match. */
+    let teamRoster = [];
+
+    const TEAM_SECTIONS = [
+      'ceo', 'board', 'japan-sales', 'dubai-sales', 'lombok',
+      'dubai-office', 'japan-office', 'partners'
+    ];
+
+    async function loadTeamRoster() {
+      try {
+        const snap = await getDoc(fdoc(db, 'teamConfig', 'main'));
+        if (!snap.exists()) return;
+        const cfg = snap.data();
+        const seen = new Set();
+        const list = [];
+        for (const section of TEAM_SECTIONS) {
+          const arr = cfg[section];
+          if (!Array.isArray(arr)) continue;
+          for (const m of arr) {
+            if (!m || !m.name) continue;
+            const key = m.name.toLowerCase();
+            if (seen.has(key)) continue;
+            seen.add(key);
+            list.push({
+              name: m.name,
+              email: m.email || '',
+              photo: m.image || ''
+            });
+          }
+        }
+        list.sort((a, b) => a.name.localeCompare(b.name));
+        teamRoster = list;
+        renderClosersDatalist();
+      } catch (e) { console.warn('[deal-alert] team roster load failed', e); }
+    }
+
+    function renderClosersDatalist() {
+      const dl = document.getElementById('teamMembersDl');
+      if (!dl) return;
+      dl.innerHTML = teamRoster.map(m =>
+        `<option value="${m.name.replace(/"/g, '&quot;')}"></option>`
+      ).join('');
+    }
 
     function showToast(msg) {
       const t = document.getElementById('toast');
@@ -277,35 +340,51 @@
       t._tm = setTimeout(() => t.classList.remove('show'), 3000);
     }
 
-    window.addCloser = function(name = '', photo = '') {
+    window.addCloser = function(name = '') {
       const wrap = document.getElementById('closersInput');
       const idx = ++closerCount;
       const row = document.createElement('div');
       row.className = 'closer-row';
       row.dataset.idx = idx;
       row.innerHTML = `
-        <input type="text" class="closer-name" placeholder="Closer name (e.g. TERUO SHIMADA)" value="${name.replace(/"/g,'&quot;')}" />
-        <input type="text" class="closer-photo" placeholder="Photo path (optional)" value="${photo.replace(/"/g,'&quot;')}" style="max-width:200px" />
+        <input type="text" class="closer-name" list="teamMembersDl"
+               placeholder="Type to search team members…"
+               value="${name.replace(/"/g,'&quot;')}"
+               autocomplete="off" />
         <button type="button" class="del" onclick="this.parentElement.remove()" title="Remove">×</button>
       `;
       wrap.appendChild(row);
     };
 
     function readClosers() {
-      return [...document.querySelectorAll('.closer-row')].map(r => ({
-        name: r.querySelector('.closer-name').value.trim(),
-        photo: r.querySelector('.closer-photo').value.trim()
-      })).filter(c => c.name);
+      return [...document.querySelectorAll('.closer-row')].map(r => {
+        const name = r.querySelector('.closer-name').value.trim();
+        // If the typed name matches a team-roster entry, pull the photo
+        // path from there. Free-text names (off-roster) just save without.
+        const member = teamRoster.find(m => m.name.toLowerCase() === name.toLowerCase());
+        return { name, photo: member ? member.photo : '' };
+      }).filter(c => c.name);
     }
 
+    /* Human-readable label for each Deal Type / Lead Source select value. */
+    const DEAL_TYPE_LABELS = { new: 'New deal', secondary: 'Secondary', rent: 'Rent' };
+    const LEAD_SOURCE_LABELS = {
+      marketing: 'Marketing', personal: 'Personal lead',
+      referral: 'Referral', other: 'Other'
+    };
     function readDeal() {
+      const dealType = document.getElementById('dealType').value;
+      const leadSource = document.getElementById('leadSource').value;
       return {
         closers: readClosers(),
         propertyType: document.getElementById('propType').value.trim(),
         property: document.getElementById('propName').value.trim(),
         amount: Number(document.getElementById('amount').value) || 0,
         currency: document.getElementById('currency').value,
-        leadSource: document.getElementById('leadSource').value.trim(),
+        dealType,
+        dealTypeLabel: DEAL_TYPE_LABELS[dealType] || dealType,
+        leadSource,
+        leadSourceLabel: LEAD_SOURCE_LABELS[leadSource] || leadSource,
         message: document.getElementById('customMsg').value.trim() || "More to come, Insha'Allah 🤲🏼"
       };
     }
@@ -338,7 +417,6 @@
     };
 
     window.previewDemo = function() {
-      // The CEO Teruo demo deal (10M AED) the user requested
       triggerCelebration({
         closers: [
           { name: 'TERUO SHIMADA', photo: 'team/teruo-shimada.png' }
@@ -347,7 +425,10 @@
         property: 'Bulgari Residences, Jumeirah Bay Island',
         amount: 10000000,
         currency: 'AED',
-        leadSource: 'Personal Lead',
+        dealType: 'new',
+        dealTypeLabel: 'New deal',
+        leadSource: 'personal',
+        leadSourceLabel: 'Personal lead',
         message: "More to come, Insha'Allah 🤲🏼  Let's gooooo! 📈🚀"
       });
     };
@@ -401,6 +482,7 @@
       // if (!canSubmit) { ...lock the form... }
       canSubmit = true;
       loadAlerts();
+      loadTeamRoster();
     });
 
     // Seed one closer row on load

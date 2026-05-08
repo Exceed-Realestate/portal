@@ -162,13 +162,31 @@
 
       .celeb-names {
         font-family: 'Playfair Display', 'Noto Serif JP', serif;
-        font-size: clamp(28px, 4vw, 52px);
-        font-weight: 700;
-        margin: 0 0 14px;
+        font-size: clamp(36px, 5.5vw, 78px);
+        font-weight: 800;
+        margin: 0 0 18px;
         color: #fff;
-        letter-spacing: -0.5px;
-        line-height: 1.1;
-        text-shadow: 0 4px 18px rgba(0,0,0,.6);
+        letter-spacing: -0.8px;
+        line-height: 1.05;
+        text-shadow:
+          0 4px 18px rgba(0,0,0,.6),
+          0 0 36px rgba(255,209,102,0.45);
+        animation: celeb-name-pulse 2.4s ease-in-out 1.4s infinite;
+      }
+      @keyframes celeb-name-pulse {
+        0%, 100% {
+          text-shadow:
+            0 4px 18px rgba(0,0,0,.6),
+            0 0 36px rgba(255,209,102,0.45);
+          transform: scale(1);
+        }
+        50% {
+          text-shadow:
+            0 4px 18px rgba(0,0,0,.6),
+            0 0 60px rgba(255,209,102,0.85),
+            0 0 100px rgba(255,154,86,0.55);
+          transform: scale(1.025);
+        }
       }
 
       /* AMOUNT — neon-green-to-gold cash gradient with 3D depth */
@@ -178,10 +196,10 @@
       }
       .celeb-amount {
         font-family: 'Playfair Display', 'Noto Serif JP', serif;
-        font-size: clamp(54px, 8.5vw, 116px);
+        font-size: clamp(72px, 11.5vw, 168px);
         font-weight: 900;
         line-height: 0.95;
-        letter-spacing: -2px;
+        letter-spacing: -3px;
         background: linear-gradient(135deg, #5cf08a 0%, #5cc98f 25%, #ffd166 60%, #ff9a40 100%);
         -webkit-background-clip: text; background-clip: text;
         color: transparent;
@@ -294,9 +312,9 @@
 
       .celeb-photo-frame {
         position: relative;
-        width: clamp(280px, 42vw, 560px);
-        height: clamp(360px, 70vh, 720px);
-        max-height: 84vh;
+        width: clamp(340px, 52vw, 720px);
+        height: clamp(440px, 80vh, 880px);
+        max-height: 90vh;
         perspective: 1200px;
       }
       .celeb-photo-inner {
