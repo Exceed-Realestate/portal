@@ -170,6 +170,23 @@ service cloud.firestore {
         || (isSignedIn() && resource.data.uid == request.auth.uid);
     }
 
+    // ------- Database files (Internal / Developer / Lombok / Japan library) -------
+    // Each doc: { section, subcategory, name, storagePath, size, type,
+    //   uploadedBy, uploadedByName, uploadedByEmail, downloadUrl, createdAt }
+    // The actual file blobs live in Firebase Storage at the storagePath;
+    // these docs are the searchable / orderable index.
+    match /databaseFiles/{fileId} {
+      allow read, list: if isSignedIn();
+      allow create: if isSignedIn()
+        && request.resource.data.uploadedBy == request.auth.uid
+        && request.resource.data.section is string
+        && request.resource.data.name is string
+        && request.resource.data.storagePath is string;
+      // Only admin or the original uploader can delete (matches storage rules).
+      allow update, delete: if isAdminEmail()
+        || (isSignedIn() && resource.data.uploadedBy == request.auth.uid);
+    }
+
     // ------- Outbound email queue -------
     // The Trigger Email Firebase extension watches this collection; any doc
     // written here gets sent. Cloud Functions use admin SDK so they bypass

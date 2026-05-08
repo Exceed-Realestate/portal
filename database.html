@@ -13,535 +13,711 @@
   <meta name="apple-mobile-web-app-title" content="Exceed">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
   <script src="pwa-init.js" defer></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@500;600&display=swap" rel="stylesheet">
+  <script src="theme-init.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@500;600&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="liquid.css">
   <style>
-    :root { --navy-0:#051428; --navy-1:#0a1f3d; --navy-2:#102a4f; --line:rgba(255,255,255,0.10); --line-strong:rgba(255,255,255,0.18); --text:#f5f7fb; --muted:#9aa8c2; --gold:#d4b87a; --cream:#f1ead8; --green:#5cc98f; --radius:14px; }
+    :root { --navy-0:#051428; --navy-1:#0a1f3d; --navy-2:#102a4f; --line:rgba(255,255,255,0.10); --line-strong:rgba(255,255,255,0.18); --text:#f5f7fb; --muted:#9aa8c2; --gold:#d4b87a; --cream:#f1ead8; --green:#5cc98f; --red:#ff6b6b; --radius:14px; }
     * { box-sizing: border-box; }
     html, body { margin: 0; padding: 0; }
     html { background: var(--navy-0); }
-    body { font-family: 'Noto Sans JP', 'Inter', sans-serif; background: radial-gradient(900px 600px at 80% -10%, rgba(212,184,122,0.08), transparent 60%), radial-gradient(800px 600px at -10% 110%, rgba(23,54,99,0.6), transparent 60%), var(--navy-0); color: var(--text); min-height: 100vh; }
+    body {
+      font-family: 'Noto Sans JP', 'Inter', sans-serif;
+      background: radial-gradient(1100px 600px at 80% -10%, rgba(212,184,122,0.08), transparent 60%),
+                  radial-gradient(900px 700px at -10% 110%, rgba(23,54,99,0.6), transparent 60%),
+                  var(--navy-0);
+      color: var(--text); min-height: 100vh;
+    }
 
-    .topbar { display: flex; align-items: center; justify-content: space-between; padding: 16px 32px; border-bottom: 1px solid var(--line); backdrop-filter: blur(8px); background: rgba(5,20,40,0.7); position: sticky; top: 0; z-index: 10; }
+    .topbar { display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 32px; border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(8px); background: rgba(5,20,40,0.7);
+      position: sticky; top: 0; z-index: 10;
+    }
     .brand { display: flex; align-items: center; gap: 12px; cursor: pointer; }
     .brand img { width: 40px; height: 40px; border-radius: 8px; }
     .brand-name { font-family: 'Playfair Display', serif; letter-spacing: 2px; font-weight: 600; }
     .brand-name span { color: var(--gold); font-weight: 400; }
     .topbar-right { display: flex; align-items: center; gap: 14px; color: var(--muted); font-size: 13px; }
-    .topbar-right strong { color: var(--cream); font-weight: 600; }
-    .icon-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--line); color: var(--text); padding: 8px 14px; border-radius: 8px; cursor: pointer; font-family: inherit; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; transition: background .2s, border-color .2s; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
-    .icon-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--line-strong); }
+    .icon-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--line);
+      color: var(--text); padding: 8px 14px; border-radius: 8px; cursor: pointer;
+      font-family: inherit; font-size: 12px; letter-spacing: 1px; text-transform: uppercase;
+      transition: background .2s; display: inline-flex; align-items: center; gap: 8px;
+      text-decoration: none;
+    }
+    .icon-btn:hover { background: rgba(255,255,255,0.1); }
     .icon-btn svg { width: 14px; height: 14px; }
-    .lang-toggle { display: inline-flex; align-items: center; background: rgba(255,255,255,0.05); border: 1px solid var(--line); border-radius: 999px; padding: 4px; position: relative; }
-    .lang-toggle button { background: transparent; border: none; color: var(--muted); font-family: inherit; font-size: 12px; font-weight: 600; letter-spacing: 1px; padding: 6px 12px; border-radius: 999px; cursor: pointer; transition: color .25s; position: relative; z-index: 1; }
-    .lang-toggle button.active { color: var(--navy-0); }
-    .lang-toggle .pill { position: absolute; top: 4px; bottom: 4px; background: var(--cream); border-radius: 999px; transition: transform .35s cubic-bezier(.34,1.56,.64,1), width .35s ease; z-index: 0; }
+    .lang-toggle { display: inline-flex; gap: 4px; background: rgba(255,255,255,0.04); padding: 4px; border-radius: 999px; border: 1px solid var(--line); }
+    .lang-toggle button { background: none; border: 0; padding: 5px 12px; color: var(--muted); font-size: 11px; letter-spacing: 1px; cursor: pointer; border-radius: 999px; font-family: inherit; }
+    .lang-toggle button.active { background: var(--gold); color: var(--navy-1); font-weight: 700; }
 
-    .page-head { max-width: 1400px; margin: 0 auto; padding: 36px 32px 0; }
-    .page-head .eyebrow { color: var(--gold); letter-spacing: 5px; font-size: 11px; text-transform: uppercase; margin-bottom: 10px; }
-    .page-head h1 { font-family: 'Noto Serif JP', 'Playfair Display', serif; font-weight: 500; font-size: clamp(28px, 4vw, 40px); margin: 0 0 8px; }
-    .page-head .lede { color: var(--muted); font-size: 14px; max-width: 720px; margin: 0; line-height: 1.6; }
+    .page-head { max-width: 1200px; margin: 0 auto; padding: 32px 32px 0; }
+    .page-head .eyebrow { color: var(--gold); letter-spacing: 5px; font-size: 11px; text-transform: uppercase; margin-bottom: 10px; font-weight: 700; }
+    .page-head h1 { font-family: 'Playfair Display', serif; font-weight: 600; font-size: clamp(28px, 4vw, 42px); margin: 0 0 8px; }
+    .page-head .lede { color: var(--muted); font-size: 14px; max-width: 760px; margin: 0; line-height: 1.6; }
 
     .global-search {
-      max-width: 1400px;
-      margin: 24px auto 0;
-      padding: 0 32px;
+      max-width: 1200px; margin: 22px auto 0; padding: 0 32px;
+      display: flex; gap: 12px; align-items: center;
     }
-    .gs-wrap {
-      display: flex; align-items: center; gap: 12px;
-      background: linear-gradient(180deg, rgba(212,184,122,0.10), rgba(212,184,122,0.04));
-      border: 1px solid rgba(212,184,122,0.35);
-      border-radius: 14px;
-      padding: 14px 20px;
-      transition: border-color .2s, box-shadow .2s;
+    .global-search input {
+      flex: 1; background: rgba(5,20,40,0.7); border: 1px solid var(--line);
+      color: var(--text); border-radius: 10px; padding: 12px 16px;
+      font-family: inherit; font-size: 14px;
     }
-    .gs-wrap:focus-within { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(212,184,122,0.12); }
-    .gs-wrap svg { width: 20px; height: 20px; color: var(--gold); flex: none; }
-    .gs-wrap input { flex: 1; background: transparent; border: none; outline: none; color: var(--text); font-family: inherit; font-size: 16px; }
-    .gs-wrap input::placeholder { color: var(--muted); }
-    .gs-meta { color: var(--muted); font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; }
+    .global-search input:focus { outline: none; border-color: var(--gold); }
 
-    /* Sub-tabs */
-    .subtabs-wrap { max-width: 1400px; margin: 28px auto 0; padding: 0 32px; border-bottom: 1px solid var(--line); }
-    .subtabs { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: thin; -webkit-overflow-scrolling: touch; padding-bottom: 0; }
-    .subtabs::-webkit-scrollbar { height: 4px; }
-    .subtabs::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 4px; }
-    .dev-tab {
-      display: inline-flex; align-items: center; gap: 10px;
-      background: transparent;
-      border: none;
-      color: var(--muted);
-      font-family: inherit;
-      font-size: 13px;
-      font-weight: 500;
-      padding: 10px 14px;
-      cursor: pointer;
-      position: relative;
-      transition: color .2s;
+    /* ===== Top tabs ===== */
+    .top-tabs-wrap {
+      max-width: 1200px; margin: 24px auto 0; padding: 0 32px;
+      border-bottom: 1px solid var(--line);
+    }
+    .top-tabs { display: flex; gap: 4px; overflow-x: auto; }
+    .top-tab {
+      background: transparent; border: 0;
+      padding: 14px 20px; color: var(--muted);
+      font-family: inherit; font-size: 14px; font-weight: 700;
+      letter-spacing: 1.2px; text-transform: uppercase;
+      cursor: pointer; position: relative;
       white-space: nowrap;
-      flex: none;
-      letter-spacing: 0.3px;
     }
-    .dev-tab .logo {
-      width: 28px; height: 28px;
-      border-radius: 7px;
-      display: grid; place-items: center;
-      font-family: 'Playfair Display', serif;
-      font-weight: 700;
-      font-size: 11px;
+    .top-tab:hover { color: var(--cream); }
+    .top-tab.active { color: var(--gold); }
+    .top-tab.active::after {
+      content: ''; position: absolute; bottom: -1px; left: 14px; right: 14px;
+      height: 2px; background: var(--gold); border-radius: 2px;
+    }
+    .top-tab .count {
+      display: inline-block; margin-left: 8px; padding: 2px 8px;
+      border-radius: 999px; background: rgba(255,255,255,0.06);
+      border: 1px solid var(--line);
+      font-size: 10.5px; font-weight: 600; letter-spacing: 0.6px;
+      color: var(--muted);
+      text-transform: none;
+    }
+    .top-tab.active .count {
+      background: rgba(212,184,122,0.16); color: var(--gold);
+      border-color: rgba(212,184,122,0.4);
+    }
+
+    /* ===== Sub-categories ===== */
+    main { max-width: 1200px; margin: 0 auto; padding: 24px 32px 80px; }
+    .subcats { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 22px; }
+    .subcat {
+      padding: 8px 14px; border-radius: 999px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-family: inherit; font-size: 12px; font-weight: 600;
       letter-spacing: 0.5px;
-      flex: none;
-      overflow: hidden;
-      position: relative;
-    }
-    .dev-tab .logo img {
-      position: absolute; inset: 0;
-      width: 100%; height: 100%;
-      object-fit: contain;
-      padding: 4px;
-      background: rgba(255,255,255,0.95);
-      border-radius: inherit;
-    }
-    .dev-tab:hover { color: var(--cream); }
-    .dev-tab.active { color: var(--gold); }
-    .dev-tab.active::after { content: ''; position: absolute; bottom: -1px; left: 8px; right: 8px; height: 2px; background: var(--gold); border-radius: 2px; }
-    .dev-tab .count {
-      display: inline-block; margin-left: 4px;
-      padding: 1px 7px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      font-size: 10px;
-      color: var(--muted);
-    }
-    .dev-tab.active .count { background: rgba(212,184,122,0.15); border-color: rgba(212,184,122,0.4); color: var(--gold); }
-
-    /* Panel */
-    .panel { display: none; max-width: 1400px; margin: 0 auto; padding: 30px 32px 80px; }
-    .panel.active { display: block; }
-
-    .dev-hero {
-      display: flex; align-items: center; gap: 18px;
-      padding: 22px 24px;
-      background: var(--dev-bg, linear-gradient(135deg, #1a2540, #0a1224));
-      border: 1px solid var(--dev-line, var(--line));
-      border-radius: var(--radius);
-      margin-bottom: 22px;
-      position: relative;
-      overflow: hidden;
-    }
-    .dev-hero::before {
-      content: ''; position: absolute; inset: 0;
-      background: radial-gradient(circle at 100% 0%, var(--dev-glow, rgba(255,255,255,0.05)), transparent 60%);
-      pointer-events: none;
-    }
-    .dev-hero .logo-big {
-      width: 96px; height: 96px;
-      border-radius: 16px;
-      background: rgba(255,255,255,0.95);
-      display: grid; place-items: center;
-      font-family: 'Playfair Display', serif;
-      font-weight: 700;
-      font-size: 32px;
-      color: var(--dev-fg, #000);
-      letter-spacing: 1.5px;
-      flex: none;
-      box-shadow: 0 14px 36px -10px rgba(0,0,0,.6);
-      position: relative;
-      z-index: 1;
-      overflow: hidden;
-    }
-    .dev-hero .logo-big img {
-      position: absolute; inset: 0;
-      width: 100%; height: 100%;
-      object-fit: contain;
-      padding: 12px;
-    }
-    .dev-hero h2 {
-      font-family: 'Playfair Display', serif;
-      font-size: 26px;
-      font-weight: 600;
-      margin: 0 0 4px;
-      color: var(--cream);
-      letter-spacing: 0.3px;
-      position: relative;
-      z-index: 1;
-    }
-    .dev-hero .tagline {
-      color: var(--muted);
-      font-size: 13px;
-      margin: 0;
-      position: relative;
-      z-index: 1;
-    }
-    .dev-hero .stat {
-      margin-left: auto;
-      text-align: right;
-      position: relative;
-      z-index: 1;
-    }
-    .dev-hero .stat .num {
-      font-family: 'Playfair Display', serif;
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--gold);
-    }
-    .dev-hero .stat .label {
-      font-size: 10px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-
-    .docs-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 14px;
-      margin-bottom: 30px;
-    }
-    .doc-card {
-      background: linear-gradient(180deg, rgba(16,42,79,0.85), rgba(10,31,61,0.85));
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 18px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
       cursor: pointer;
-      text-decoration: none;
-      color: var(--cream);
-      transition: transform .15s, border-color .15s, box-shadow .15s;
     }
-    .doc-card:hover { transform: translateY(-2px); border-color: rgba(212,184,122,0.4); box-shadow: 0 14px 30px -14px rgba(0,0,0,.5); }
-    .doc-icon {
-      width: 44px; height: 44px;
+    .subcat:hover { color: var(--cream); border-color: var(--line-strong); }
+    .subcat.active {
+      background: rgba(212,184,122,0.14); color: var(--gold);
+      border-color: rgba(212,184,122,0.4);
+    }
+    .subcat .count {
+      display: inline-block; margin-left: 6px;
+      font-size: 10.5px; opacity: 0.7;
+    }
+
+    /* ===== Upload card ===== */
+    .upload-card {
+      background: linear-gradient(180deg, rgba(16,42,79,0.6), rgba(10,31,61,0.6));
+      border: 1px dashed rgba(212,184,122,0.4);
+      border-radius: 12px;
+      padding: 22px 24px;
+      margin-bottom: 22px;
+      display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+      transition: border-color .15s, background .15s;
+    }
+    .upload-card.drag {
+      border-color: var(--gold);
+      background: rgba(212,184,122,0.08);
+    }
+    .upload-icon {
+      width: 44px; height: 44px; border-radius: 10px;
+      background: rgba(212,184,122,0.16);
+      border: 1px solid rgba(212,184,122,0.4);
+      color: var(--gold);
+      display: grid; place-items: center;
+      flex: 0 0 44px;
+    }
+    .upload-icon svg { width: 22px; height: 22px; }
+    .upload-text { flex: 1; min-width: 0; }
+    .upload-text strong { display: block; color: var(--cream); font-size: 14px; font-weight: 700; }
+    .upload-text .sub { color: var(--muted); font-size: 12px; line-height: 1.5; margin-top: 4px; }
+    .upload-btn {
+      padding: 11px 20px; border-radius: 9px; border: 0;
+      background: linear-gradient(135deg, var(--cream), var(--gold));
+      color: var(--navy-1);
+      font-family: inherit; font-size: 12px; font-weight: 700;
+      letter-spacing: 1.2px; text-transform: uppercase;
+      cursor: pointer;
+    }
+    .upload-btn:disabled { opacity: 0.55; cursor: wait; }
+    .upload-progress {
+      width: 100%; height: 4px; margin-top: 10px;
+      background: rgba(255,255,255,0.06); border-radius: 999px; overflow: hidden;
+      display: none;
+    }
+    .upload-progress .bar {
+      height: 100%; width: 0;
+      background: linear-gradient(90deg, var(--gold), var(--cream));
+      transition: width .15s ease;
+    }
+
+    /* ===== File list ===== */
+    .file-list { display: flex; flex-direction: column; gap: 8px; }
+    .file-row {
+      display: grid;
+      grid-template-columns: 36px 1fr auto auto;
+      gap: 14px; align-items: center;
+      padding: 12px 14px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
       border-radius: 10px;
+    }
+    .file-row:hover { border-color: var(--line-strong); background: rgba(255,255,255,0.05); }
+    .file-icon {
+      width: 36px; height: 36px; border-radius: 8px;
       background: rgba(212,184,122,0.10);
       border: 1px solid rgba(212,184,122,0.3);
-      display: grid; place-items: center;
       color: var(--gold);
-      flex: none;
+      display: grid; place-items: center;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
     }
-    .doc-icon svg { width: 18px; height: 18px; }
-    .doc-info { flex: 1; min-width: 0; }
-    .doc-name { font-size: 14px; font-weight: 600; color: var(--cream); margin-bottom: 3px; line-height: 1.3; word-break: break-word; }
-    .doc-meta { font-size: 11px; color: var(--muted); display: flex; gap: 10px; }
+    .file-meta { min-width: 0; }
+    .file-name {
+      color: var(--cream); font-weight: 600; font-size: 14px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .file-sub { color: var(--muted); font-size: 11.5px; margin-top: 2px; }
+    .file-actions { display: flex; gap: 6px; }
+    .action-btn {
+      background: transparent; border: 1px solid var(--line);
+      color: var(--muted); width: 32px; height: 32px;
+      border-radius: 8px; cursor: pointer;
+      display: grid; place-items: center;
+    }
+    .action-btn:hover { color: var(--cream); border-color: var(--line-strong); }
+    .action-btn.danger:hover { color: var(--red); border-color: rgba(255,107,107,0.5); }
+    .action-btn svg { width: 16px; height: 16px; }
+    .file-row a.action-btn { text-decoration: none; }
 
     .empty-state {
-      text-align: center;
-      padding: 60px 32px;
-      border: 1px dashed var(--line-strong);
-      border-radius: 14px;
-      color: var(--muted);
+      text-align: center; color: var(--muted);
+      padding: 56px 20px;
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+      font-size: 13.5px; line-height: 1.6;
     }
-    .empty-icon {
-      width: 56px; height: 56px;
-      border-radius: 14px;
-      background: rgba(212,184,122,0.08);
-      border: 1px solid rgba(212,184,122,0.3);
-      display: grid; place-items: center;
-      color: var(--gold);
-      margin: 0 auto 16px;
-    }
-    .empty-icon svg { width: 24px; height: 24px; }
-    .empty-state h3 { color: var(--cream); font-size: 17px; font-weight: 600; margin: 0 0 8px; font-family: 'Playfair Display', serif; }
-    .empty-state p { font-size: 13px; line-height: 1.55; margin: 0 auto; max-width: 460px; }
-    .empty-state code { background: rgba(255,255,255,0.06); padding: 2px 7px; border-radius: 4px; font-family: ui-monospace, 'SF Mono', monospace; font-size: 11px; color: var(--cream); }
+    .empty-state strong { color: var(--cream); font-weight: 600; display: block; margin-bottom: 6px; }
 
-    .add-hint {
-      max-width: 1400px;
-      margin: 30px auto 0;
-      padding: 16px 22px;
-      background: rgba(255,255,255,0.03);
-      border: 1px dashed var(--line-strong);
-      border-radius: 10px;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.6;
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: rgba(10,31,61,0.96); border: 1px solid var(--gold); color: var(--cream);
+      padding: 12px 22px; border-radius: 10px; font-size: 13px;
+      opacity: 0; pointer-events: none; transition: all .25s;
+      z-index: 50; max-width: calc(100vw - 32px);
+      backdrop-filter: blur(8px);
     }
-    .add-hint strong { color: var(--cream); }
-    .add-hint code { background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px; font-family: ui-monospace, 'SF Mono', monospace; font-size: 11px; color: var(--cream); }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.error { border-color: var(--red); }
 
     @media (max-width: 700px) {
-      .topbar { padding: 14px 18px; flex-wrap: wrap; gap: 12px; }
-      .page-head, .global-search, .subtabs-wrap, .panel, .add-hint { padding-left: 18px; padding-right: 18px; }
-      .dev-hero { flex-wrap: wrap; padding: 18px; }
-      .dev-hero .logo-big { width: 60px; height: 60px; font-size: 22px; }
-      .dev-hero .stat { margin-left: 0; text-align: left; }
-    }
-    @media (max-width: 480px) {
-      .topbar { padding: 12px 14px; }
-      .brand img { width: 32px; height: 32px; }
-      .brand-name { font-size: 13px; letter-spacing: 1.5px; }
-      .panel { padding: 18px 14px; }
+      .topbar { padding: 12px 18px; flex-wrap: wrap; gap: 10px; }
+      .page-head, .global-search, .top-tabs-wrap, main { padding-left: 18px; padding-right: 18px; }
+      .top-tab { padding: 12px 14px; font-size: 13px; }
+      .upload-card { padding: 18px; }
+      .file-row { grid-template-columns: 32px 1fr; grid-row-gap: 8px; }
+      .file-actions { grid-column: 1 / -1; justify-content: flex-end; }
+      .file-icon { width: 32px; height: 32px; }
     }
   </style>
-  <script src="theme-init.js"></script>
 </head>
-<body>
+<body class="dashboard-bg">
+  <div class="bg-skyline"></div>
+  <div class="bg-overlay"></div>
+
   <header class="topbar">
-    <div class="brand" onclick="window.location.href='agent.html'">
-      <img src="logo.jpg" alt="Exceed" />
-      <div class="brand-name">EXCEED <span>REAL ESTATE</span></div>
-    </div>
+    <a class="brand" href="agent.html" style="text-decoration:none;color:inherit;">
+      <img src="logo.jpg" alt="Exceed">
+      <div class="brand-name">EXCEED <span>Real Estate</span></div>
+    </a>
     <div class="topbar-right">
+      <div class="lang-toggle" id="langToggle">
+        <button data-lang="ja" class="active">日本語</button>
+        <button data-lang="en">EN</button>
+      </div>
+      <span data-i18n="hello">こんにちは、</span><strong id="userName">エージェント</strong>
       <a class="icon-btn" href="agent.html">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
         <span data-i18n="back">ダッシュボード</span>
       </a>
-      <span><span data-i18n="hello">こんにちは、</span><strong id="userName">—</strong></span>
-      <div class="lang-toggle" id="langToggle">
-        <span class="pill" id="langPill"></span>
-        <button data-lang="ja" class="active">日本語</button>
-        <button data-lang="en">EN</button>
-      </div>
     </div>
   </header>
 
   <div class="page-head">
     <div class="eyebrow" data-i18n="eyebrow">Database</div>
     <h1 data-i18n="title">データベース</h1>
-    <p class="lede" data-i18n="lede">主要ドバイデベロッパーのブローシャー・PDF・ファクトシートを一括管理。検索バーで全デベロッパー横断検索、または下のタブから個別に閲覧。</p>
+    <p class="lede" data-i18n="lede">社内資料・デベロッパー資料・ロンボク・日本の資料をここに保存。検索バーで横断検索、または各タブから閲覧。</p>
   </div>
 
   <div class="global-search">
-    <div class="gs-wrap">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" id="globalSearch" placeholder="ブローシャー・物件名で検索…" oninput="filterDocs()" />
-      <span class="gs-meta" id="searchMeta"></span>
+    <input type="search" id="searchInput" placeholder="ファイル名で検索…" data-i18n-attr-placeholder="searchPh" />
+  </div>
+
+  <div class="top-tabs-wrap">
+    <nav class="top-tabs" id="topTabs"></nav>
+  </div>
+
+  <main>
+    <div class="subcats" id="subcats"></div>
+
+    <div class="upload-card" id="uploadCard">
+      <div class="upload-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </div>
+      <div class="upload-text">
+        <strong data-i18n="dropTitle">ファイルをドラッグ&ドロップ または「アップロード」をクリック</strong>
+        <span class="sub" data-i18n="dropSub">PDF・画像・ドキュメント・スライドなど 最大 50MB</span>
+        <div class="upload-progress" id="uploadProgress"><div class="bar"></div></div>
+      </div>
+      <button class="upload-btn" id="uploadBtn">
+        <span data-i18n="uploadBtn">アップロード</span>
+      </button>
+      <input type="file" id="fileInput" hidden multiple />
     </div>
-  </div>
 
-  <div class="subtabs-wrap">
-    <nav class="subtabs" id="subtabs"></nav>
-  </div>
+    <div class="file-list" id="fileList">
+      <div class="empty-state">
+        <strong data-i18n="loadingTitle">読み込み中…</strong>
+      </div>
+    </div>
+  </main>
 
-  <main id="panels"></main>
-
-  <div class="add-hint" data-i18n-html="addHint">
-    <strong>ブローシャー追加方法:</strong> リポジトリの <code>developers/&lt;developer-id&gt;/</code> フォルダにPDFをアップロードし、<code>database.html</code> の <code>DOCS</code> 配列に <code>{ name, file }</code> を追加してください。
-  </div>
+  <div class="toast" id="toast"></div>
 
   <script type="module">
-    import { auth, db } from './firebase-init.js';
+    import { auth, db, storage, isAdmin } from './firebase-init.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    import {
+      doc, getDoc, addDoc, deleteDoc, collection, query,
+      orderBy, onSnapshot, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    import {
+      ref as sref, uploadBytesResumable, getDownloadURL, deleteObject
+    } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-storage.js";
 
-    // ============ DEVELOPERS ============
-    // bg / accent / fg = brand colors. Drop a real logo PNG at developers/<id>/logo.png
-    // and it will replace the monogram automatically.
-    // domain = used to fetch logo from logo.clearbit.com (free, no key needed).
-    // If clearbit doesn't have it, the monogram fallback shows.
-    const DEVELOPERS = [
-      { id: 'emaar',     name: 'Emaar',            domain: 'emaar.com',                  taglineJa: 'ダウンタウン・ドバイヒルズ',  taglineEn: 'Downtown, Dubai Hills, iconic landmarks',  initials: 'EM', bg: 'linear-gradient(135deg, #1a2540, #050d1f)', accent: '#d4b87a', fg: '#000' },
-      { id: 'damac',     name: 'DAMAC',            domain: 'damacproperties.com',        taglineJa: '高級ブランデッドレジデンス',  taglineEn: 'Luxury & branded residences',              initials: 'DM', bg: 'linear-gradient(135deg, #2a0a0a, #1a0505)', accent: '#e32726', fg: '#fff' },
-      { id: 'sobha',     name: 'Sobha Realty',     domain: 'sobharealty.com',            taglineJa: 'ハートランド、プレミアムビラ', taglineEn: 'Hartland & premium villas',                initials: 'SO', bg: 'linear-gradient(135deg, #1b2d5b, #0a1224)', accent: '#a88b5a', fg: '#fff' },
-      { id: 'nakheel',   name: 'Nakheel',          domain: 'nakheel.com',                taglineJa: 'パームジュメイラ',           taglineEn: 'Palm Jumeirah, The World',                 initials: 'NK', bg: 'linear-gradient(135deg, #0a2618, #04140d)', accent: '#0e914f', fg: '#fff' },
-      { id: 'meraas',    name: 'Meraas',           domain: 'meraas.com',                 taglineJa: 'シティウォーク、ブルーウォーターズ', taglineEn: 'City Walk, Bluewaters',           initials: 'MR', bg: 'linear-gradient(135deg, #0d2a2a, #051515)', accent: '#00897b', fg: '#fff' },
-      { id: 'omniyat',   name: 'Omniyat',          domain: 'omniyat.com',                taglineJa: 'ウルトララグジュアリー',       taglineEn: 'ONE Palm, AVA, ultra-luxury',              initials: 'OM', bg: 'linear-gradient(135deg, #1a0f1a, #0a0410)', accent: '#9a7bff', fg: '#fff' },
-      { id: 'mag',       name: 'MAG',              domain: 'magpd.com',                  taglineJa: 'MAGシティ、Keturah',         taglineEn: 'MAG City, Keturah Reserve',                initials: 'MG', bg: 'linear-gradient(135deg, #1a0f05, #0a0502)', accent: '#f26522', fg: '#fff' },
-      { id: 'binghatti', name: 'Binghatti',        domain: 'binghatti.com',              taglineJa: '象徴的な曲線ファサード',     taglineEn: 'Iconic curved-facade towers',              initials: 'BH', bg: 'linear-gradient(135deg, #1a1500, #0a0800)', accent: '#f4c61c', fg: '#000' },
-      { id: 'azizi',     name: 'Azizi',            domain: 'azizidevelopments.com',      taglineJa: 'リビエラ、MBR City',         taglineEn: 'Riviera, MBR City',                        initials: 'AZ', bg: 'linear-gradient(135deg, #1a0a12, #0a0408)', accent: '#a8233e', fg: '#fff' },
-      { id: 'tiger',     name: 'Tiger Properties', domain: 'tigerproperties.com',        taglineJa: 'JVC、JVT、新興エリア',       taglineEn: 'JVC, JVT, emerging districts',             initials: 'TG', bg: 'linear-gradient(135deg, #1a0f00, #0a0500)', accent: '#f8a92b', fg: '#000' },
-      { id: 'ellington', name: 'Ellington',        domain: 'ellingtonproperties.ae',     taglineJa: 'デザイン重視、現代建築',     taglineEn: 'Design-led contemporary',                  initials: 'EL', bg: 'linear-gradient(135deg, #0f1f1f, #050d0d)', accent: '#5ba8a0', fg: '#000' },
-      { id: 'danube',    name: 'Danube',           domain: 'danubeproperties.com',       taglineJa: 'アフォーダブル・ラグジュアリー', taglineEn: 'Affordable luxury',                       initials: 'DN', bg: 'linear-gradient(135deg, #0a1a2a, #050d18)', accent: '#1a6fb8', fg: '#fff' },
-      { id: 'select',    name: 'Select Group',     domain: 'select-group.ae',            taglineJa: 'Marina、Studio One',         taglineEn: 'Marina, Studio One',                       initials: 'SG', bg: 'linear-gradient(135deg, #122230, #060c14)', accent: '#5d8fb5', fg: '#000' },
-      { id: 'aldar',     name: 'Aldar',            domain: 'aldar.com',                  taglineJa: 'アブダビ、Saadiyat',         taglineEn: 'Abu Dhabi, Saadiyat, Yas',                 initials: 'AL', bg: 'linear-gradient(135deg, #0a1a14, #050d0a)', accent: '#71a87a', fg: '#000' }
+    /* ===== Sections + sub-categories ===== */
+    const SECTIONS = [
+      {
+        key: 'internal',  label: 'Internal',  labelJa: '社内',
+        subs: [
+          { key: 'files',  label: 'Files',  labelJa: 'ファイル' },
+          { key: 'forms',  label: 'Forms',  labelJa: 'フォーム' },
+          { key: 'media',  label: 'Media',  labelJa: 'メディア' }
+        ]
+      },
+      {
+        key: 'developer', label: 'Developer', labelJa: 'デベロッパー',
+        subs: [
+          { key: 'all',        label: 'All' },
+          { key: 'emaar',      label: 'Emaar' },
+          { key: 'damac',      label: 'DAMAC' },
+          { key: 'sobha',      label: 'Sobha Realty' },
+          { key: 'nakheel',    label: 'Nakheel' },
+          { key: 'meraas',     label: 'Meraas' },
+          { key: 'omniyat',    label: 'Omniyat' },
+          { key: 'mag',        label: 'MAG' },
+          { key: 'binghatti',  label: 'Binghatti' },
+          { key: 'azizi',      label: 'Azizi' },
+          { key: 'tiger',      label: 'Tiger Properties' },
+          { key: 'ellington',  label: 'Ellington' },
+          { key: 'danube',     label: 'Danube' },
+          { key: 'select',     label: 'Select Group' },
+          { key: 'aldar',      label: 'Aldar' },
+          { key: 'other',      label: 'Other' }
+        ]
+      },
+      {
+        key: 'lombok',    label: 'Lombok',    labelJa: 'ロンボク',
+        subs: [
+          { key: 'all',       label: 'All' },
+          { key: 'brochures', label: 'Brochures', labelJa: 'ブローシャー' },
+          { key: 'photos',    label: 'Photos',    labelJa: '写真' },
+          { key: 'decks',     label: 'Decks',     labelJa: '資料' }
+        ]
+      },
+      {
+        key: 'japan',     label: 'Japan',     labelJa: '日本',
+        subs: [
+          { key: 'all',     label: 'All' },
+          { key: 'ayuva',   label: 'AYUVA' },
+          { key: 'takumi',  label: 'Takumi Renovation' }
+        ]
+      }
     ];
-    function logoUrl(d) { return d.domain ? `https://logo.clearbit.com/${d.domain}?size=128` : ''; }
 
-    // ============ DOCS ============
-    // Paths are relative to the repo root. To add a brochure:
-    //   1. Drop the PDF (or JPG) into developers/<dev-id>/<filename>
-    //   2. Append { devId, name, file, type, size, date } below
-    const DOCS = [
-      // Example placeholders — replace with real files. The cards still render search-friendly.
-      // { devId: 'emaar', name: 'Address Residences Dubai Hills — Brochure', file: 'developers/emaar/address-dubai-hills.pdf', type: 'PDF', size: '12 MB', date: '2026-04-30' }
-    ];
-
-    // ============ I18N ============
+    /* ===== i18n ===== */
     const I18N = {
       ja: {
-        back: 'ダッシュボード', hello: 'こんにちは、',
         eyebrow: 'Database',
         title: 'データベース',
-        lede: '主要ドバイデベロッパーのブローシャー・PDF・ファクトシートを一括管理。検索バーで全デベロッパー横断検索、または下のタブから個別に閲覧。',
-        searchPh: 'ブローシャー・物件名で検索…',
-        emptyTitle: 'まだブローシャーがありません',
-        emptyBody: 'リポジトリの <code>developers/{ID}/</code> フォルダにPDFファイルを配置し、<code>database.html</code> の <code>DOCS</code> 配列にエントリを追加してください。',
-        searchAllResults: '件',
-        statLabel: 'ブローシャー',
-        addHint: '<strong>ブローシャー追加方法:</strong> リポジトリの <code>developers/&lt;developer-id&gt;/</code> フォルダにPDFをアップロードし、<code>database.html</code> の <code>DOCS</code> 配列に <code>{ name, file }</code> を追加してください。'
+        lede: '社内資料・デベロッパー資料・ロンボク・日本の資料をここに保存。検索バーで横断検索、または各タブから閲覧。',
+        searchPh: 'ファイル名で検索…',
+        back: 'ダッシュボード', hello: 'こんにちは、',
+        dropTitle: 'ファイルをドラッグ&ドロップ または「アップロード」をクリック',
+        dropSub: 'PDF・画像・ドキュメント・スライドなど 最大 50MB',
+        uploadBtn: 'アップロード',
+        uploading: 'アップロード中…',
+        loadingTitle: '読み込み中…',
+        emptyTitle: 'まだファイルがありません',
+        emptyBody: '上の「アップロード」ボタンか、ファイルをドラッグ&ドロップして追加してください。',
+        download: 'ダウンロード', deleteAct: '削除',
+        confirmDelete: 'このファイルを削除しますか？',
+        toastUploaded: '✓ アップロード完了',
+        toastDeleted: '✓ 削除しました',
+        toastTooBig: 'ファイルサイズが大きすぎます (最大 50MB)',
+        toastUploadFailed: 'アップロード失敗: ',
+        toastDeleteFailed: '削除失敗: ',
+        uploadedBy: '— '
       },
       en: {
-        back: 'Dashboard', hello: 'Hi, ',
         eyebrow: 'Database',
         title: 'Database',
-        lede: 'All major Dubai developer brochures, PDFs, and fact-sheets in one place. Use the global search bar to find anything across developers, or browse by tab.',
-        searchPh: 'Search brochures or property names…',
-        emptyTitle: 'No brochures yet',
-        emptyBody: 'Drop PDFs into the <code>developers/{ID}/</code> folder in the repo, then append entries to the <code>DOCS</code> array in <code>database.html</code>.',
-        searchAllResults: ' results',
-        statLabel: 'Brochures',
-        addHint: '<strong>How to add brochures:</strong> Upload PDFs to <code>developers/&lt;developer-id&gt;/</code> in the repo, then append <code>{ name, file }</code> entries to the <code>DOCS</code> array in <code>database.html</code>.'
+        lede: 'Internal company files, developer brochures, Lombok and Japan project assets — all in one place. Search across or browse by tab.',
+        searchPh: 'Search by filename…',
+        back: 'Dashboard', hello: 'Hello, ',
+        dropTitle: 'Drag & drop a file, or click Upload',
+        dropSub: 'PDFs, images, docs, slides — up to 50 MB each',
+        uploadBtn: 'Upload',
+        uploading: 'Uploading…',
+        loadingTitle: 'Loading…',
+        emptyTitle: 'No files yet',
+        emptyBody: 'Use the Upload button above or drag a file onto this card to get started.',
+        download: 'Download', deleteAct: 'Delete',
+        confirmDelete: 'Delete this file?',
+        toastUploaded: '✓ Upload complete',
+        toastDeleted: '✓ Deleted',
+        toastTooBig: 'File too large (50 MB max)',
+        toastUploadFailed: 'Upload failed: ',
+        toastDeleteFailed: 'Delete failed: ',
+        uploadedBy: 'by '
       }
     };
     let currentLang = 'ja';
+    function setLang(lang) {
+      currentLang = lang;
+      document.documentElement.lang = lang;
+      const dict = I18N[lang];
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const k = el.getAttribute('data-i18n');
+        if (dict[k]) el.textContent = dict[k];
+      });
+      document.querySelectorAll('[data-i18n-attr-placeholder]').forEach(el => {
+        const k = el.getAttribute('data-i18n-attr-placeholder');
+        if (dict[k]) el.placeholder = dict[k];
+      });
+      document.querySelectorAll('#langToggle button').forEach(b =>
+        b.classList.toggle('active', b.dataset.lang === lang));
+      renderTabs(); renderSubcats(); renderFiles();
+    }
+    document.querySelectorAll('#langToggle button').forEach(b =>
+      b.addEventListener('click', () => setLang(b.dataset.lang)));
 
-    function docsForDev(id) { return DOCS.filter(d => d.devId === id); }
-    function fileIcon(type) {
-      const t = (type || 'PDF').toUpperCase();
-      const color = t === 'PDF' ? '#ff6b6b' : t === 'JPG' || t === 'PNG' ? '#5ee896' : 'var(--gold)';
-      return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`;
+    function showToast(msg, isErr) {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.classList.toggle('error', !!isErr);
+      t.classList.add('show');
+      clearTimeout(t._tm);
+      t._tm = setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    /* ===== State ===== */
+    let _me = null;
+    let _isAdminUser = false;
+    let _files = [];                 // live from /databaseFiles
+    let _activeSection = 'internal';
+    let _activeSub = 'files';
+    let _searchQuery = '';
+
+    function sectionDef(key) { return SECTIONS.find(s => s.key === key); }
+    function subDef(sectionKey, subKey) {
+      const sec = sectionDef(sectionKey);
+      return sec?.subs.find(s => s.key === subKey);
+    }
+    function subLabel(sub) {
+      return currentLang === 'ja' ? (sub.labelJa || sub.label) : sub.label;
+    }
+    function sectionLabel(sec) {
+      return currentLang === 'ja' ? (sec.labelJa || sec.label) : sec.label;
+    }
+
+    function countForSection(secKey) {
+      return _files.filter(f => f.section === secKey).length;
+    }
+    function countForSub(secKey, subKey) {
+      if (subKey === 'all') return countForSection(secKey);
+      return _files.filter(f => f.section === secKey && f.subcategory === subKey).length;
     }
 
     function renderTabs() {
-      const tabsEl = document.getElementById('subtabs');
-      tabsEl.innerHTML = DEVELOPERS.map((d, i) => {
-        const count = docsForDev(d.id).length;
-        const lu = logoUrl(d);
-        return `<button class="dev-tab ${i === 0 ? 'active' : ''}" data-tab="${d.id}">
-          <span class="logo" style="background:${d.accent}; color:${d.fg};">
-            <span style="position:relative;z-index:0">${d.initials}</span>
-            ${lu ? `<img src="${lu}" alt="${d.name}" onerror="this.remove()" />` : ''}
-          </span>
-          <span>${d.name}</span>
-          <span class="count">${count}</span>
+      const wrap = document.getElementById('topTabs');
+      wrap.innerHTML = SECTIONS.map(sec => {
+        const isActive = sec.key === _activeSection;
+        return `<button class="top-tab ${isActive ? 'active' : ''}" data-section="${sec.key}">
+          ${sectionLabel(sec)}
+          <span class="count">${countForSection(sec.key)}</span>
         </button>`;
       }).join('');
-    }
-
-    function renderPanels() {
-      const dict = I18N[currentLang];
-      const panelsEl = document.getElementById('panels');
-      panelsEl.innerHTML = DEVELOPERS.map((d, i) => {
-        const list = docsForDev(d.id);
-        const tagline = currentLang === 'ja' ? d.taglineJa : d.taglineEn;
-        const docs = list.length
-          ? `<div class="docs-grid">${list.map(doc => `
-              <a class="doc-card" href="${doc.file}" target="_blank" rel="noopener">
-                <div class="doc-icon">${fileIcon(doc.type)}</div>
-                <div class="doc-info">
-                  <div class="doc-name">${doc.name}</div>
-                  <div class="doc-meta">
-                    <span>${doc.type || 'PDF'}</span>
-                    ${doc.size ? `<span>·</span><span>${doc.size}</span>` : ''}
-                    ${doc.date ? `<span>·</span><span>${doc.date}</span>` : ''}
-                  </div>
-                </div>
-              </a>`).join('')}</div>`
-          : `<div class="empty-state">
-              <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
-              <h3>${dict.emptyTitle}</h3>
-              <p>${dict.emptyBody.replace('{ID}', d.id)}</p>
-            </div>`;
-        const lu = logoUrl(d);
-        return `<section class="panel ${i === 0 ? 'active' : ''}" data-panel="${d.id}" style="--dev-bg:${d.bg}; --dev-accent:${d.accent}; --dev-fg:${d.fg}; --dev-glow:${d.accent}33;">
-          <div class="dev-hero">
-            <div class="logo-big">
-              <span style="position:relative;z-index:0">${d.initials}</span>
-              ${lu ? `<img src="${lu}" alt="${d.name}" onerror="this.remove()" />` : ''}
-            </div>
-            <div>
-              <h2>${d.name}</h2>
-              <p class="tagline">${tagline}</p>
-            </div>
-            <div class="stat">
-              <div class="num">${list.length}</div>
-              <div class="label">${dict.statLabel}</div>
-            </div>
-          </div>
-          ${docs}
-        </section>`;
-      }).join('');
-
-      document.querySelectorAll('.dev-tab').forEach(b => {
+      wrap.querySelectorAll('button').forEach(b =>
         b.addEventListener('click', () => {
-          const tab = b.dataset.tab;
-          document.querySelectorAll('.dev-tab').forEach(x => x.classList.toggle('active', x === b));
-          document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.dataset.panel === tab));
-          history.replaceState(null, '', '#' + tab);
-          document.getElementById('globalSearch').value = '';
-          filterDocs();
-        });
-      });
-      if (location.hash) {
-        const t = location.hash.replace('#', '');
-        const btn = document.querySelector(`.dev-tab[data-tab="${t}"]`);
-        if (btn) btn.click();
-      }
+          _activeSection = b.dataset.section;
+          // Default sub on switch — first sub in the section.
+          const sec = sectionDef(_activeSection);
+          _activeSub = sec.subs[0].key;
+          renderTabs(); renderSubcats(); renderFiles();
+        })
+      );
     }
 
-    window.filterDocs = function() {
-      const q = (document.getElementById('globalSearch').value || '').trim().toLowerCase();
-      const meta = document.getElementById('searchMeta');
-      if (!q) {
-        // restore tab view
-        document.querySelectorAll('.panel').forEach(p => {
-          p.style.display = '';
-          p.querySelectorAll('.doc-card').forEach(c => c.style.display = '');
-        });
-        meta.textContent = '';
+    function renderSubcats() {
+      const sec = sectionDef(_activeSection);
+      const wrap = document.getElementById('subcats');
+      wrap.innerHTML = sec.subs.map(s => {
+        const isActive = s.key === _activeSub;
+        const c = countForSub(_activeSection, s.key);
+        return `<button class="subcat ${isActive ? 'active' : ''}" data-sub="${s.key}">
+          ${subLabel(s)}<span class="count">${c}</span>
+        </button>`;
+      }).join('');
+      wrap.querySelectorAll('button').forEach(b =>
+        b.addEventListener('click', () => {
+          _activeSub = b.dataset.sub;
+          renderSubcats(); renderFiles();
+        })
+      );
+    }
+
+    function fmtBytes(n) {
+      if (!n || n < 1024) return (n || 0) + ' B';
+      if (n < 1024 * 1024) return Math.round(n / 1024) + ' KB';
+      return (n / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+    function fmtDate(ts) {
+      if (!ts) return '';
+      try {
+        const d = ts.toDate ? ts.toDate() : new Date(ts);
+        return d.toLocaleDateString(currentLang === 'ja' ? 'ja-JP' : 'en-GB',
+          { year: 'numeric', month: 'short', day: 'numeric' });
+      } catch (_) { return ''; }
+    }
+    function extOf(name) {
+      const m = (name || '').match(/\.([a-zA-Z0-9]{1,5})$/);
+      return m ? m[1].toUpperCase() : 'FILE';
+    }
+
+    function renderFiles() {
+      const list = document.getElementById('fileList');
+      const dict = I18N[currentLang];
+      const q = _searchQuery.trim().toLowerCase();
+      const filtered = _files.filter(f => {
+        if (f.section !== _activeSection) return false;
+        if (_activeSub !== 'all' && f.subcategory !== _activeSub) return false;
+        if (q && !(f.name || '').toLowerCase().includes(q)) return false;
+        return true;
+      });
+      if (!filtered.length) {
+        list.innerHTML = `<div class="empty-state">
+          <strong>${dict.emptyTitle}</strong>
+          <span>${dict.emptyBody}</span>
+        </div>`;
         return;
       }
-      // Show all panels at once when searching globally
-      let total = 0;
-      document.querySelectorAll('.panel').forEach(p => {
-        let visible = 0;
-        p.querySelectorAll('.doc-card').forEach(c => {
-          const t = c.textContent.toLowerCase();
-          const hit = t.includes(q);
-          c.style.display = hit ? '' : 'none';
-          if (hit) visible++;
-        });
-        // Show panel if any matches OR if no docs exist yet (so the empty state still shows)
-        const hasMatches = visible > 0;
-        p.style.display = hasMatches ? 'block' : 'none';
-        total += visible;
+      list.innerHTML = filtered.map(f => {
+        const canDelete = _isAdminUser || (f.uploadedBy && _me && f.uploadedBy === _me.uid);
+        const ext = extOf(f.name);
+        const sub = `${dict.uploadedBy}${(f.uploadedByName || f.uploadedByEmail || '').replace(/</g,'&lt;')} · ${fmtDate(f.createdAt)} · ${fmtBytes(f.size)}`;
+        return `<div class="file-row" data-id="${f.id}">
+          <div class="file-icon">${ext}</div>
+          <div class="file-meta">
+            <div class="file-name">${(f.name || '').replace(/</g,'&lt;')}</div>
+            <div class="file-sub">${sub}</div>
+          </div>
+          <div class="file-actions">
+            <a class="action-btn" href="${f.downloadUrl}" target="_blank" rel="noopener" title="${dict.download}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </a>
+            ${canDelete ? `<button class="action-btn danger" data-del="${f.id}" title="${dict.deleteAct}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+            </button>` : ''}
+          </div>
+        </div>`;
+      }).join('');
+      list.querySelectorAll('button[data-del]').forEach(btn =>
+        btn.addEventListener('click', () => deleteFile(btn.dataset.del))
+      );
+    }
+
+    /* ===== Search ===== */
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      _searchQuery = e.target.value || '';
+      renderFiles();
+    });
+
+    /* ===== Subscribe to file index ===== */
+    function subscribeFiles() {
+      const q = query(collection(db, 'databaseFiles'), orderBy('createdAt', 'desc'));
+      onSnapshot(q, (snap) => {
+        _files = [];
+        snap.forEach(d => _files.push({ id: d.id, ...d.data() }));
+        renderTabs(); renderSubcats(); renderFiles();
+      }, (err) => {
+        console.error('[database] onSnapshot', err);
+        showToast('読み込みに失敗しました: ' + (err.message || err), true);
       });
+    }
+
+    /* ===== Upload ===== */
+    const MAX_BYTES = 50 * 1024 * 1024;
+    function safeFilename(name) {
+      const stamp = Date.now().toString(36);
+      const cleaned = (name || 'file').replace(/[^A-Za-z0-9._\-぀-ヿ一-鿿]/g, '_');
+      return `${stamp}-${cleaned}`;
+    }
+
+    async function uploadOne(file) {
       const dict = I18N[currentLang];
-      meta.textContent = total + dict.searchAllResults;
-    };
+      if (file.size > MAX_BYTES) { showToast(dict.toastTooBig, true); return; }
 
-    function setLang(lang) {
-      currentLang = lang;
-      const dict = I18N[lang];
-      document.documentElement.lang = lang;
-      document.querySelectorAll('[data-i18n]').forEach(el => { const k = el.getAttribute('data-i18n'); if (dict[k]) el.textContent = dict[k]; });
-      document.querySelectorAll('[data-i18n-html]').forEach(el => { const k = el.getAttribute('data-i18n-html'); if (dict[k]) el.innerHTML = dict[k]; });
-      document.getElementById('globalSearch').placeholder = dict.searchPh;
-      document.querySelectorAll('.lang-toggle button').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
-      positionPill();
-      renderTabs();
-      renderPanels();
-    }
-    function positionPill() {
-      const pill = document.getElementById('langPill');
-      const active = document.querySelector('.lang-toggle button.active');
-      if (!active || !pill) return;
-      const r = active.getBoundingClientRect();
-      const pr = active.parentElement.getBoundingClientRect();
-      pill.style.width = r.width + 'px';
-      pill.style.transform = `translateX(${r.left - pr.left - 4}px)`;
-    }
-    document.querySelectorAll('.lang-toggle button').forEach(b => b.addEventListener('click', () => setLang(b.dataset.lang)));
+      const path = `database/${_activeSection}/${_activeSub || 'all'}/${safeFilename(file.name)}`;
+      const ref = sref(storage, path);
+      const meta = {
+        contentType: file.type || 'application/octet-stream',
+        customMetadata: { uploadedBy: _me.uid }
+      };
+      const task = uploadBytesResumable(ref, file, meta);
+      const progressEl = document.getElementById('uploadProgress');
+      const bar = progressEl.querySelector('.bar');
+      progressEl.style.display = 'block';
+      bar.style.width = '0%';
 
+      const btn = document.getElementById('uploadBtn');
+      btn.disabled = true;
+      const origLabel = btn.querySelector('span').textContent;
+      btn.querySelector('span').textContent = dict.uploading;
+
+      return new Promise((resolve) => {
+        task.on('state_changed',
+          (s) => { bar.style.width = ((s.bytesTransferred / s.totalBytes) * 100).toFixed(1) + '%'; },
+          (err) => {
+            console.error(err);
+            showToast(dict.toastUploadFailed + (err.message || err.code || err), true);
+            progressEl.style.display = 'none';
+            btn.disabled = false;
+            btn.querySelector('span').textContent = origLabel;
+            resolve();
+          },
+          async () => {
+            try {
+              const url = await getDownloadURL(task.snapshot.ref);
+              await addDoc(collection(db, 'databaseFiles'), {
+                section: _activeSection,
+                subcategory: _activeSub || 'all',
+                name: file.name,
+                storagePath: path,
+                size: file.size,
+                type: file.type || '',
+                downloadUrl: url,
+                uploadedBy: _me.uid,
+                uploadedByName: _me.displayName || (_me.email || '').split('@')[0],
+                uploadedByEmail: _me.email || '',
+                createdAt: serverTimestamp()
+              });
+              showToast(dict.toastUploaded);
+            } catch (err) {
+              console.error(err);
+              showToast(dict.toastUploadFailed + (err.message || err), true);
+            } finally {
+              setTimeout(() => { progressEl.style.display = 'none'; bar.style.width = '0%'; }, 800);
+              btn.disabled = false;
+              btn.querySelector('span').textContent = origLabel;
+              resolve();
+            }
+          }
+        );
+      });
+    }
+
+    document.getElementById('uploadBtn').addEventListener('click', () =>
+      document.getElementById('fileInput').click()
+    );
+    document.getElementById('fileInput').addEventListener('change', async (e) => {
+      const files = [...(e.target.files || [])];
+      e.target.value = '';
+      for (const f of files) await uploadOne(f);
+    });
+
+    /* Drag-and-drop */
+    const card = document.getElementById('uploadCard');
+    ['dragenter', 'dragover'].forEach(ev =>
+      card.addEventListener(ev, (e) => {
+        e.preventDefault(); e.stopPropagation();
+        card.classList.add('drag');
+      })
+    );
+    ['dragleave', 'drop'].forEach(ev =>
+      card.addEventListener(ev, (e) => {
+        e.preventDefault(); e.stopPropagation();
+        card.classList.remove('drag');
+      })
+    );
+    card.addEventListener('drop', async (e) => {
+      const files = [...(e.dataTransfer?.files || [])];
+      for (const f of files) await uploadOne(f);
+    });
+
+    /* ===== Delete ===== */
+    async function deleteFile(id) {
+      const f = _files.find(x => x.id === id);
+      if (!f) return;
+      const dict = I18N[currentLang];
+      if (!confirm(dict.confirmDelete)) return;
+      try {
+        if (f.storagePath) {
+          try { await deleteObject(sref(storage, f.storagePath)); }
+          catch (_) { /* missing storage object is OK — proceed with metadata delete */ }
+        }
+        await deleteDoc(doc(db, 'databaseFiles', id));
+        showToast(dict.toastDeleted);
+      } catch (err) {
+        console.error(err);
+        showToast(dict.toastDeleteFailed + (err.message || err), true);
+      }
+    }
+
+    /* ===== Auth + init ===== */
     onAuthStateChanged(auth, async (user) => {
       if (!user) { window.location.href = 'index.html'; return; }
+      _me = user;
+      _isAdminUser = isAdmin(user.email);
       let firstName = (user.displayName || '').trim().split(/\s+/)[0];
-      try { const snap = await getDoc(doc(db, 'agents', user.uid)); if (snap.exists() && snap.data().firstName) firstName = snap.data().firstName; } catch (e) {}
-      if (!firstName && user.email) { const local = user.email.split('@')[0].split(/[._-]/)[0]; firstName = local.charAt(0).toUpperCase() + local.slice(1); }
+      try {
+        const snap = await getDoc(doc(db, 'agents', user.uid));
+        if (snap.exists() && snap.data().firstName) firstName = snap.data().firstName;
+      } catch (_) {}
+      if (!firstName && user.email) {
+        const local = user.email.split('@')[0].split(/[._-]/)[0];
+        firstName = local.charAt(0).toUpperCase() + local.slice(1);
+      }
       document.getElementById('userName').textContent = firstName || 'Agent';
+      subscribeFiles();
     });
 
-    window.addEventListener('load', () => { setLang('ja'); });
-    window.addEventListener('resize', positionPill);
-    document.addEventListener('keydown', (e) => {
-      if ((e.metaKey || e.ctrlKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'e') {
-        e.preventDefault();
-        setLang(currentLang === 'ja' ? 'en' : 'ja');
-      }
-    });
+    setLang('ja');
   </script>
 </body>
 </html>
