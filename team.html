@@ -1372,6 +1372,21 @@
         if (!merged.phoneDisplay) merged.phoneDisplay = a.phone;
       }
       if (!merged.uid && a.uid) merged.uid = a.uid;
+      // Name: upgrade short placeholders ("MOUAD") to the registered full
+      // name from /agents ("Mouad Khaled"). Don't touch entries that
+      // already look like a complete name (≥ 2 words AND ≥ 8 chars) so
+      // manual edits via Edit Tree are preserved.
+      const fullFromAgent = `${a.firstName || ''} ${a.lastName || ''}`.trim();
+      if (fullFromAgent) {
+        const cur = (merged.name || '').trim();
+        const looksPlaceholder =
+          !cur ||
+          cur.split(/\s+/).length < 2 ||
+          cur.length < 8;
+        if (looksPlaceholder && fullFromAgent.toLowerCase() !== cur.toLowerCase()) {
+          merged.name = fullFromAgent;
+        }
+      }
       return merged;
     }
 
