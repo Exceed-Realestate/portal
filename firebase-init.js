@@ -172,8 +172,11 @@ export const CAPABILITIES = {
   // Team tree (the org chart)
   editTeamTree:       ['admin', 'ceo', 'md'],
 
-  // Deal flow
-  createDealAlert:    ['admin', 'ceo', 'md', 'manager', 'agent'],
+  // Deal flow — submission restricted to MD + Board + Manager (admin always).
+  // CEO, agents and back-office can view the page + recent alerts but cannot
+  // file a new one. Per Balraj — keeps the celebration screen for verified
+  // closes only.
+  createDealAlert:    ['admin', 'md', 'board', 'manager'],
   receiveDealAlerts:  ['admin', 'ceo', 'md', 'board', 'manager'],
 
   // Operations

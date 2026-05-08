@@ -270,7 +270,7 @@
 
   <script src="celebration.js"></script>
   <script type="module">
-    import { auth, db, isAdmin } from './firebase-init.js';
+    import { auth, db, isAdmin, can } from './firebase-init.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
     import { doc as fdoc, getDoc, collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
@@ -470,17 +470,40 @@
       if (!user) { window.location.href = 'index.html'; return; }
       currentUser = user;
       let firstName = (user.displayName || '').trim().split(/\s+/)[0];
+      let role = null;
+      try {
+        const snap = await getDoc(fdoc(db, 'agents', user.uid));
+        if (snap.exists()) {
+          const d = snap.data();
+          if (d.firstName) firstName = d.firstName;
+          role = d.role || null;
+        }
+      } catch (_) {}
       if (!firstName && user.email) {
         const local = user.email.split('@')[0].split(/[._-]/)[0];
         firstName = local.charAt(0).toUpperCase() + local.slice(1);
       }
       document.getElementById('userName').textContent = firstName || 'Agent';
 
-      // Permission gating intentionally OFF for now — will tighten later when team registration lands.
-      // To re-enable: uncomment the block below.
-      // canSubmit = isSubmitter(user.email) || isAdmin(user.email);
-      // if (!canSubmit) { ...lock the form... }
-      canSubmit = true;
+      // Submission restricted to admin / md / board / manager. Everyone else
+      // sees the recent-alerts feed + can replay celebrations, but the form
+      // is hidden and replaced with a view-only banner.
+      canSubmit = can(role, 'createDealAlert', user.email);
+      if (!canSubmit) {
+        const formPanel = document.getElementById('formPanel');
+        if (formPanel) {
+          formPanel.innerHTML = `
+            <h2>View only</h2>
+            <p class="sub">Deal submissions are restricted to <strong>MD, Board members and Managers</strong>. You can still browse recent alerts and replay any celebration on the right.</p>
+            <div class="badge-locked" style="display:inline-flex;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <span>You can view but not submit</span>
+            </div>
+            <div style="margin-top:22px;">
+              <button type="button" class="btn-secondary" onclick="previewDemo()">▶ Preview demo</button>
+            </div>`;
+        }
+      }
       loadAlerts();
       loadTeamRoster();
     });
