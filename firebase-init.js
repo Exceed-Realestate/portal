@@ -178,6 +178,9 @@ export const CAPABILITIES = {
 
   // Operations
   viewLeadership:     ['admin', 'ceo', 'md', 'board'],
+  // Attendance roll-call — Balraj asked this be limited to MD + Board
+  // (Shoya + Malik), not the wider leadership cohort. Admin always.
+  takeAttendance:     ['admin', 'md', 'board'],
   viewDatabase:       ['admin', 'ceo', 'md', 'board', 'manager', 'agent', 'back_office'],
   bookCar:            ['admin', 'ceo', 'md', 'board', 'manager', 'agent', 'back_office'],
   useTravel:          ['admin', 'ceo', 'md', 'board', 'manager', 'agent'],
