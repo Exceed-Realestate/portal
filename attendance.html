@@ -334,22 +334,21 @@
       } catch (e) { console.warn('agents load failed', e?.message); }
     }
 
-    /* Build the roll. Two sources, deduped by name:
-         1. Team-tree members in any ATTENDANCE_SECTIONS — captures everyone
-            in the org chart even before they've signed up to the portal.
-            (Sales sections = agent tier, office sections = back_office.)
-         2. Firestore agents/{uid} docs with role in ATTENDANCE_ROLES —
-            captures people who signed up but aren't in the tree yet.
-       Each entry resolves photo / role / uid from whichever source has it. */
+    /* Build the roll. STRICT filter — only people whose Firestore
+       access role is 'agent' or 'back_office' appear. Two passes,
+       deduped by name:
+         1. Team-tree members in attendance sections, BUT only if they
+            also have a Firestore agent doc with role in ATTENDANCE_ROLES.
+            Tree-only members (haven't signed up, or signed up under a
+            non-tracked role like manager / md / board) are skipped.
+         2. Firestore agents not in the tree but with role in
+            ATTENDANCE_ROLES — catches new signups before the tree is
+            updated. */
     function buildEligibleList() {
       ELIGIBLE_MEMBERS = [];
       const seen = new Set();
-      const sectionToTier = {
-        'japan-sales': 'agent',     'dubai-sales': 'agent',     'lombok': 'agent',
-        'dubai-office': 'back_office', 'japan-office': 'back_office'
-      };
 
-      // (1) Team-tree members in attendance sections
+      // (1) Tree members who are also signed-up agents/back-office
       if (TEAM_CFG) {
         ATTENDANCE_SECTIONS.forEach(sec => {
           const arr = Array.isArray(TEAM_CFG[sec]) ? TEAM_CFG[sec] : [];
@@ -357,27 +356,27 @@
             if (!m || !m.name) return;
             const k = nameKeyFor(m.name);
             if (!k || seen.has(k)) return;
+            const matchedAgent =
+              AGENTS_BY_NAME.get(k) ||
+              AGENTS_BY_NAME.get(nameKeyFor((m.name || '').split(/\s+/)[0]));
+            // Strict access-role gate
+            if (!matchedAgent) return;
+            if (!ATTENDANCE_ROLES.includes(matchedAgent.role || '')) return;
             seen.add(k);
-            // Skip section leaders (they're already on the board / leadership)
-            const isLeader = /\bMD\b|COO|CEO|head of/i.test(m.role || '');
-            if (isLeader) return;
-            // Look up the matching agent doc for uid + photoURL
-            const matchedAgent = AGENTS_BY_NAME.get(k) || AGENTS_BY_NAME.get(nameKeyFor((m.name || '').split(/\s+/)[0]));
-            const id = (matchedAgent && matchedAgent.id) || (k.replace(/\s+/g, '-') + '|' + sec);
             ELIGIBLE_MEMBERS.push({
-              id,
+              id: matchedAgent.id,
               name: m.name,
               nameJa: m.nameJa || '',
-              photo: m.photo || (matchedAgent && matchedAgent.photoURL) || '',
-              role: m.role || sectionToTier[sec] || '',
-              accessRole: (matchedAgent && matchedAgent.role) || sectionToTier[sec] || '',
+              photo: m.photo || matchedAgent.photoURL || '',
+              role: m.role || matchedAgent.role,
+              accessRole: matchedAgent.role,
               section: sec
             });
           });
         });
       }
 
-      // (2) Signed-up agents with role agent / back_office not in the tree
+      // (2) Signed-up agents/back-office not in the tree
       AGENTS_BY_NAME.forEach((a) => {
         if (!ATTENDANCE_ROLES.includes(a.role || '')) return;
         const fullName = `${a.firstName || ''} ${a.lastName || ''}`.trim() || a.displayName || a.email || '?';
@@ -395,7 +394,7 @@
         });
       });
 
-      // Stable sort: by access role (agent first), then by name
+      // Sort: agents first, then back-office; alphabetical within each tier.
       ELIGIBLE_MEMBERS.sort((a, b) => {
         if (a.accessRole !== b.accessRole) return a.accessRole === 'agent' ? -1 : 1;
         return a.name.localeCompare(b.name);
