@@ -1042,77 +1042,73 @@
        so legibility is guaranteed even if the image fails to load.
        Stacking pseudo-elements with var(url(...)) was unreliable on
        some iOS Safari versions, so the URL is inlined per rule. */
-    /* Photos were generated with the subject in the LOWER-RIGHT (so the
-       upper-left stays clean for title text). Anchor cover at right-bottom
-       so the subject stays visible at every tile aspect ratio. */
-    .tile.has-card { background-position: right bottom; background-repeat: no-repeat; }
+    /* Photo layer uses contain (not cover) so the entire image is visible
+       inside the tile — no more cropped subjects. The empty space left
+       over by contain shows the per-tile accent gradient as a backing
+       wash, which feels deliberate rather than empty. The diagonal
+       darkening gradient on top still keeps the title text legible. */
+    .tile.has-card {
+      background-position: center, right bottom;     /* gradient, photo */
+      background-size:     100% 100%, contain;       /* gradient, photo */
+      background-repeat:   no-repeat;
+      background-color:    rgba(10,31,61,0.95);      /* navy fallback under contain */
+    }
     .tile.has-card .tile-art { display: none; }
 
     .tile.has-card[data-key="customer-register"] {
       background-image:
         linear-gradient(135deg, rgba(10,31,61,0.80) 0%, rgba(10,31,61,0.45) 45%, rgba(10,31,61,0.12) 100%),
         url('cards/customer-register.jpg');
-      background-size: cover, cover;
     }
     .tile.has-card[data-key="irr"] {
       background-image:
         linear-gradient(135deg, rgba(10,31,61,0.80) 0%, rgba(10,31,61,0.45) 45%, rgba(10,31,61,0.12) 100%),
         url('cards/irr.jpg');
-      background-size: cover, cover;
     }
     .tile.has-card[data-key="availability"] {
       background-image:
         linear-gradient(135deg, rgba(10,31,61,0.80) 0%, rgba(10,31,61,0.45) 45%, rgba(10,31,61,0.12) 100%),
         url('cards/availability.jpg');
-      background-size: cover, cover;
     }
     .tile.has-card[data-key="travel"] {
       background-image:
         linear-gradient(135deg, rgba(10,31,61,0.80) 0%, rgba(10,31,61,0.45) 45%, rgba(10,31,61,0.12) 100%),
         url('cards/travel.jpg');
-      background-size: cover, cover;
     }
     .tile.has-card[data-key="team"] {
       background-image:
         linear-gradient(135deg, rgba(10,31,61,0.80) 0%, rgba(10,31,61,0.45) 45%, rgba(10,31,61,0.12) 100%),
         url('cards/team.jpg');
-      background-size: cover, cover;
     }
     .tile.has-card[data-key="deal-alert"] {
       background-image:
         linear-gradient(135deg, rgba(10,31,61,0.80) 0%, rgba(10,31,61,0.45) 45%, rgba(10,31,61,0.12) 100%),
         url('cards/deal-alert.jpg');
-      background-size: cover, cover;
     }
     .tile.has-card[data-key="book-car"] {
       background-image:
         linear-gradient(135deg, rgba(10,31,61,0.80) 0%, rgba(10,31,61,0.45) 45%, rgba(10,31,61,0.12) 100%),
         url('cards/book-car.jpg');
-      background-size: cover, cover;
     }
     .tile.has-card[data-key="payment"] {
       background-image:
         linear-gradient(135deg, rgba(10,31,61,0.80) 0%, rgba(10,31,61,0.45) 45%, rgba(10,31,61,0.12) 100%),
         url('cards/payment.jpg');
-      background-size: cover, cover;
     }
     .tile.has-card[data-key="manage-access"] {
       background-image:
         linear-gradient(135deg, rgba(10,31,61,0.80) 0%, rgba(10,31,61,0.45) 45%, rgba(10,31,61,0.12) 100%),
         url('cards/manage-access.jpg');
-      background-size: cover, cover;
     }
     .tile.has-card[data-key="listings"] {
       background-image:
         linear-gradient(135deg, rgba(10,31,61,0.80) 0%, rgba(10,31,61,0.45) 45%, rgba(10,31,61,0.12) 100%),
         url('cards/listings.jpg');
-      background-size: cover, cover;
     }
     .tile.has-card[data-key="database"] {
       background-image:
         linear-gradient(135deg, rgba(10,31,61,0.80) 0%, rgba(10,31,61,0.45) 45%, rgba(10,31,61,0.12) 100%),
         url('cards/database.jpg');
-      background-size: cover, cover;
     }
 
     /* ---- Per-tile accent palette ----
