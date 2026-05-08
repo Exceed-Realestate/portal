@@ -1042,15 +1042,27 @@
        so legibility is guaranteed even if the image fails to load.
        Stacking pseudo-elements with var(url(...)) was unreliable on
        some iOS Safari versions, so the URL is inlined per rule. */
-    /* Photo fills the tile with cover but anchored slightly off-center
-       toward the lower-right so the hero subject lands in frame without
-       leaving any empty space. Looks composed, not cropped. */
+    /* Full-bleed photo tiles. The gradient overlay is dropped entirely so
+       the image owns the whole button — title text gets a strong
+       text-shadow + a subtle dark scrim around the icon chip + heading
+       only, just enough to keep the label legible against any photo. */
     .tile.has-card {
-      background-position: center, 75% 70%;          /* gradient, photo */
-      background-size:     100% 100%, cover;         /* gradient, photo */
+      background-position: center;
+      background-size:     cover;
       background-repeat:   no-repeat;
     }
     .tile.has-card .tile-art { display: none; }
+    .tile.has-card h3,
+    .tile.has-card .tile-icon-wrap {
+      text-shadow: 0 2px 6px rgba(0,0,0,0.65), 0 0 16px rgba(0,0,0,0.4);
+    }
+    .tile.has-card .tile-icon-wrap {
+      background: rgba(10,31,61,0.55);
+      backdrop-filter: blur(4px);
+      border-color: rgba(212,184,122,0.6);
+      color: var(--gold);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.45);
+    }
 
     .tile.has-card[data-key="customer-register"] {
       background-image:
@@ -2418,11 +2430,10 @@
     async function renderTraveling() {
       const wrap = document.getElementById('travelingList');
       const dict = I18N[currentLang];
-      // Placeholder: nobody traveling yet, OR someone who has logged a current trip
-      // (Yuta is permanently in Lombok per current TEAM data, so show him as a sample.)
-      const sample = [
-        { name: 'YUTA NAGATOSHI', where: 'Lombok, Indonesia', flag: '🇮🇩', photo: 'team/yuta-nagatoshi.png', initials: 'YN' }
-      ];
+      // Yuta lives in Lombok permanently — don't list him as "traveling".
+      // Real trip data comes from the /travel collection (Travel page).
+      // TODO: subscribe to /travel and render here once team adoption is up.
+      const sample = [];
       if (!sample.length) {
         wrap.innerHTML = `<div class="traveling-empty">${dict.travelingEmpty}</div>`;
         return;
@@ -2944,6 +2955,10 @@
           if (data.firstName) firstName = data.firstName;
           agentDocRole = data.role || null;
           gcalConnected = !!data.gcalConnected;
+          // Profile photo + birthday — read once for topbar + modal prefill.
+          if (data.photoBase64) _myPhotoBase64 = data.photoBase64;
+          if (data.birthdayMonth) _myBdayMonth = String(data.birthdayMonth);
+          if (data.birthdayDay)   _myBdayDay   = String(data.birthdayDay);
         }
       } catch (e) {}
 
@@ -2980,6 +2995,7 @@
 
       document.getElementById('userName').textContent = firstName;
       document.getElementById('userAvatar').textContent = firstName.charAt(0).toUpperCase();
+      applyTopbarAvatar();   // swap to photo if user has one saved
       const wn = document.getElementById('welcomeName');
       if (wn) wn.textContent = firstName;
       renderToolList();
@@ -2999,6 +3015,131 @@
     window.closeAccessModal = function() {
       document.getElementById('accBd').classList.remove('show');
     };
+
+    /* ============ My Profile modal: photo + birthday ============ */
+    let _myPhotoBase64 = '';   // current data: URI in agents/{uid}.photoBase64
+    let _myBdayMonth = '';
+    let _myBdayDay = '';
+
+    function fillBdayOptions() {
+      const monthSel = document.getElementById('meBdayMonth');
+      const daySel   = document.getElementById('meBdayDay');
+      // Months
+      const months = currentLang === 'ja'
+        ? ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月']
+        : ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      monthSel.innerHTML = `<option value="">${currentLang === 'ja' ? '月' : 'Month'}</option>` +
+        months.map((m, i) => `<option value="${i + 1}">${m}</option>`).join('');
+      monthSel.value = _myBdayMonth || '';
+      // Days 1-31
+      daySel.innerHTML = `<option value="">${currentLang === 'ja' ? '日' : 'Day'}</option>` +
+        Array.from({ length: 31 }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join('');
+      daySel.value = _myBdayDay || '';
+    }
+
+    function setMePhotoPreview(dataUri) {
+      const el = document.getElementById('mePhotoPreview');
+      const clearBtn = document.getElementById('mePhotoClearBtn');
+      if (dataUri) {
+        el.innerHTML = `<img src="${dataUri}" alt="">`;
+        if (clearBtn) clearBtn.style.display = '';
+      } else {
+        const initial = (currentUser && (currentUser.displayName || currentUser.email || 'A'))
+          .replace(/[^A-Za-z]/g, '').charAt(0).toUpperCase() || 'A';
+        el.textContent = initial;
+        if (clearBtn) clearBtn.style.display = 'none';
+      }
+    }
+
+    /* Resize an image File to a square 256×256 JPEG and return a data URI.
+       Keeps total payload < ~80 KB which fits comfortably in Firestore. */
+    function resizePhotoToDataUri(file) {
+      return new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onerror = reject;
+        r.onload = () => {
+          const img = new Image();
+          img.onerror = reject;
+          img.onload = () => {
+            const SIZE = 256;
+            const c = document.createElement('canvas');
+            c.width = SIZE; c.height = SIZE;
+            const ctx = c.getContext('2d');
+            // Cover-style centre crop into square
+            const minSide = Math.min(img.width, img.height);
+            const sx = (img.width  - minSide) / 2;
+            const sy = (img.height - minSide) / 2;
+            ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, SIZE, SIZE);
+            resolve(c.toDataURL('image/jpeg', 0.86));
+          };
+          img.src = r.result;
+        };
+        r.readAsDataURL(file);
+      });
+    }
+
+    window.openMeModal = function() {
+      if (!currentUser) return;
+      fillBdayOptions();
+      setMePhotoPreview(_myPhotoBase64);
+      document.getElementById('meBd').classList.add('show');
+    };
+    window.closeMeModal = function() {
+      document.getElementById('meBd').classList.remove('show');
+    };
+
+    document.getElementById('mePhotoInput').addEventListener('change', async (e) => {
+      const file = e.target.files && e.target.files[0];
+      e.target.value = '';
+      if (!file) return;
+      try {
+        const dataUri = await resizePhotoToDataUri(file);
+        _myPhotoBase64 = dataUri;
+        setMePhotoPreview(dataUri);
+      } catch (err) { console.error('photo resize failed', err); }
+    });
+    document.getElementById('mePhotoClearBtn').addEventListener('click', () => {
+      _myPhotoBase64 = '';
+      setMePhotoPreview('');
+    });
+
+    document.getElementById('meSaveBtn').addEventListener('click', async () => {
+      if (!currentUser) return;
+      const btn = document.getElementById('meSaveBtn');
+      btn.disabled = true;
+      const originalLabel = btn.textContent;
+      btn.textContent = currentLang === 'ja' ? '保存中…' : 'Saving…';
+      try {
+        _myBdayMonth = document.getElementById('meBdayMonth').value || '';
+        _myBdayDay   = document.getElementById('meBdayDay').value   || '';
+        await updateDoc(doc(db, 'agents', currentUser.uid), {
+          photoBase64:   _myPhotoBase64 || '',
+          birthdayMonth: _myBdayMonth ? Number(_myBdayMonth) : null,
+          birthdayDay:   _myBdayDay   ? Number(_myBdayDay)   : null
+        });
+        // Update topbar avatar immediately
+        applyTopbarAvatar();
+        btn.textContent = currentLang === 'ja' ? '✓ 保存しました' : '✓ Saved';
+        setTimeout(() => { btn.textContent = originalLabel; btn.disabled = false; closeMeModal(); }, 800);
+      } catch (err) {
+        console.error(err);
+        alert((currentLang === 'ja' ? '保存に失敗しました: ' : 'Save failed: ') + (err.message || err));
+        btn.textContent = originalLabel;
+        btn.disabled = false;
+      }
+    });
+
+    /* Render the topbar user-chip avatar from the current photo (if any). */
+    function applyTopbarAvatar() {
+      const av = document.getElementById('userAvatar');
+      if (!av) return;
+      if (_myPhotoBase64) {
+        av.innerHTML = `<img src="${_myPhotoBase64}" alt="">`;
+      } else {
+        const name = document.getElementById('userName')?.textContent || 'A';
+        av.textContent = (name.charAt(0) || 'A').toUpperCase();
+      }
+    }
     // Per-role inline SVG icons. Stroked, currentColor, 24×24 viewBox.
     const ROLE_ICON = {
       admin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10l4 4 6-9 6 9 4-4-2 11H4z"/><path d="M5 18h14"/></svg>',
@@ -3206,6 +3347,42 @@
       if (panel && !panel.hidden) panel.hidden = true;
     });
   </script>
+  <!-- My profile modal — photo + birthday -->
+  <div class="me-bd" id="meBd" onclick="if(event.target===this)closeMeModal()">
+    <div class="me-card" role="dialog" aria-labelledby="meTitle">
+      <h2 id="meTitle" data-i18n="meTitle">プロフィール</h2>
+      <p class="me-sub" data-i18n="meSub">プロフィール写真とお誕生日を登録（年は不要）。チームに表示されます。</p>
+
+      <div class="me-photo-row">
+        <div class="me-photo-preview" id="mePhotoPreview">A</div>
+        <div class="me-photo-actions">
+          <label class="me-upload-btn" for="mePhotoInput" data-i18n="meUploadPhoto">写真をアップロード</label>
+          <input id="mePhotoInput" type="file" accept="image/*" />
+          <button type="button" class="me-photo-clear" id="mePhotoClearBtn" data-i18n="meClearPhoto" style="display:none;">写真を削除</button>
+          <span class="me-photo-hint" data-i18n="mePhotoHint">JPEG / PNG · 自動で正方形にトリミング</span>
+        </div>
+      </div>
+
+      <div class="me-field">
+        <label data-i18n="meBirthday">お誕生日（年なし）</label>
+        <div class="me-bday-row">
+          <select id="meBdayMonth">
+            <option value="" data-i18n="meMonth">月</option>
+          </select>
+          <select id="meBdayDay">
+            <option value="" data-i18n="meDay">日</option>
+          </select>
+        </div>
+        <div class="me-bday-hint" data-i18n="meBdayHint">月初にチームの誕生日リストに表示されます。</div>
+      </div>
+
+      <div class="me-actions">
+        <button type="button" class="me-btn ghost" onclick="closeMeModal()" data-i18n="meCancel">キャンセル</button>
+        <button type="button" class="me-btn primary" id="meSaveBtn" data-i18n="meSave">保存</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Access role modal -->
   <div class="acc-bd" id="accBd" onclick="if(event.target===this)closeAccessModal()">
     <div class="acc-modal" role="dialog" aria-labelledby="accTitle">
