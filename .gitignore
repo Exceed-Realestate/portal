@@ -10,3 +10,5 @@ components-part-*.png
 # Firebase extension secrets (uploaded to Secret Manager on deploy)
 extensions/*.secret.local
 extensions/*.secret.*.local
+# Service-account JSON keys — never commit
+.secrets/

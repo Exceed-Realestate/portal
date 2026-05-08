@@ -7,7 +7,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyDCncNEuHfi_lTJ86OzOEub8b1ogJkVe9o",
   authDomain: "exceed-portal.firebaseapp.com",
   projectId: "exceed-portal",
-  storageBucket: "exceed-portal.firebasestorage.app",
+  storageBucket: "exceed-portal-files",
   messagingSenderId: "464886450601",
   appId: "1:464886450601:web:b71234f5b488e01c005cb8",
   measurementId: "G-7MPRDT0GE6"
