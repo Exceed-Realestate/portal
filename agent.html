@@ -2397,6 +2397,46 @@
       const monthFmt = new Intl.DateTimeFormat(currentLang === 'ja' ? 'ja-JP' : 'en-GB', { month: 'long', year: 'numeric' });
       document.getElementById('bdayMonthName').textContent = monthFmt.format(today);
 
+      // Merge user-supplied birthdays from agents/{uid}.birthdayMonth/Day.
+      // Source-of-truth precedence: agents collection (self-uploaded via
+      // the My-Profile modal) overrides team-tree config. Also catches
+      // agents who aren't in the org chart yet.
+      let agentsByUid = new Map();
+      let agentsByName = new Map();
+      try {
+        const snap = await getDocs(collection(db, 'agents'));
+        snap.forEach(d => {
+          const a = { id: d.id, ...d.data() };
+          if (a.uid) agentsByUid.set(a.uid, a);
+          const fname = `${a.firstName || ''} ${a.lastName || ''}`.trim().toUpperCase();
+          if (fname) agentsByName.set(fname, a);
+        });
+      } catch (e) { console.warn('[bday] agents load failed', e); }
+
+      // Enrich tree members with agent birthday + photo when available
+      for (const m of all) {
+        const a = (m.uid && agentsByUid.get(m.uid))
+          || agentsByName.get((m.name || '').trim().toUpperCase());
+        if (!a) continue;
+        if (Number.isInteger(a.birthdayMonth)) m.bdayMonth = a.birthdayMonth;
+        if (Number.isInteger(a.birthdayDay))   m.bdayDay   = a.birthdayDay;
+        if (a.photoBase64) m.photo = a.photoBase64;
+      }
+
+      // Add agents who have birthdays but aren't in any team-tree section
+      const treeNames = new Set(all.map(m => (m.name || '').trim().toUpperCase()));
+      for (const a of agentsByName.values()) {
+        const name = `${a.firstName || ''} ${a.lastName || ''}`.trim();
+        if (!name || treeNames.has(name.toUpperCase())) continue;
+        if (!Number.isInteger(a.birthdayMonth) || !Number.isInteger(a.birthdayDay)) continue;
+        all.push({
+          name,
+          bdayMonth: a.birthdayMonth,
+          bdayDay:   a.birthdayDay,
+          photo:     a.photoBase64 || ''
+        });
+      }
+
       const list = all
         .filter(m => Number.isInteger(m.bdayMonth) && m.bdayMonth === month && Number.isInteger(m.bdayDay))
         .sort((a, b) => a.bdayDay - b.bdayDay);
