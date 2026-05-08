@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Exceed Real Estate — Dashboard</title>
+  <title>Exceed Real Estate — Sign in</title>
   <link rel="icon" type="image/jpeg" href="logo.jpg">
   <!-- PWA: manifest, theme color, iOS install support. -->
   <link rel="manifest" href="manifest.webmanifest">
@@ -20,896 +20,579 @@
   <style>
     :root {
       --navy-0: #051428;
-      --navy-1: #0a1f3d;        /* logo bg */
+      --navy-1: #0a1f3d;
       --navy-2: #102a4f;
-      --navy-3: #173663;
-      --line: rgba(255, 255, 255, 0.10);
-      --line-strong: rgba(255, 255, 255, 0.20);
+      --line: rgba(255,255,255,0.10);
+      --line-strong: rgba(255,255,255,0.20);
       --text: #f5f7fb;
       --muted: #9aa8c2;
       --cream: #f1ead8;
       --gold: #d4b87a;
-      --accent: #ffffff;
-      --radius: 16px;
-      --shadow: 0 30px 80px -20px rgba(0,0,0,.7);
     }
-
     * { box-sizing: border-box; }
-    html, body { margin: 0; padding: 0; }
+    html, body { margin: 0; padding: 0; height: 100%; }
     html[lang="ja"] body { font-family: 'Noto Sans JP', 'Inter', system-ui, sans-serif; }
-    html[lang="ja"] h1, html[lang="ja"] h2, html[lang="ja"] h3,
-    html[lang="ja"] .brand-name { font-family: 'Noto Serif JP', 'Playfair Display', serif; }
+    html[lang="ja"] .welcome-title,
+    html[lang="ja"] .signin-title { font-family: 'Noto Serif JP', 'Playfair Display', serif; }
 
     body {
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
       color: var(--text);
-      background: transparent;
+      background: var(--navy-0) !important;
       min-height: 100vh;
       -webkit-font-smoothing: antialiased;
-      overflow-x: hidden;
-    }
-    html { background: var(--navy-0); }
-
-    /* Dubai skyline background */
-    .bg-skyline {
-      position: fixed;
-      inset: 0;
-      z-index: -3;
-      background-image: url('skyline.jpg');
-      background-size: cover;
-      background-position: center center;
-      background-repeat: no-repeat;
-    }
-    /* Subtle navy vignette so the photo shows but text stays readable */
-    .bg-overlay {
-      position: fixed;
-      inset: 0;
-      z-index: -2;
-      background:
-        radial-gradient(80% 50% at 50% 40%, transparent 0%, rgba(5,20,40,0.35) 100%),
-        linear-gradient(180deg, rgba(5,20,40,0.30) 0%, rgba(5,20,40,0.10) 35%, rgba(5,20,40,0.55) 100%);
     }
 
-    /* Floating shapes */
-    .shapes {
-      position: fixed;
-      inset: 0;
-      z-index: -1;
+    /* Override the global skyline / overlay layers from liquid.css for this
+       page — we draw our own split layout. */
+    .bg-skyline, .bg-overlay { display: none !important; }
+
+    /* ===== Layout ===== */
+    .auth-shell {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      min-height: 100vh;
+    }
+    @media (max-width: 880px) {
+      .auth-shell { grid-template-columns: 1fr; grid-template-rows: 38vh 1fr; }
+    }
+
+    /* ===== LEFT: hero / welcome side ===== */
+    .auth-hero {
+      position: relative;
       overflow: hidden;
+      background:
+        linear-gradient(120deg, rgba(5,15,30,0.55) 0%, rgba(5,15,30,0.2) 60%, rgba(5,15,30,0.65) 100%),
+        url('skyline.jpg') center/cover no-repeat;
+      display: flex;
+      flex-direction: column;
+      padding: 36px 48px;
+    }
+    @media (max-width: 880px) { .auth-hero { padding: 22px 22px 26px; } }
+
+    .auth-hero::after {
+      /* subtle gold horizon glow on the right edge */
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(60% 40% at 100% 50%, rgba(212,184,122,0.18), transparent 60%);
       pointer-events: none;
     }
-    .shape {
-      position: absolute;
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 30%;
-      animation: float 18s ease-in-out infinite;
-    }
-    .shape.s1 { width: 260px; height: 260px; top: 10%; left: -60px; animation-delay: 0s; }
-    .shape.s2 { width: 180px; height: 180px; top: 60%; right: -40px; animation-delay: -6s; border-radius: 20%; }
-    .shape.s3 { width: 120px; height: 120px; top: 30%; right: 20%; animation-delay: -12s; border-radius: 50%; }
-    .shape.s4 { width: 200px; height: 200px; bottom: 10%; left: 30%; animation-delay: -3s; border-radius: 40%; }
-    @keyframes float {
-      0%, 100% { transform: translate(0, 0) rotate(0deg); }
-      33% { transform: translate(30px, -40px) rotate(120deg); }
-      66% { transform: translate(-20px, 20px) rotate(240deg); }
-    }
+    .auth-hero > * { position: relative; z-index: 1; }
 
-    /* Top bar */
-    .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 20px 40px;
-      border-bottom: 1px solid var(--line);
-      backdrop-filter: blur(10px);
-      background: rgba(5,20,40,0.5);
-      position: sticky;
-      top: 0;
-      z-index: 50;
+    .hero-brand {
+      display: inline-flex; align-items: center; gap: 12px;
+      text-decoration: none; color: inherit;
     }
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      transition: transform .3s ease;
+    .hero-brand img {
+      width: 44px; height: 44px; border-radius: 10px;
+      box-shadow: 0 6px 18px -6px rgba(0,0,0,0.5);
     }
-    .brand:hover { transform: scale(1.02); }
-    .brand-logo {
-      width: 48px; height: 48px;
-      border-radius: 10px;
-      object-fit: cover;
-      box-shadow: 0 6px 20px -6px rgba(0,0,0,.6);
-      transition: transform .4s cubic-bezier(.34,1.56,.64,1);
-    }
-    .brand:hover .brand-logo { transform: rotate(-6deg) scale(1.06); }
-    .brand-name {
+    .hero-brand .brand-name {
       font-family: 'Playfair Display', serif;
-      font-size: 20px;
-      letter-spacing: 2.5px;
       font-weight: 600;
-      line-height: 1;
+      letter-spacing: 2.6px;
+      font-size: 16px;
     }
-    .brand-name span { color: var(--gold); font-weight: 400; }
-    .brand-name small {
+    .hero-brand .brand-name span { color: var(--gold); font-weight: 400; }
+    .hero-brand .brand-name small {
       display: block;
       font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      letter-spacing: 3px;
       font-size: 10px;
-      letter-spacing: 4px;
       color: var(--muted);
       margin-top: 4px;
-      font-weight: 400;
     }
 
-    .topbar-right {
-      display: flex;
-      align-items: center;
-      gap: 18px;
+    .hero-content {
+      margin-top: auto;
+      max-width: 520px;
     }
-    .topbar-meta {
-      color: var(--muted);
+    .welcome-eyebrow {
+      color: var(--gold);
+      letter-spacing: 5px;
       font-size: 11px;
-      letter-spacing: 1.5px;
+      font-weight: 700;
       text-transform: uppercase;
+      margin-bottom: 16px;
     }
+    .welcome-title {
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: clamp(46px, 6.5vw, 96px);
+      line-height: 0.98;
+      margin: 0 0 18px;
+      color: var(--cream);
+      text-shadow: 0 6px 28px rgba(0,0,0,0.5);
+    }
+    .welcome-tagline {
+      color: rgba(255,255,255,0.82);
+      font-size: 14px;
+      line-height: 1.65;
+      max-width: 440px;
+      margin: 0 0 28px;
+    }
+    .hero-socials {
+      display: flex; gap: 12px;
+      margin-top: auto;
+    }
+    .hero-socials a {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.16);
+      color: var(--cream);
+      display: grid; place-items: center;
+      text-decoration: none;
+      transition: background .15s, border-color .15s, transform .15s;
+    }
+    .hero-socials a:hover {
+      background: rgba(212,184,122,0.18);
+      border-color: rgba(212,184,122,0.4);
+      color: var(--gold);
+      transform: translateY(-2px);
+    }
+    .hero-socials svg { width: 16px; height: 16px; }
 
-    /* Language toggle */
+    .hero-bottom {
+      margin-top: 22px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      flex-wrap: wrap;
+    }
     .lang-toggle {
-      display: inline-flex;
-      align-items: center;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--line);
-      border-radius: 999px;
+      display: inline-flex; gap: 4px;
       padding: 4px;
-      position: relative;
+      background: rgba(0,0,0,0.35);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 999px;
+      backdrop-filter: blur(8px);
     }
     .lang-toggle button {
-      background: transparent;
-      border: none;
-      color: var(--muted);
-      font-family: inherit;
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 1px;
-      padding: 6px 14px;
-      border-radius: 999px;
-      cursor: pointer;
-      transition: color .25s ease;
-      position: relative;
-      z-index: 1;
+      background: transparent; border: 0; padding: 6px 14px;
+      color: rgba(255,255,255,0.7); font-family: inherit; font-size: 11.5px;
+      letter-spacing: 1px; cursor: pointer; border-radius: 999px; font-weight: 600;
+      transition: all .15s;
     }
-    .lang-toggle button.active { color: var(--navy-0); }
-    .lang-toggle .pill {
-      position: absolute;
-      top: 4px; bottom: 4px;
-      background: var(--cream);
-      border-radius: 999px;
-      transition: transform .35s cubic-bezier(.34,1.56,.64,1), width .35s ease;
-      z-index: 0;
-    }
-
-    /* Hero */
-    .hero {
-      padding: 70px 24px 30px;
-      max-width: 1100px;
-      margin: 0 auto;
-      text-align: center;
-      position: relative;
-    }
-    .eyebrow {
-      color: var(--gold);
-      letter-spacing: 6px;
+    .lang-toggle button.active { background: var(--cream); color: var(--navy-0); }
+    .hero-tagline-mini {
+      color: rgba(255,255,255,0.55);
       font-size: 11px;
+      letter-spacing: 2.4px;
       text-transform: uppercase;
-      margin-bottom: 22px;
-      opacity: 0;
-      animation: fadeUp .8s ease forwards;
-    }
-    h1 {
-      font-family: 'Playfair Display', serif;
-      font-weight: 500;
-      font-size: clamp(40px, 6vw, 68px);
-      line-height: 1.1;
-      margin: 0 0 50px;
-      letter-spacing: -0.5px;
-      opacity: 0;
-      animation: fadeUp .9s .15s ease forwards;
-    }
-    h1 em {
-      font-style: italic;
-      font-weight: 600;
-      background: linear-gradient(135deg, var(--gold), var(--cream));
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      position: relative;
-    }
-    .lede {
-      color: var(--muted);
-      font-size: 17px;
-      max-width: 640px;
-      margin: 0 auto 40px;
-      line-height: 1.7;
-      opacity: 0;
-      animation: fadeUp .9s .3s ease forwards;
-    }
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Stats strip */
-    .stats {
+    /* ===== RIGHT: form side ===== */
+    .auth-form-side {
+      background: linear-gradient(180deg, var(--navy-1) 0%, var(--navy-0) 100%);
       display: flex;
+      align-items: center;
       justify-content: center;
-      gap: 50px;
-      margin: 0 auto 50px;
-      flex-wrap: wrap;
-      opacity: 0;
-      animation: fadeUp .9s .45s ease forwards;
-    }
-    .stat { text-align: center; }
-    .stat-num {
-      font-family: 'Playfair Display', serif;
-      font-size: 32px;
-      font-weight: 600;
-      color: var(--cream);
-      line-height: 1;
-    }
-    html[lang="ja"] .stat-num { font-family: 'Noto Serif JP', serif; }
-    .stat-label {
-      font-size: 11px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-top: 6px;
-    }
-
-    /* Login buttons */
-    .login-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 18px;
-      max-width: 640px;
-      margin: 0 auto;
-      opacity: 0;
-      animation: fadeUp .9s .6s ease forwards;
-    }
-    .login-btn {
-      background: linear-gradient(180deg, rgba(16,42,79,0.85), rgba(10,31,61,0.85));
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      padding: 26px 20px;
-      cursor: pointer;
-      color: var(--cream);
-      font-family: 'Playfair Display', serif;
-      font-size: 18px;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease, background .25s ease;
-      backdrop-filter: blur(10px);
-    }
-    html[lang="ja"] .login-btn { font-family: 'Noto Serif JP', serif; }
-    .login-btn:hover {
-      transform: translateY(-3px);
-      border-color: rgba(212,184,122,0.5);
-      box-shadow: 0 20px 40px -16px rgba(0,0,0,.5);
-      color: #fff;
-    }
-    .login-btn:active { transform: translateY(-1px); }
-
-    /* Divider */
-    .divider {
-      max-width: 780px;
-      margin: 70px auto 40px;
-      display: flex;
-      align-items: center;
-      gap: 18px;
-      color: var(--muted);
-      font-size: 11px;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-    }
-    .divider::before, .divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--line), transparent);
-    }
-    .divider .dot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: var(--gold);
-      box-shadow: 0 0 12px var(--gold);
-    }
-
-    /* Register section */
-    .register-section {
-      max-width: 780px;
-      margin: 0 auto 80px;
-      background: linear-gradient(180deg, rgba(16,42,79,0.85), rgba(10,31,61,0.85));
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      padding: 44px 40px;
-      backdrop-filter: blur(10px);
+      padding: 48px 36px;
       position: relative;
-      overflow: hidden;
     }
-    .register-section::before {
-      content: '';
-      position: absolute;
-      top: -1px; left: 20%; right: 20%;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, var(--gold), transparent);
-      opacity: 0.6;
-    }
-    .register-section h2 {
-      font-family: 'Playfair Display', serif;
-      font-weight: 600;
-      font-size: 28px;
-      margin: 0 0 8px;
-      letter-spacing: -0.3px;
-    }
-    .register-section .sub {
-      color: var(--muted);
-      font-size: 14px;
-      margin: 0 0 30px;
-      line-height: 1.6;
-    }
-    .register-section .sub strong { color: var(--cream); font-weight: 600; }
+    @media (max-width: 880px) { .auth-form-side { padding: 32px 22px 40px; } }
 
-    form {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 18px;
-    }
-    .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-    .field.full { grid-column: 1 / -1; }
-    .register-section form > * { min-width: 0; }
-    label {
-      font-size: 11px;
-      letter-spacing: 1.5px;
-      color: var(--muted);
-      text-transform: uppercase;
-      font-weight: 500;
-    }
-    input, select {
-      background: rgba(5,20,40,0.7);
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      color: var(--text);
-      padding: 14px 16px;
-      font-family: inherit;
-      font-size: 14px;
-      outline: none;
-      transition: border-color .2s ease, background .2s ease, box-shadow .2s ease;
-    }
-    .field select {
-      appearance: none;
-      -webkit-appearance: none;
-      cursor: pointer;
-      padding-right: 40px;
-      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none' stroke='%239aa8c2' stroke-width='1.5'><path d='M1 1l4 4 4-4'/></svg>");
-      background-repeat: no-repeat;
-      background-position: right 14px center;
-    }
-    .field select option { background: var(--navy-1); color: var(--text); }
-    input::placeholder { color: #5d6c87; }
-    input:focus, select:focus {
-      border-color: var(--gold);
-      background: rgba(5,20,40,0.95);
-      box-shadow: 0 0 0 3px rgba(212,184,122,0.12);
-    }
-    .submit-row {
-      grid-column: 1 / -1;
-      margin-top: 14px;
-      display: flex;
-      flex-direction: column;
-      align-items: stretch;
-      gap: 14px;
-    }
-    .submit-row .btn-primary { width: 100%; padding: 16px 30px; font-size: 13px; }
-    .submit-row .terms { text-align: center; }
-    .btn-primary {
-      background: linear-gradient(135deg, var(--cream), var(--gold));
-      color: var(--navy-0);
-      border: none;
-      padding: 14px 30px;
-      border-radius: 10px;
-      font-weight: 700;
-      font-size: 12px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      cursor: pointer;
-      font-family: inherit;
-      transition: transform .2s ease, box-shadow .25s ease;
-      position: relative;
-      overflow: hidden;
-    }
-    .btn-primary::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, #fff, var(--cream));
-      opacity: 0;
-      transition: opacity .25s ease;
-    }
-    .btn-primary span { position: relative; z-index: 1; }
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 14px 32px -10px rgba(212,184,122,.5);
-    }
-    .btn-primary:hover::before { opacity: 1; }
-    .terms { color: var(--muted); font-size: 12px; }
-
-    /* Register reveal toggle */
-    .register-cta-wrap {
-      max-width: 780px;
-      margin: 60px auto 80px;
-      text-align: center;
-    }
-    .register-cta-wrap .lead-text {
-      color: var(--muted);
-      font-size: 14px;
-      margin: 0 0 18px;
-      letter-spacing: 0.3px;
-    }
-    .register-toggle {
-      background: transparent;
-      color: var(--cream);
-      border: 1px solid rgba(212,184,122,0.4);
-      padding: 14px 32px;
-      border-radius: 999px;
-      font-family: inherit;
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: background .25s ease, border-color .25s ease, color .25s ease, transform .15s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .register-toggle:hover {
-      background: rgba(212,184,122,0.1);
-      border-color: var(--gold);
-      color: #fff;
-    }
-    .register-toggle .chev {
-      width: 14px; height: 14px;
-      transition: transform .35s ease;
-    }
-    .register-toggle.open .chev { transform: rotate(180deg); }
-
-    .register-section {
-      max-height: 0;
-      overflow: hidden;
-      padding: 0 40px;
-      margin: 0 auto;
-      opacity: 0;
-      text-align: left;
-      transition: max-height .55s ease, opacity .35s ease, padding .4s ease, margin .4s ease;
-      border: 1px solid transparent;
-    }
-    .register-section.open {
-      max-height: 2200px;
-      padding: 44px 40px;
-      margin: 24px auto 0;
-      opacity: 1;
-      border-color: var(--line);
-    }
-    .register-section form { text-align: left; }
-
-    /* Email composite + phone composite */
-    .composite {
-      display: flex;
-      align-items: stretch;
-      background: rgba(5,20,40,0.7);
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      transition: border-color .2s ease, background .2s ease, box-shadow .2s ease;
-      overflow: hidden;
-    }
-    .composite:focus-within {
-      border-color: var(--gold);
-      background: rgba(5,20,40,0.95);
-      box-shadow: 0 0 0 3px rgba(212,184,122,0.12);
-    }
-    .composite input,
-    .composite select {
-      background: transparent;
-      border: none;
-      box-shadow: none;
-      padding: 14px 14px;
-      flex: 1;
-      min-width: 0;
-    }
-    .composite input:focus, .composite select:focus { box-shadow: none; }
-    .composite .email-suffix {
-      display: flex;
-      align-items: center;
-      padding: 0 14px;
-      background: rgba(255,255,255,0.04);
-      color: var(--cream);
-      font-family: ui-monospace, 'SF Mono', monospace;
-      font-size: 13px;
-      border-left: 1px solid var(--line);
-      white-space: nowrap;
-    }
-    .composite select.country-code {
-      flex: 0 0 auto;
-      max-width: 110px;
-      border-right: 1px solid var(--line);
-      background: rgba(255,255,255,0.04);
-      padding-right: 8px;
-      font-size: 13px;
-      color: var(--text);
-      cursor: pointer;
-      appearance: none;
-      -webkit-appearance: none;
-      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none' stroke='%239aa8c2' stroke-width='1.5'><path d='M1 1l4 4 4-4'/></svg>");
-      background-repeat: no-repeat;
-      background-position: right 10px center;
-      padding-right: 26px;
-    }
-    .composite select.country-code option { background: var(--navy-1); color: var(--text); }
-
-    /* Toast */
-    .toast {
-      position: fixed;
-      bottom: 30px; left: 50%;
-      transform: translateX(-50%) translateY(120%);
-      background: rgba(16,42,79,0.95);
-      border: 1px solid rgba(212,184,122,0.4);
-      color: var(--text);
-      padding: 14px 22px;
-      border-radius: 10px;
-      box-shadow: var(--shadow);
-      font-size: 14px;
-      transition: transform .35s cubic-bezier(.34,1.56,.64,1);
-      z-index: 999;
-      backdrop-filter: blur(10px);
-    }
-    .toast.show { transform: translateX(-50%) translateY(0); }
-
-    /* Skyline */
-    .skyline {
+    .auth-form-card {
       width: 100%;
-      height: 110px;
-      display: block;
-      margin-top: -20px;
-      opacity: 0.35;
+      max-width: 380px;
     }
 
-    footer {
-      text-align: center;
-      color: var(--muted);
+    .signin-eyebrow {
+      color: var(--gold);
+      letter-spacing: 4px;
       font-size: 11px;
-      padding: 0 20px 30px;
-      letter-spacing: 2px;
+      font-weight: 700;
       text-transform: uppercase;
+      margin-bottom: 8px;
     }
-
-    /* Confetti */
-    .confetti {
-      position: fixed;
-      width: 8px; height: 14px;
-      pointer-events: none;
-      z-index: 998;
-      will-change: transform;
-    }
-
-    /* Modal */
-    .modal-backdrop {
-      position: fixed; inset: 0;
-      background: rgba(5, 12, 24, 0.75);
-      backdrop-filter: blur(8px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      opacity: 0;
-      transition: opacity .25s ease;
-    }
-    .modal-backdrop.show { display: flex; opacity: 1; }
-    .modal {
-      background: linear-gradient(180deg, var(--navy-2), var(--navy-1));
-      border: 1px solid var(--line-strong);
-      border-radius: var(--radius);
-      padding: 36px 32px;
-      width: min(420px, calc(100% - 32px));
-      box-shadow: var(--shadow);
-      transform: translateY(20px) scale(0.97);
-      transition: transform .35s cubic-bezier(.34,1.56,.64,1);
-      position: relative;
-    }
-    .modal-backdrop.show .modal { transform: translateY(0) scale(1); }
-    .modal-close {
-      position: absolute;
-      top: 14px; right: 14px;
-      background: none;
-      border: none;
-      color: var(--muted);
-      cursor: pointer;
-      width: 32px; height: 32px;
-      border-radius: 8px;
-      display: grid; place-items: center;
-      transition: background .2s ease, color .2s ease;
-    }
-    .modal-close:hover { background: rgba(255,255,255,0.08); color: var(--text); }
-    .modal h3 {
+    .signin-title {
       font-family: 'Playfair Display', serif;
-      font-size: 24px;
-      font-weight: 600;
+      font-weight: 700;
+      font-size: 36px;
       margin: 0 0 6px;
+      color: var(--cream);
     }
-    html[lang="ja"] .modal h3 { font-family: 'Noto Serif JP', serif; }
-    .modal .modal-sub {
+    .signin-sub {
       color: var(--muted);
       font-size: 13px;
-      margin: 0 0 22px;
+      margin: 0 0 28px;
+      line-height: 1.5;
     }
-    .modal form {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
+
+    .field {
+      margin-bottom: 16px;
     }
-    .modal .field { gap: 6px; }
-    .modal .modal-actions {
-      margin-top: 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .modal .btn-primary { width: 100%; }
-    .modal .demo-hint {
-      font-size: 12px;
-      color: var(--muted);
-      text-align: center;
-      margin: 0;
-      padding: 10px;
-      background: rgba(212,184,122,0.08);
-      border-radius: 8px;
-      border: 1px dashed rgba(212,184,122,0.25);
-    }
-    .modal .demo-hint code {
-      color: var(--cream);
-      font-family: ui-monospace, 'SF Mono', monospace;
+    .field label {
+      display: block;
       font-size: 11px;
+      letter-spacing: 1.4px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .field input, .field select {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+      color: var(--text);
+      padding: 13px 14px;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 14.5px;
+      transition: border-color .15s, background .15s;
+    }
+    .field input:focus, .field select:focus {
+      outline: none;
+      border-color: var(--gold);
+      background: rgba(212,184,122,0.05);
+    }
+    .field input::placeholder { color: rgba(255,255,255,0.35); }
+
+    .composite {
+      display: flex; gap: 8px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0;
+      transition: border-color .15s;
+    }
+    .composite:focus-within { border-color: var(--gold); background: rgba(212,184,122,0.05); }
+    .composite > input, .composite > select {
+      background: transparent; border: 0;
+    }
+    .composite > input { flex: 1; padding: 13px 12px 13px 0; }
+    .composite > select {
+      padding: 13px 4px 13px 14px; color: var(--cream); font-size: 14px;
+      flex: 0 0 auto;
+    }
+    .composite > select option { background: var(--navy-1); color: var(--text); }
+    .composite .email-suffix {
+      align-self: center; padding-right: 14px;
+      color: var(--muted); font-size: 13px; white-space: nowrap;
     }
 
-    /* Rolling-logo login loader — transparent track, the logo rolls along
-       a thin gold guideline while a glow fills behind it. */
-    .rolling-track {
-      width: min(420px, calc(100% - 32px));
-      height: 72px;
+    .row-2 {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    }
+    @media (max-width: 540px) { .row-2 { grid-template-columns: 1fr; } }
+
+    .form-extra {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; margin: 8px 0 22px;
+      flex-wrap: wrap;
+    }
+    .remember-me { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+    .remember-me input {
+      width: 16px; height: 16px;
+      accent-color: var(--gold);
+      cursor: pointer;
+    }
+    .remember-me span { font-size: 12.5px; color: var(--muted); }
+    .forgot-link {
+      color: var(--gold);
+      font-size: 12.5px;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .forgot-link:hover { text-decoration: underline; }
+
+    .btn-primary {
+      width: 100%;
+      padding: 14px;
+      border: 0;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--cream), var(--gold));
+      color: var(--navy-1);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: transform .15s, box-shadow .15s, opacity .15s;
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 14px 32px -10px rgba(212,184,122,0.5); }
+    .btn-primary:disabled { opacity: 0.55; cursor: wait; transform: none; box-shadow: none; }
+
+    .btn-secondary {
+      display: inline-block;
+      padding: 12px 18px;
+      border: 1px solid var(--line-strong);
+      border-radius: 10px;
       background: transparent;
-      border: none;
-      border-radius: 0;
-      position: relative;
-      overflow: visible;
-      margin: 28px auto 10px;
-      display: none;
+      color: var(--cream);
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      text-decoration: none;
     }
-    .rolling-track.active { display: block; }
-    /* Faint baseline the logo "rolls" along */
-    .rolling-track::before {
-      content: '';
-      position: absolute;
-      left: 6px; right: 6px;
-      bottom: 8px;
-      height: 1px;
-      background: linear-gradient(90deg,
-        transparent 0%,
-        rgba(212,184,122,0.12) 8%,
-        rgba(212,184,122,0.55) 50%,
-        rgba(212,184,122,0.12) 92%,
-        transparent 100%);
-    }
-    /* Filled progress that grows in sync with the rolling logo */
-    .rolling-track::after {
-      content: '';
-      position: absolute;
-      left: 6px;
-      bottom: 8px;
-      width: 0;
-      height: 1px;
-      background: linear-gradient(90deg, var(--cream), var(--gold));
-      box-shadow: 0 0 10px rgba(212,184,122,0.6);
-    }
-    .rolling-track.go::after {
-      animation: rollFill 1.8s cubic-bezier(.5,.05,.25,1) forwards;
-    }
-    .rolling-logo {
-      width: 56px; height: 56px;
-      position: absolute;
-      left: 0; top: 6px;
-      border-radius: 50%;
-      object-fit: cover;
-      box-shadow: 0 8px 22px -8px rgba(0,0,0,.65), 0 0 0 1px rgba(212,184,122,0.35);
-    }
-    /* Soft gold glow that travels under the logo */
-    .rolling-logo::after {
-      /* (kept here in case glow becomes its own element later) */
-    }
-    .rolling-track.go .rolling-logo {
-      animation: roll 1.8s cubic-bezier(.5,.05,.25,1) forwards;
-    }
-    @keyframes roll {
-      from { left: 0; transform: rotate(0deg); }
-      to   { left: calc(100% - 56px); transform: rotate(720deg); }
-    }
-    @keyframes rollFill {
-      from { width: 0; }
-      to   { width: calc(100% - 12px); }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .rolling-track.go .rolling-logo,
-      .rolling-track.go::after {
-        animation: none;
-      }
-      .rolling-track.go .rolling-logo { left: calc(100% - 56px); }
-      .rolling-track.go::after { width: calc(100% - 12px); }
-    }
+    .btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
 
-    @media (max-width: 640px) {
-      .login-grid { grid-template-columns: 1fr; }
-      form { grid-template-columns: 1fr; }
-      .topbar { padding: 16px 18px; flex-wrap: wrap; gap: 14px; }
-      .topbar-meta { display: none; }
-      .register-section.open { padding: 28px 22px; }
-      .hero { padding-top: 50px; padding-left: 18px; padding-right: 18px; }
-      .stats { gap: 28px; }
-      .stat-num { font-size: 26px; }
+    .signup-prompt {
+      margin-top: 22px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
     }
-    @media (max-width: 420px) {
-      .topbar { padding: 12px 14px; gap: 10px; }
-      .brand-logo { width: 38px; height: 38px; }
-      .brand-name { font-size: 16px; letter-spacing: 1.6px; }
-      .brand-name small { font-size: 9px; letter-spacing: 2.5px; }
-      .lang-toggle button { font-size: 11px; padding: 5px 10px; }
-      h1 { margin-bottom: 32px; }
-      .lede { font-size: 15px; }
-      .hero { padding-top: 38px; padding-bottom: 16px; }
-      .register-section.open { padding: 22px 18px; }
-      .register-cta-wrap { margin: 36px auto 56px; }
-      .submit-row .btn-primary { padding: 14px 20px; font-size: 12px; }
-      .modal { padding: 28px 22px; }
+    .signup-prompt a {
+      color: var(--gold);
+      text-decoration: none;
+      font-weight: 600;
+      margin-left: 4px;
+    }
+    .signup-prompt a:hover { text-decoration: underline; }
+
+    .legal-line {
+      margin-top: 20px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.55;
+    }
+    .legal-line a { color: var(--cream); text-decoration: underline; }
+
+    /* ===== Toast ===== */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: rgba(10,31,61,0.96);
+      color: var(--cream);
+      padding: 14px 22px; border-radius: 12px;
+      border: 1px solid var(--gold);
+      font-size: 13px; font-weight: 500;
+      opacity: 0; pointer-events: none;
+      transition: all .35s ease;
+      z-index: 1000; max-width: calc(100vw - 32px);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 22px 50px -10px rgba(0,0,0,0.5);
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+    .toast.error { border-color: rgba(255,107,107,0.6); }
+
+    /* ===== Register modal ===== */
+    .modal-bd {
+      position: fixed; inset: 0;
+      background: rgba(5,15,30,0.78);
+      backdrop-filter: blur(8px);
+      z-index: 200;
+      display: none;
+      place-items: center;
+      padding: 24px;
+    }
+    .modal-bd.show { display: grid; }
+    .modal {
+      width: 100%; max-width: 460px;
+      background: linear-gradient(180deg, rgba(16,42,79,0.98), rgba(10,31,61,0.98));
+      border: 1px solid rgba(212,184,122,0.45);
+      border-radius: 16px;
+      padding: 28px;
+      max-height: 90vh; overflow-y: auto;
+      position: relative;
+    }
+    .modal h3 {
+      font-family: 'Playfair Display', 'Noto Serif JP', serif;
+      font-weight: 600; font-size: 22px; margin: 0 0 4px;
+      color: var(--cream);
+    }
+    .modal p.sub {
+      color: var(--muted); font-size: 13px; margin: 0 0 22px; line-height: 1.55;
+    }
+    .modal-close {
+      position: absolute; top: 14px; right: 14px;
+      background: transparent; border: 0; cursor: pointer;
+      width: 30px; height: 30px; border-radius: 50%;
+      color: var(--muted);
+      display: grid; place-items: center;
+    }
+    .modal-close:hover { background: rgba(255,255,255,0.08); color: var(--cream); }
+    .modal-actions { margin-top: 22px; }
+
+    /* iOS PWA safe area */
+    @supports (padding: env(safe-area-inset-top)) {
+      .auth-hero { padding-top: max(36px, env(safe-area-inset-top)); }
+      .auth-form-side { padding-top: max(48px, env(safe-area-inset-top)); }
     }
   </style>
-  <script src="theme-init.js"></script>
 </head>
 <body>
-  <div class="bg-skyline"></div>
-  <div class="bg-overlay"></div>
-  <div class="shapes">
-    <div class="shape s1"></div>
-    <div class="shape s2"></div>
-    <div class="shape s3"></div>
-    <div class="shape s4"></div>
-  </div>
+  <div class="auth-shell">
 
-  <header class="topbar">
-    <div class="brand">
-      <img src="logo.jpg" alt="Exceed Real Estate" class="brand-logo" />
-      <div class="brand-name">
-        EXCEED <span>REAL ESTATE</span>
-        <small data-i18n="tagline">DUBAI · OFF-PLAN & RESALE</small>
+    <!-- LEFT: brand-rich hero -->
+    <aside class="auth-hero">
+      <a class="hero-brand" href="https://exceed.estate" target="_blank" rel="noopener">
+        <img src="logo.jpg" alt="Exceed Real Estate">
+        <div class="brand-name">
+          EXCEED <span>REAL ESTATE</span>
+          <small data-i18n="brandSub">DUBAI · OFF-PLAN &amp; RESALE</small>
+        </div>
+      </a>
+
+      <div class="hero-content">
+        <div class="welcome-eyebrow" data-i18n="eyebrow">Welcome back</div>
+        <h1 class="welcome-title" data-i18n="welcomeTitle">Welcome to<br>Exceed Portal</h1>
+        <p class="welcome-tagline" data-i18n="welcomeTag">
+          Dubai's most polished real-estate workspace — listings,
+          deal flow, IRR simulation and team collaboration in one place.
+        </p>
       </div>
-    </div>
-    <div class="topbar-right">
-      <div class="topbar-meta" data-i18n="topbarMeta">EST. DUBAI</div>
-      <div class="lang-toggle" id="langToggle">
-        <span class="pill" id="langPill"></span>
-        <button data-lang="ja" class="active">日本語</button>
-        <button data-lang="en">EN</button>
+
+      <div class="hero-bottom">
+        <div class="hero-socials">
+          <a href="https://www.instagram.com/exceed.estate/" target="_blank" rel="noopener" aria-label="Instagram">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.8" fill="currentColor"/></svg>
+          </a>
+          <a href="https://wa.me/971500000000" target="_blank" rel="noopener" aria-label="WhatsApp">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.6 14.5c-.3-.1-1.7-.8-1.9-.9-.3-.1-.5-.1-.7.2-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.4-1.5-.9-.8-1.5-1.8-1.6-2.1-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.4z"/><path d="M20.5 3.5C18.4 1.4 15.7.3 12.7.3 6.6.3 1.5 5.4 1.5 11.5c0 1.9.5 3.8 1.5 5.5L1.5 22.7l5.9-1.5c1.6.9 3.5 1.4 5.3 1.4h.1c6.1 0 11.2-5.1 11.2-11.2-.1-3-1.2-5.7-3.5-7.9zM12.7 20.6c-1.6 0-3.2-.4-4.6-1.3l-.3-.2-3.5.9.9-3.4-.2-.3c-.9-1.5-1.4-3.2-1.4-4.9C3.6 6.5 7.7 2.4 12.8 2.4c2.4 0 4.7 1 6.4 2.7 1.7 1.7 2.7 4 2.7 6.4-.1 5-4.2 9.1-9.2 9.1z"/></svg>
+          </a>
+          <a href="https://exceed.estate" target="_blank" rel="noopener" aria-label="Website">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          </a>
+          <a href="mailto:info@exceed-re.ae" aria-label="Email">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          </a>
+        </div>
+
+        <div class="lang-toggle" id="langToggle">
+          <button data-lang="ja" class="active">日本語</button>
+          <button data-lang="en">EN</button>
+        </div>
       </div>
-    </div>
-  </header>
+    </aside>
 
-  <main>
-    <section class="hero">
-      <h1>Exceed <em>Portal</em></h1>
+    <!-- RIGHT: sign-in form -->
+    <main class="auth-form-side">
+      <div class="auth-form-card">
+        <div class="signin-eyebrow" data-i18n="signinEyebrow">EXCEED PORTAL</div>
+        <h2 class="signin-title" data-i18n="signinTitle">Sign in</h2>
+        <p class="signin-sub" data-i18n="signinSub">Access your dashboard with your company credentials.</p>
 
-      <div class="login-grid">
-        <button class="login-btn" onclick="handleLogin('agent')" data-i18n="agentTitle">Agent Login</button>
-        <button class="login-btn" onclick="handleLogin('client')" data-i18n="clientTitle">Client Login</button>
-      </div>
-    </section>
-
-    <div class="register-cta-wrap">
-      <p class="lead-text" data-i18n="regLead">新しいエージェントですか？</p>
-      <button type="button" class="register-toggle" id="registerToggle" onclick="toggleRegister()">
-        <span data-i18n="registerOpen">エージェント登録</span>
-        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-      </button>
-
-      <section class="register-section" id="registerSection">
-        <h2 data-i18n="regTitle">エージェント登録</h2>
-        <p class="sub" data-i18n-html="regSub">登録は <strong>@exceed-re.ae</strong> の会社メールを持つExceedスタッフのみ可能です。</p>
-
-        <form id="register-form" onsubmit="handleRegister(event)" novalidate>
+        <form id="login-form" onsubmit="submitLogin(event)" novalidate>
           <div class="field">
-            <label for="firstName" data-i18n="firstName">名</label>
-            <input id="firstName" type="text" required data-i18n-attr-placeholder="phFirst" placeholder="例: Aisha" />
+            <label for="loginEmail" data-i18n="emailLabel">Email address</label>
+            <input id="loginEmail" type="email" required
+                   autocomplete="username"
+                   placeholder="name@exceed-re.ae" />
           </div>
           <div class="field">
-            <label for="lastName" data-i18n="lastName">姓</label>
-            <input id="lastName" type="text" required data-i18n-attr-placeholder="phLast" placeholder="例: Khan" />
+            <label for="loginPassword" data-i18n="passwordLabel">Password</label>
+            <input id="loginPassword" type="password" required minlength="6"
+                   autocomplete="current-password"
+                   placeholder="••••••••" />
           </div>
-          <div class="field">
-            <label for="emailLocal" data-i18n="email">会社メール</label>
-            <div class="composite">
-              <input id="emailLocal" type="text" required data-i18n-attr-placeholder="phEmailLocal" placeholder="name" pattern="^[A-Za-z0-9._%+\-]+$" />
-              <span class="email-suffix">@exceed-re.ae</span>
-            </div>
+
+          <div class="form-extra">
+            <label class="remember-me">
+              <input type="checkbox" id="rememberMe" />
+              <span data-i18n="rememberMe">Remember me</span>
+            </label>
+            <a href="#" class="forgot-link" onclick="event.preventDefault(); openForgot()" data-i18n="forgotPwd">Forgot password?</a>
           </div>
-          <div class="field">
-            <label for="phoneNumber" data-i18n="phone">電話番号</label>
-            <div class="composite">
-              <select id="countryCode" class="country-code" aria-label="Country code">
-                <option value="+971" selected>🇦🇪 +971</option>
-                <option value="+81">🇯🇵 +81</option>
-                <option value="+91">🇮🇳 +91</option>
-                <option value="+1">🇺🇸 +1</option>
-                <option value="+44">🇬🇧 +44</option>
-                <option value="+86">🇨🇳 +86</option>
-                <option value="+966">🇸🇦 +966</option>
-                <option value="+65">🇸🇬 +65</option>
-                <option value="+852">🇭🇰 +852</option>
-              </select>
-              <input id="phoneNumber" type="tel" required data-i18n-attr-placeholder="phPhone" placeholder="50 123 4567" pattern="^[0-9 \-]{6,}$" />
-            </div>
-          </div>
-          <div class="field full">
-            <label for="role" data-i18n="role">役割</label>
-            <select id="role" required>
-              <option value="agent" data-i18n="roleAgent">エージェント</option>
-              <option value="team" data-i18n="roleTeam">チームメンバー</option>
-              <option value="back_office" data-i18n="roleBackOffice">バックオフィス</option>
-              <option value="board" data-i18n="roleBoard">ボード</option>
-              <option value="md" data-i18n="roleMd">マネージング・ディレクター</option>
-              <option value="ceo" data-i18n="roleCeo">CEO</option>
-            </select>
-          </div>
-          <div class="field full">
-            <label for="password" data-i18n="password">パスワード作成</label>
-            <input id="password" type="password" required minlength="8" data-i18n-attr-placeholder="phPassword" placeholder="8文字以上" />
-          </div>
-          <div class="submit-row">
-            <span class="terms" data-i18n="terms">登録によりExceedの利用規約とデータポリシーに同意したものとみなされます。</span>
-            <button type="submit" class="btn-primary"><span data-i18n="submit">登録を送信</span></button>
-          </div>
+
+          <button type="submit" class="btn-primary" id="loginSubmitBtn">
+            <span data-i18n="signinBtn">Sign in now</span>
+          </button>
         </form>
-      </section>
-    </div>
-  </main>
 
-<footer>© 2026 Exceed Real Estate · <span data-i18n="footerLoc">ドバイ, UAE</span></footer>
+        <div class="signup-prompt">
+          <span data-i18n="newAgentPrompt">New agent?</span>
+          <a href="#" onclick="event.preventDefault(); openRegister()" data-i18n="registerLink">Register here</a>
+        </div>
+
+        <p class="legal-line">
+          <span data-i18n-html="legalLine">By signing in you agree to Exceed's <a href="#" onclick="event.preventDefault()">Terms of Service</a> and <a href="#" onclick="event.preventDefault()">Privacy Policy</a>.</span>
+        </p>
+      </div>
+    </main>
+  </div>
 
   <div class="toast" id="toast"></div>
 
-  <!-- Login Modal -->
-  <div class="modal-backdrop" id="loginModal" onclick="if(event.target===this)closeLogin()">
+  <!-- Register modal — minimal: name + email + phone + password -->
+  <div class="modal-bd" id="registerBd" onclick="if(event.target===this)closeRegister()">
     <div class="modal">
-      <button class="modal-close" onclick="closeLogin()" aria-label="Close">
+      <button class="modal-close" onclick="closeRegister()" aria-label="Close">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
-      <h3 data-i18n="loginTitle">エージェントログイン</h3>
-      <p class="modal-sub" data-i18n="loginSub">会社の認証情報でサインインしてください。</p>
-      <form id="login-form" onsubmit="submitLogin(event)" novalidate>
-        <div class="field">
-          <label for="loginEmail" data-i18n="email">会社メール</label>
-          <input id="loginEmail" type="email" required placeholder="name@exceed-re.ae"
-                 pattern="^[^@\s]+@exceed-re\.ae$" />
+      <h3 data-i18n="registerTitle">Register as an Exceed agent</h3>
+      <p class="sub" data-i18n-html="registerSub">Use your <strong>@exceed-re.ae</strong> work email. Your account is pending until an admin activates you.</p>
+
+      <form id="register-form" onsubmit="handleRegister(event)" novalidate>
+        <div class="row-2">
+          <div class="field">
+            <label for="firstName" data-i18n="firstName">First name</label>
+            <input id="firstName" type="text" required placeholder="Aisha" />
+          </div>
+          <div class="field">
+            <label for="lastName" data-i18n="lastName">Last name</label>
+            <input id="lastName" type="text" required placeholder="Khan" />
+          </div>
         </div>
+
         <div class="field">
-          <label for="loginPassword" data-i18n="password">パスワード</label>
-          <input id="loginPassword" type="password" required minlength="6" />
+          <label for="emailLocal" data-i18n="workEmail">Work email</label>
+          <div class="composite">
+            <input id="emailLocal" type="text" required placeholder="name"
+                   pattern="^[A-Za-z0-9._%+\-]+$" />
+            <span class="email-suffix">@exceed-re.ae</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="phoneNumber" data-i18n="phoneLabel">Phone</label>
+          <div class="composite">
+            <select id="countryCode" aria-label="Country code">
+              <option value="+971" selected>🇦🇪 +971</option>
+              <option value="+81">🇯🇵 +81</option>
+              <option value="+91">🇮🇳 +91</option>
+              <option value="+62">🇮🇩 +62</option>
+              <option value="+1">🇺🇸 +1</option>
+              <option value="+44">🇬🇧 +44</option>
+              <option value="+86">🇨🇳 +86</option>
+              <option value="+966">🇸🇦 +966</option>
+              <option value="+65">🇸🇬 +65</option>
+              <option value="+852">🇭🇰 +852</option>
+            </select>
+            <input id="phoneNumber" type="tel" required placeholder="50 123 4567"
+                   pattern="^[0-9 \-]{6,}$" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="regPassword" data-i18n="passwordCreate">Create password</label>
+          <input id="regPassword" type="password" required minlength="8"
+                 placeholder="Min 8 characters" />
+        </div>
+
+        <div class="modal-actions">
+          <button type="submit" class="btn-primary">
+            <span data-i18n="submitRegister">Submit registration</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Forgot-password modal -->
+  <div class="modal-bd" id="forgotBd" onclick="if(event.target===this)closeForgot()">
+    <div class="modal" style="max-width:380px;">
+      <button class="modal-close" onclick="closeForgot()" aria-label="Close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <h3 data-i18n="forgotTitle">Reset password</h3>
+      <p class="sub" data-i18n="forgotSub">Enter your email — we'll send a reset link.</p>
+      <form onsubmit="submitForgot(event)" novalidate>
+        <div class="field">
+          <label data-i18n="emailLabel">Email address</label>
+          <input id="forgotEmail" type="email" required placeholder="name@exceed-re.ae" />
         </div>
         <div class="modal-actions">
-          <button type="submit" class="btn-primary"><span data-i18n="loginBtn">ログイン</span></button>
-          <p class="demo-hint" data-i18n-html="demoHint">デモアカウント: <code>demo@exceed-re.ae</code> / <code>demo1234</code></p>
+          <button type="submit" class="btn-primary"><span data-i18n="sendResetLink">Send reset link</span></button>
         </div>
       </form>
     </div>
@@ -920,175 +603,135 @@
     import {
       createUserWithEmailAndPassword,
       signInWithEmailAndPassword,
-      onAuthStateChanged,
+      sendPasswordResetEmail,
       updateProfile,
       signOut
     } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
     import {
       doc, setDoc, getDoc, serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
-    import { isAdmin, isValidRole, DEFAULT_ROLE } from './firebase-init.js';
+    import { isAdmin, DEFAULT_ROLE } from './firebase-init.js';
 
-    // ----- i18n -----
-    const i18n = {
+    /* ----- i18n ----- */
+    const I18N = {
       ja: {
-        tagline: 'ドバイ · オフプラン & 中古',
-        topbarMeta: 'ドバイ拠点',
-        eyebrow: 'ようこそ',
-        h1pre: 'EXCEED', h1em: 'ポータル', h1post: 'へ',
-        lede: 'エージェントとクライアントのための統合ワークスペース。リスティング管理、案件追跡、そしてドバイで最も洗練された不動産機会の発掘まで。',
-        stat1: '物件リスティング', stat2: '専属エージェント', stat3: '成約クライアント',
-        agentTitle: 'エージェントログイン',
-        clientTitle: 'クライアントログイン',
-        divider: '新規エージェント',
-        regTitle: 'エージェント登録',
-        regSub: '登録は <strong>@exceed-re.ae</strong> の会社メールを持つExceedスタッフのみ可能です。',
-        firstName: '名', lastName: '姓', email: '会社メール', phone: '電話番号', password: 'パスワード作成',
-        role: '役割',
-        roleCeo: 'CEO', roleMd: 'マネージング・ディレクター', roleBoard: 'ボード',
-        roleAgent: 'エージェント', roleTeam: 'チームメンバー', roleBackOffice: 'バックオフィス',
-        phFirst: '例: Aisha', phLast: '例: Khan', phPassword: '8文字以上',
-        phEmailLocal: 'name', phPhone: '50 123 4567',
-        regLead: '新しいエージェントですか？',
-        registerOpen: 'エージェント登録', registerClose: '閉じる',
-        emailTitle: '@exceed-re.ae の会社メールのみ使用可能です',
-        terms: '登録によりExceedの利用規約とデータポリシーに同意したものとみなされます。',
-        submit: '登録を送信',
-        footerLoc: 'ドバイ, UAE',
-        toastAgent: 'エージェントログインは近日公開。',
-        toastClient: 'クライアントログインは近日公開。',
+        brandSub: 'ドバイ · オフプラン & 中古',
+        eyebrow: 'おかえりなさい',
+        welcomeTitle: 'Exceed<br>ポータルへ',
+        welcomeTag: 'ドバイで最も洗練された不動産ワークスペース — リスティング、案件管理、IRR シミュレーター、チーム共有まで一つに。',
+        signinEyebrow: 'EXCEED PORTAL',
+        signinTitle: 'サインイン',
+        signinSub: '会社の認証情報でダッシュボードにアクセスしてください。',
+        emailLabel: 'メールアドレス',
+        passwordLabel: 'パスワード',
+        rememberMe: 'ログインを保存',
+        forgotPwd: 'パスワードをお忘れですか？',
+        signinBtn: 'サインイン',
+        newAgentPrompt: '新しいエージェントですか？',
+        registerLink: '登録はこちら',
+        legalLine: 'サインインすることで、Exceed の <a href="#" onclick="event.preventDefault()">利用規約</a> と <a href="#" onclick="event.preventDefault()">プライバシーポリシー</a> に同意したものとみなされます。',
+        registerTitle: 'Exceed エージェント登録',
+        registerSub: '<strong>@exceed-re.ae</strong> の会社メールをご利用ください。管理者の承認後にログインできます。',
+        firstName: '名', lastName: '姓',
+        workEmail: '会社メール',
+        phoneLabel: '電話番号',
+        passwordCreate: 'パスワード作成',
+        submitRegister: '登録を送信',
+        forgotTitle: 'パスワードをリセット',
+        forgotSub: 'メールアドレスを入力してください。リセットリンクをお送りします。',
+        sendResetLink: 'リセットリンクを送信',
+        toastFields: '必須項目を入力してください。',
         toastDomain: '@exceed-re.ae の会社メールのみ登録可能です。',
-        toastFields: '必須項目をすべて入力してください。',
         toastSuccess: '登録完了 — 管理者の承認後にログインできます。',
         toastLoginInvalid: 'メールアドレスまたはパスワードが正しくありません。',
-        toastLoginSuccess: 'ログイン成功。ダッシュボードへ移動中...',
-        toastClientSoon: 'クライアントログインは近日公開。',
+        toastLoginSuccess: 'ログイン成功。ダッシュボードへ移動中…',
         toastEmailInUse: 'このメールアドレスは既に登録されています。',
         toastWeakPassword: 'パスワードは6文字以上で設定してください。',
-        toastNetwork: 'ネットワークエラーが発生しました。もう一度お試しください。',
+        toastNetwork: 'ネットワークエラーが発生しました。',
         toastPending: 'アカウントは管理者の承認待ちです。',
-        toastSuspended: 'このアカウントは停止されています。管理者に連絡してください。',
-        loginTitle: 'エージェントログイン',
-        loginSub: '会社の認証情報でサインインしてください。',
-        loginBtn: 'ログイン',
-        demoHint: '会社メールとパスワードでサインインしてください。'
+        toastSuspended: 'このアカウントは停止されています。',
+        toastResetSent: 'リセットリンクを送信しました。メールをご確認ください。'
       },
       en: {
-        tagline: 'DUBAI · OFF-PLAN & RESALE',
-        topbarMeta: 'EST. DUBAI',
-        eyebrow: 'Welcome',
-        h1pre: 'Step into the', h1em: 'Exceed', h1post: 'portal',
-        lede: 'A unified workspace for our agents and clients — manage listings, track deals, and explore Dubai\'s most exclusive real estate opportunities.',
-        stat1: 'Property Listings', stat2: 'Active Agents', stat3: 'Happy Clients',
-        agentTitle: 'Agent Login',
-        clientTitle: 'Client Login',
-        divider: 'New Agent',
-        regTitle: 'Register as an Agent',
-        regSub: 'Registration is restricted to Exceed staff with an <strong>@exceed-re.ae</strong> company email.',
-        firstName: 'First Name', lastName: 'Last Name', email: 'Work Email', phone: 'Phone', password: 'Create Password',
-        role: 'Role',
-        roleCeo: 'CEO', roleMd: 'Managing Director', roleBoard: 'Board',
-        roleAgent: 'Agent', roleTeam: 'Team', roleBackOffice: 'Back Office',
-        phFirst: 'e.g. Aisha', phLast: 'e.g. Khan', phPassword: 'Min 8 characters',
-        phEmailLocal: 'name', phPhone: '50 123 4567',
-        regLead: 'New to Exceed?',
-        registerOpen: 'Register as Agent', registerClose: 'Close',
-        emailTitle: 'Only @exceed-re.ae company emails are allowed',
-        terms: 'By registering you agree to Exceed\'s terms & data policy.',
-        submit: 'Submit Registration',
-        footerLoc: 'Dubai, UAE',
-        toastAgent: 'Agent login coming soon.',
-        toastClient: 'Client login coming soon.',
+        brandSub: 'DUBAI · OFF-PLAN & RESALE',
+        eyebrow: 'Welcome back',
+        welcomeTitle: 'Welcome to<br>Exceed Portal',
+        welcomeTag: "Dubai's most polished real-estate workspace — listings, deal flow, IRR simulation and team collaboration in one place.",
+        signinEyebrow: 'EXCEED PORTAL',
+        signinTitle: 'Sign in',
+        signinSub: 'Access your dashboard with your company credentials.',
+        emailLabel: 'Email address',
+        passwordLabel: 'Password',
+        rememberMe: 'Remember me',
+        forgotPwd: 'Forgot password?',
+        signinBtn: 'Sign in now',
+        newAgentPrompt: 'New agent?',
+        registerLink: 'Register here',
+        legalLine: 'By signing in you agree to Exceed\'s <a href="#" onclick="event.preventDefault()">Terms of Service</a> and <a href="#" onclick="event.preventDefault()">Privacy Policy</a>.',
+        registerTitle: 'Register as an Exceed agent',
+        registerSub: 'Use your <strong>@exceed-re.ae</strong> work email. Your account is pending until an admin activates you.',
+        firstName: 'First name', lastName: 'Last name',
+        workEmail: 'Work email',
+        phoneLabel: 'Phone',
+        passwordCreate: 'Create password',
+        submitRegister: 'Submit registration',
+        forgotTitle: 'Reset password',
+        forgotSub: "Enter your email — we'll send a reset link.",
+        sendResetLink: 'Send reset link',
+        toastFields: 'Please fill in all required fields.',
         toastDomain: 'Registration is restricted to @exceed-re.ae company emails.',
-        toastFields: 'Please complete all required fields.',
         toastSuccess: 'Registered — you can log in once an admin approves.',
         toastLoginInvalid: 'Email or password is incorrect.',
         toastLoginSuccess: 'Logged in. Redirecting…',
-        toastClientSoon: 'Client login coming soon.',
         toastEmailInUse: 'This email is already registered.',
         toastWeakPassword: 'Password must be at least 6 characters.',
         toastNetwork: 'Network error. Please try again.',
         toastPending: 'Account is awaiting admin approval.',
         toastSuspended: 'This account has been suspended. Contact your admin.',
-        loginTitle: 'Agent Login',
-        loginSub: 'Sign in with your company credentials.',
-        loginBtn: 'Sign In',
-        demoHint: 'Use your company email and password to sign in.'
+        toastResetSent: 'Reset link sent. Check your inbox.'
       }
     };
 
     let currentLang = 'ja';
-
     function setLang(lang) {
       currentLang = lang;
-      const dict = i18n[lang];
       document.documentElement.lang = lang;
+      const dict = I18N[lang];
       document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        if (dict[key]) el.textContent = dict[key];
+        const k = el.getAttribute('data-i18n');
+        if (dict[k]) el.innerHTML = dict[k];
       });
       document.querySelectorAll('[data-i18n-html]').forEach(el => {
-        const key = el.getAttribute('data-i18n-html');
-        if (dict[key]) el.innerHTML = dict[key];
+        const k = el.getAttribute('data-i18n-html');
+        if (dict[k]) el.innerHTML = dict[k];
       });
-      document.querySelectorAll('[data-i18n-attr-placeholder]').forEach(el => {
-        const key = el.getAttribute('data-i18n-attr-placeholder');
-        if (dict[key]) el.placeholder = dict[key];
-      });
-      document.querySelectorAll('[data-i18n-attr-title]').forEach(el => {
-        const key = el.getAttribute('data-i18n-attr-title');
-        if (dict[key]) el.title = dict[key];
-      });
-      // Update toggle pill
-      const buttons = document.querySelectorAll('.lang-toggle button');
-      buttons.forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
-      positionPill();
-      // Sync register button label with current open/closed state
-      const btn = document.getElementById('registerToggle');
-      if (btn) {
-        const isOpen = btn.classList.contains('open');
-        btn.querySelector('span').textContent = dict[isOpen ? 'registerClose' : 'registerOpen'];
-      }
+      document.querySelectorAll('#langToggle button').forEach(b =>
+        b.classList.toggle('active', b.dataset.lang === lang));
+    }
+    document.querySelectorAll('#langToggle button').forEach(b =>
+      b.addEventListener('click', () => setLang(b.dataset.lang)));
+
+    /* ----- Toast ----- */
+    function showToast(msg, isErr) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.toggle('error', !!isErr);
+      t.classList.add('show');
+      clearTimeout(t._tm);
+      t._tm = setTimeout(() => t.classList.remove('show'), 3500);
     }
 
-    function positionPill() {
-      const pill = document.getElementById('langPill');
-      const active = document.querySelector('.lang-toggle button.active');
-      if (!active || !pill) return;
-      const parent = active.parentElement;
-      const parentRect = parent.getBoundingClientRect();
-      const rect = active.getBoundingClientRect();
-      pill.style.width = rect.width + 'px';
-      pill.style.transform = `translateX(${rect.left - parentRect.left - 4}px)`;
-    }
-
-    document.querySelectorAll('.lang-toggle button').forEach(btn => {
-      btn.addEventListener('click', () => setLang(btn.dataset.lang));
-    });
-
-    // ----- Auth state: if already logged in, hop to dashboard -----
-    onAuthStateChanged(auth, (user) => {
-      if (user && document.getElementById('loginModal').classList.contains('show')) {
-        // Closing login modal — handled in submitLogin
-      }
-    });
-
-    // ----- Login & register handlers -----
-    window.handleLogin = function(role) {
-      const dict = i18n[currentLang];
-      if (role === 'agent') openLogin();
-      else showToast(dict.toastClientSoon);
+    /* ----- Modals ----- */
+    window.openRegister = () => document.getElementById('registerBd').classList.add('show');
+    window.closeRegister = () => document.getElementById('registerBd').classList.remove('show');
+    window.openForgot = () => {
+      const email = document.getElementById('loginEmail').value || '';
+      document.getElementById('forgotEmail').value = email;
+      document.getElementById('forgotBd').classList.add('show');
     };
+    window.closeForgot = () => document.getElementById('forgotBd').classList.remove('show');
 
-    function openLogin() {
-      const m = document.getElementById('loginModal');
-      m.classList.add('show');
-      setTimeout(() => document.getElementById('loginEmail').focus(), 200);
-    }
-    window.closeLogin = function() {
-      document.getElementById('loginModal').classList.remove('show');
-    };
-
+    /* ----- Auth-error → human message ----- */
     function mapAuthError(code, dict) {
       switch (code) {
         case 'auth/email-already-in-use': return dict.toastEmailInUse;
@@ -1102,194 +745,111 @@
       }
     }
 
+    /* ----- Remember-me prefill ----- */
+    try {
+      const remembered = localStorage.getItem('rememberedEmail');
+      if (remembered) {
+        document.getElementById('loginEmail').value = remembered;
+        document.getElementById('rememberMe').checked = true;
+      }
+    } catch (_) {}
+
+    /* ----- Sign in ----- */
     window.submitLogin = async function(e) {
       e.preventDefault();
-      const dict = i18n[currentLang];
+      const dict = I18N[currentLang];
       const email = document.getElementById('loginEmail').value.trim().toLowerCase();
       const pwd = document.getElementById('loginPassword').value;
-      const form = e.target;
-      const btn = form.querySelector('button[type=submit]');
-
-      // Validate non-empty
-      if (!email || !pwd) { showToast(dict.toastFields || 'Please enter email and password.'); return; }
-
+      const remember = document.getElementById('rememberMe').checked;
+      const btn = document.getElementById('loginSubmitBtn');
+      if (!email || !pwd) { showToast(dict.toastFields, true); return; }
       btn.disabled = true;
-
-      const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const ROLL_MS = reducedMotion ? 200 : 1800;
-      const FADE_MS = 350;
-
-      // Find or build the rolling-loader inside the modal
-      let track = document.getElementById('rollingTrack');
-      if (!track) {
-        track = document.createElement('div');
-        track.id = 'rollingTrack';
-        track.className = 'rolling-track';
-        const logo = document.createElement('img');
-        logo.src = 'logo.jpg';
-        logo.alt = 'Loading';
-        logo.className = 'rolling-logo';
-        track.appendChild(logo);
-        form.parentNode.insertBefore(track, form.nextSibling);
-      }
-
-      // Fade form out
-      form.style.transition = `opacity ${FADE_MS}ms ease`;
-      form.style.opacity = '0';
-      setTimeout(() => { form.style.display = 'none'; track.classList.add('active', 'go'); }, FADE_MS);
-
-      // Animation completes after FADE_MS + ROLL_MS
-      const animDone = new Promise(r => setTimeout(r, FADE_MS + ROLL_MS));
-
-      const restoreForm = () => {
-        track.classList.remove('active', 'go');
-        form.style.display = '';
-        requestAnimationFrame(() => { form.style.opacity = '1'; });
-        btn.disabled = false;
-      };
-
       try {
         const cred = await signInWithEmailAndPassword(auth, email, pwd);
+        // Pending / suspended gate (admins bypass)
         if (!isAdmin(email)) {
           const snap = await getDoc(doc(db, 'agents', cred.user.uid));
           if (snap.exists()) {
             const status = snap.data().status;
-            if (status === 'pending') {
-              await signOut(auth);
-              await animDone; restoreForm();
-              showToast(dict.toastPending);
-              return;
-            }
-            if (status === 'suspended') {
-              await signOut(auth);
-              await animDone; restoreForm();
-              showToast(dict.toastSuspended);
-              return;
-            }
+            if (status === 'pending')   { await signOut(auth); showToast(dict.toastPending, true);   btn.disabled = false; return; }
+            if (status === 'suspended') { await signOut(auth); showToast(dict.toastSuspended, true); btn.disabled = false; return; }
           }
         }
-        // Wait for the roll to complete, then redirect.
-        await animDone;
+        try {
+          if (remember) localStorage.setItem('rememberedEmail', email);
+          else          localStorage.removeItem('rememberedEmail');
+        } catch (_) {}
         showToast(dict.toastLoginSuccess);
-        window.location.href = 'agent.html';
+        setTimeout(() => { window.location.href = 'agent.html'; }, 400);
       } catch (err) {
-        await animDone;
-        restoreForm();
-        showToast(mapAuthError(err.code, dict));
+        console.error(err);
+        showToast(mapAuthError(err.code, dict), true);
+        btn.disabled = false;
       }
     };
 
+    /* ----- Register ----- */
     window.handleRegister = async function(e) {
       e.preventDefault();
-      const dict = i18n[currentLang];
+      const dict = I18N[currentLang];
       const form = e.target;
       const local = form.emailLocal.value.trim().toLowerCase();
       const email = local + '@exceed-re.ae';
       const allowed = /^[A-Za-z0-9._%+\-]+$/.test(local) && local.length > 0;
-      if (!allowed) { showToast(dict.toastDomain); form.emailLocal.focus(); return; }
-      if (!form.checkValidity()) { showToast(dict.toastFields); return; }
+      if (!allowed) { showToast(dict.toastDomain, true); form.emailLocal.focus(); return; }
+      if (!form.checkValidity()) { showToast(dict.toastFields, true); return; }
       const code = form.countryCode.value;
       const firstName = form.firstName.value.trim();
       const lastName = form.lastName.value.trim();
       const phone = code + ' ' + form.phoneNumber.value.trim();
-      const role = isValidRole(form.role.value) ? form.role.value : DEFAULT_ROLE;
-      const password = form.password.value;
+      const password = form.regPassword.value;
       const submitBtn = form.querySelector('button[type=submit]');
       submitBtn.disabled = true;
       try {
         const cred = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(cred.user, { displayName: `${firstName} ${lastName}` });
+        // Default role 'agent' — admin can promote later via Manage Access.
         await setDoc(doc(db, 'agents', cred.user.uid), {
-          firstName, lastName, email, phone, role,
+          firstName, lastName, email, phone,
+          role: DEFAULT_ROLE,
           uid: cred.user.uid,
           status: 'pending',
           createdAt: serverTimestamp()
         });
-        // Sign out immediately — must be approved before login
-        try { await signOut(auth); } catch (e) {}
+        try { await signOut(auth); } catch (_) {}
         showToast(dict.toastSuccess);
-        fireConfetti();
         form.reset();
-        setTimeout(() => toggleRegister(false), 1500);
+        setTimeout(closeRegister, 1500);
       } catch (err) {
-        showToast(mapAuthError(err.code, dict));
+        console.error(err);
+        showToast(mapAuthError(err.code, dict), true);
       } finally {
         submitBtn.disabled = false;
       }
     };
 
-    window.toggleRegister = function(force) {
-      const section = document.getElementById('registerSection');
-      const btn = document.getElementById('registerToggle');
-      const willOpen = (typeof force === 'boolean') ? force : !section.classList.contains('open');
-      section.classList.toggle('open', willOpen);
-      btn.classList.toggle('open', willOpen);
-      const labelKey = willOpen ? 'registerClose' : 'registerOpen';
-      btn.querySelector('span').textContent = i18n[currentLang][labelKey];
-      if (willOpen) {
-        setTimeout(() => section.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80);
+    /* ----- Forgot password ----- */
+    window.submitForgot = async function(e) {
+      e.preventDefault();
+      const dict = I18N[currentLang];
+      const email = document.getElementById('forgotEmail').value.trim().toLowerCase();
+      if (!email) { showToast(dict.toastFields, true); return; }
+      const btn = e.target.querySelector('button[type=submit]');
+      btn.disabled = true;
+      try {
+        await sendPasswordResetEmail(auth, email);
+        showToast(dict.toastResetSent);
+        closeForgot();
+      } catch (err) {
+        console.error(err);
+        showToast(mapAuthError(err.code, dict), true);
+      } finally {
+        btn.disabled = false;
       }
     };
-    const toggleRegister = window.toggleRegister;
 
-    // Close modal on ESC, ⌘E / Ctrl+E to toggle language
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') closeLogin();
-      if ((e.metaKey || e.ctrlKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'e') {
-        e.preventDefault();
-        setLang(currentLang === 'ja' ? 'en' : 'ja');
-      }
-    });
-
-    function showToast(msg) {
-      const el = document.getElementById('toast');
-      el.textContent = msg;
-      el.classList.add('show');
-      clearTimeout(el._t);
-      el._t = setTimeout(() => el.classList.remove('show'), 2800);
-    }
-
-    // ----- Confetti -----
-    function fireConfetti() {
-      const colors = ['#d4b87a', '#f1ead8', '#ffffff', '#173663'];
-      const count = 60;
-      for (let i = 0; i < count; i++) {
-        const c = document.createElement('div');
-        c.className = 'confetti';
-        c.style.background = colors[Math.floor(Math.random() * colors.length)];
-        c.style.left = (50 + (Math.random() - 0.5) * 30) + '%';
-        c.style.top = '60%';
-        c.style.transform = `rotate(${Math.random() * 360}deg)`;
-        document.body.appendChild(c);
-        const dx = (Math.random() - 0.5) * 600;
-        const dy = -300 - Math.random() * 200;
-        const rot = Math.random() * 720;
-        c.animate([
-          { transform: `translate(0,0) rotate(0deg)`, opacity: 1 },
-          { transform: `translate(${dx}px, ${dy}px) rotate(${rot}deg)`, opacity: 1, offset: 0.3 },
-          { transform: `translate(${dx * 1.4}px, ${500}px) rotate(${rot * 1.5}deg)`, opacity: 0 }
-        ], { duration: 2000 + Math.random() * 800, easing: 'cubic-bezier(.2,.7,.4,1)' });
-        setTimeout(() => c.remove(), 3000);
-      }
-    }
-
-    // ----- Card hover spotlight -----
-    window.cardMove = function(e, el) {
-      const r = el.getBoundingClientRect();
-      el.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
-      el.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100) + '%');
-    };
-    window.cardLeave = function(el) {
-      el.style.removeProperty('--mx');
-      el.style.removeProperty('--my');
-    };
-
-    // ----- Init -----
-    window.addEventListener('load', () => {
-      setLang('ja');
-    });
-    window.addEventListener('resize', positionPill);
+    /* ----- Init ----- */
+    setLang('ja');
   </script>
-  <script src="glass-fx.js" defer></script>
 </body>
 </html>
