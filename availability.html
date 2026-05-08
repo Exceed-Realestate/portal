@@ -351,24 +351,32 @@
     .cal-today-btn:hover { background: rgba(212,184,122,0.20); }
 
     .cal-grid {
-      display: grid; grid-template-columns: repeat(7, 1fr);
+      display: grid;
+      /* minmax(0, 1fr) lets every column shrink past its content's
+         intrinsic width — without it, a long event chip in one cell
+         pushes that column wide and squeezes Sunday/Saturday off-screen. */
+      grid-template-columns: repeat(7, minmax(0, 1fr));
       gap: 2px; background: var(--line);
       border: 1px solid var(--line); border-radius: 12px; overflow: hidden;
+      width: 100%;
     }
     .cal-grid-head {
       background: rgba(5,15,30,0.6);
-      padding: 14px 10px; font-size: 11px; letter-spacing: 1.8px;
+      padding: 14px 6px; font-size: 11px; letter-spacing: 1.8px;
       text-transform: uppercase; color: var(--muted); font-weight: 700;
       text-align: center;
+      min-width: 0; overflow: hidden;
     }
     .cal-cell {
       background: rgba(8,22,42,0.55);
       min-height: 140px;
-      padding: 10px 12px;
+      padding: 10px 10px;
       display: flex; flex-direction: column; gap: 5px;
       cursor: pointer;
       transition: background .15s;
       position: relative;
+      min-width: 0;        /* lets the cell shrink below content size */
+      overflow: hidden;    /* event chips never escape into the next column */
     }
     .cal-cell:hover { background: rgba(212,184,122,0.06); }
     .cal-cell.other-month { opacity: 0.35; }
@@ -389,6 +397,9 @@
       border-radius: 5px;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       border-left: 2px solid var(--gold);
+      max-width: 100%;     /* never pushes past the cell width */
+      min-width: 0;
+      display: block;
     }
     .cal-chip.allday {
       background: rgba(135,179,157,0.18); color: #87b39d;
@@ -868,24 +879,35 @@
       renderCalendar();
     });
 
-    /* Silently re-authorise (no popup) using a previously granted consent. */
+    /* Silently re-authorise using a previously granted consent.
+       prompt:'none' is the proper "silent" mode — GIS attempts to issue
+       a fresh token without UI as long as the user is still signed into
+       Google in this browser. Returns true on success, false if it
+       failed (in which case the caller falls back to the Connect button). */
     async function silentRequestToken() {
       await waitForGis();
       const client = ensureTokenClient();
-      if (!client) throw new Error('GIS not ready');
+      if (!client) return false;
       return new Promise((resolve) => {
+        let settled = false;
+        const done = (ok) => { if (!settled) { settled = true; resolve(ok); } };
         client.callback = async (resp) => {
           if (resp && resp.access_token) {
             try {
               localStorage.setItem(TOKEN_KEY, resp.access_token);
               localStorage.setItem(EXP_KEY, String(Date.now() + (resp.expires_in - 30) * 1000));
             } catch (_) {}
+            done(true);
+          } else {
+            done(false);
           }
-          resolve();
         };
-        client.error_callback = () => resolve();
-        try { client.requestAccessToken({ prompt: '' }); }
-        catch (_) { resolve(); }
+        client.error_callback = () => done(false);
+        try { client.requestAccessToken({ prompt: 'none' }); }
+        catch (_) { done(false); }
+        // Hard timeout — if GIS doesn't fire either callback within 6s
+        // (e.g., popup blocked, network), bail and let the caller decide.
+        setTimeout(() => done(false), 6000);
       });
     }
 
@@ -1016,10 +1038,23 @@
         orderBy: 'startTime',
         maxResults: String(maxResults)
       });
-      const res = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events?' + params, {
-        headers: { Authorization: 'Bearer ' + token }
+      const doFetch = (t) => fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events?' + params, {
+        headers: { Authorization: 'Bearer ' + t }
       });
+      let res = await doFetch(token);
+      // On 401/403, try a SILENT re-auth once (prompt:'none') and retry the
+      // fetch with the new token. Only if THAT also fails do we clear and
+      // bubble up an "expired" error so the UI shows the Reconnect prompt.
       if (res.status === 401 || res.status === 403) {
+        const ok = await silentRequestToken();
+        const fresh = ok ? getToken() : null;
+        if (fresh) {
+          res = await doFetch(fresh);
+          if (res.ok) {
+            const data = await res.json();
+            return data.items || [];
+          }
+        }
         clearToken();
         const err = new Error('expired');
         err.expired = true;

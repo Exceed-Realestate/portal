@@ -2488,12 +2488,12 @@
           headers: { Authorization: 'Bearer ' + token }
         });
         if (res.status === 401 || res.status === 403) {
-          // Token expired/revoked — drop it locally so the user re-connects via availability.html
-          try {
-            localStorage.removeItem(GCAL_TOKEN_KEY);
-            localStorage.removeItem(GCAL_EXP_KEY);
-            localStorage.removeItem('gcal_email_v1');
-          } catch (_) {}
+          // Token expired/revoked — DON'T wipe the token here. The dashboard
+          // is a passive consumer; the user re-connects on availability.html
+          // when they actually open the calendar. Wiping here used to break
+          // the persistence story: a transient 401 deleted the token, the
+          // user saw "Connect" again on next visit, and consent appeared
+          // forgotten. Just show the empty state silently and move on.
           _showEmptyState();
           return;
         }
