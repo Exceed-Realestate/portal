@@ -193,6 +193,20 @@
     .feature .sub { color: var(--muted); font-size: 13px; margin: -12px 0 22px; }
 
     .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 18px; }
+    /* The depart/return/country/timezone row: explicit column ratios so
+       the time-zone preview gets enough room for "Asia/Jakarta WIB ·
+       西インドネシア時間 13:20 GMT+7" without wrapping into a tiny pill,
+       and date inputs stay tight. */
+    .trip-row { grid-template-columns: 0.75fr 0.75fr 1.1fr 1.4fr; align-items: end; }
+    @media (max-width: 900px) { .trip-row { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 540px) { .trip-row { grid-template-columns: 1fr; } }
+    .tz-pill-wrap { padding: 11px 4px; }
+    .tz-field .country-tz {
+      display: inline-flex; flex-wrap: wrap; align-items: center;
+      column-gap: 6px; row-gap: 2px;
+      max-width: 100%;
+      line-height: 1.4;
+    }
     .field { display: flex; flex-direction: column; gap: 6px; }
     .field label { font-size: 11px; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; font-weight: 500; }
     .field input, .field select { background: rgba(5,20,40,0.7); border: 1px solid var(--line); border-radius: 8px; color: var(--text); padding: 12px 14px; font-family: inherit; font-size: 14px; outline: none; transition: border-color .2s, background .2s; }
@@ -296,16 +310,6 @@
   </div>
 
   <main>
-    <div class="howto" id="howto-travel">
-      <div class="howto-head">
-        <div class="howto-title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          <span data-i18n="howtoTitle">30秒で使い方を見る</span>
-          <span class="badge">30s</span>
-        </div>
-      </div>
-      <div class="howto-frame" id="howtoFrame"></div>
-    </div>
 
     <div class="instructions" id="ins-travel">
       <div class="instructions-head">
@@ -348,7 +352,7 @@
           </div>
         </div>
       </div>
-      <div class="row">
+      <div class="row trip-row">
         <div class="field">
           <label data-i18n="fromDate">出発日</label>
           <input type="date" id="travelFrom" />
@@ -372,9 +376,9 @@
             <option value="SA" data-tz="Asia/Riyadh" data-label="AST · アラビア標準時">🇸🇦 サウジアラビア / Saudi Arabia</option>
           </select>
         </div>
-        <div class="field">
+        <div class="field tz-field">
           <label data-i18n="tzPreview">タイムゾーン（自動）</label>
-          <div style="padding:12px 14px;"><span class="country-tz" id="tzPreview">— <span data-i18n="autoFill">国を選ぶと自動入力</span> —</span></div>
+          <div class="tz-pill-wrap"><span class="country-tz" id="tzPreview">— <span data-i18n="autoFill">国を選ぶと自動入力</span> —</span></div>
         </div>
       </div>
       <div class="row">
@@ -486,31 +490,6 @@
       try { localStorage.setItem('insDismissed_travel', '1'); } catch (e) {}
     };
     try { if (localStorage.getItem('insDismissed_travel') === '1') { const el = document.getElementById('ins-travel'); if (el) el.style.display = 'none'; } } catch (e) {}
-
-    /* ----- How-to-use video -----
-       Paste the YouTube ID (just the 11-char part after watch?v=) in
-       HOWTO_VIDEO_ID below. Until then, a placeholder card renders. */
-    const HOWTO_VIDEO_ID = '';   // e.g. 'dQw4w9WgXcQ'
-    function renderHowto() {
-      const frame = document.getElementById('howtoFrame');
-      if (!frame) return;
-      const dict = I18N[currentLang];
-      if (HOWTO_VIDEO_ID && /^[A-Za-z0-9_-]{11}$/.test(HOWTO_VIDEO_ID)) {
-        frame.classList.remove('placeholder');
-        const lang = currentLang === 'ja' ? 'ja' : 'en';
-        frame.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${HOWTO_VIDEO_ID}?rel=0&modestbranding=1&hl=${lang}" title="How to use Travel" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
-      } else {
-        frame.classList.add('placeholder');
-        frame.innerHTML = `
-          <div class="howto-placeholder">
-            <div class="play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
-            <p><strong>${dict.howtoSoonStrong}</strong>${dict.howtoSoonBody}</p>
-          </div>`;
-      }
-    }
-    renderHowto();
-    // Hook into the existing lang toggle so the howto card re-translates too.
-    document.querySelectorAll('.lang-toggle button').forEach(b => b.addEventListener('click', () => setTimeout(renderHowto, 0)));
 
     window.updateTzPreview = function() {
       const sel = document.getElementById('travelCountry');

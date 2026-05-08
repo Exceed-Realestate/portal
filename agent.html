@@ -1886,15 +1886,16 @@
         action: 'page', target: 'admin.html',
         icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
         badge: 'admin',
-        capability: 'viewAllAgents'
+        // Admin-only — uses changeRoles cap so CEO/MD/Board don't see this tile.
+        capability: 'changeRoles'
       },
       {
         key: 'admin-customers',
         label: 'Registered Customers', labelEn: 'Registered Customers',
         desc: '顧客一覧', descEn: 'All customers',
-        action: 'page', target: 'customers-admin.html',
+        action: 'soon',
         icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
-        badge: 'admin',
+        badge: 'soon',
         capability: 'viewAllCustomers'
       },
       {
