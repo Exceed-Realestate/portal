@@ -960,16 +960,35 @@
       });
     }
 
-    /* Mirror connection state into Firestore so consent persists per-user. */
+    /* Mirror connection state into Firestore so consent persists per-user.
+       Errors are now surfaced via console (and a one-time visible toast)
+       so we don't lose track of silent rule denials. */
     async function persistGcalConnected(connected, email) {
-      if (!_currentFbUser) return;
+      if (!_currentFbUser) {
+        console.warn('[gcal] persist skipped — no Firebase user yet');
+        return;
+      }
       try {
         const ref = doc(db, 'agents', _currentFbUser.uid);
         const patch = connected
           ? { gcalConnected: true, gcalEmail: email || null, gcalConnectedAt: serverTimestamp() }
           : { gcalConnected: false, gcalEmail: null };
         await updateDoc(ref, patch);
-      } catch (e) { /* doc may not exist yet — skip silently */ }
+        console.log('[gcal] connection state saved →', connected ? 'connected' : 'disconnected', email || '');
+      } catch (e) {
+        console.error('[gcal] persist FAILED — Firestore write rejected:',
+          e.code || '', e.message || e);
+        // Surface visible feedback so the user knows the connection didn't stick.
+        const body = document.getElementById('calBody');
+        if (body) {
+          const note = document.createElement('div');
+          note.style.cssText = 'margin:10px 0;padding:10px 14px;background:rgba(255,107,107,0.10);border:1px solid rgba(255,107,107,0.4);border-radius:8px;color:#ff8a8a;font-size:12px;';
+          note.textContent = (currentLang === 'ja'
+            ? '⚠ 連携状態の保存に失敗しました。コンソールで詳細を確認してください。'
+            : '⚠ Could not save the connection state. Check the console for details.') + ' (' + (e.code || e.message || 'error') + ')';
+          body.prepend(note);
+        }
+      }
     }
 
     /* =====================================================================
