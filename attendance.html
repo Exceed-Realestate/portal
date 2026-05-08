@@ -274,7 +274,7 @@
   <div class="toast" id="toast"></div>
 
   <script type="module">
-    import { auth, db, isAdmin, can } from './firebase-init.js';
+    import { auth, db, isAdmin, can, loadCapabilityOverrides } from './firebase-init.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
     import { doc, getDoc, setDoc, collection, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
@@ -601,7 +601,9 @@
       // Hard gate: this page is restricted to admin / md / board (the same
       // tier that sees the dashboard tile). Anyone else who guesses the URL
       // is redirected to the dashboard. Capability check lives in
-      // firebase-init.js → CAPABILITIES.takeAttendance.
+      // firebase-init.js → CAPABILITIES.takeAttendance, plus any overrides
+      // set via Manage Access matrix.
+      await loadCapabilityOverrides(db);
       let role = null;
       try {
         const snap = await import("https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js")

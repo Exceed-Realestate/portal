@@ -270,7 +270,7 @@
 
   <script src="celebration.js"></script>
   <script type="module">
-    import { auth, db, isAdmin, can } from './firebase-init.js';
+    import { auth, db, isAdmin, can, loadCapabilityOverrides } from './firebase-init.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
     import { doc as fdoc, getDoc, collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
@@ -487,7 +487,9 @@
 
       // Submission restricted to admin / md / board / manager. Everyone else
       // sees the recent-alerts feed + can replay celebrations, but the form
-      // is hidden and replaced with a view-only banner.
+      // is hidden and replaced with a view-only banner. Honour any matrix
+      // overrides set via Manage Access.
+      await loadCapabilityOverrides(db);
       canSubmit = can(role, 'createDealAlert', user.email);
       if (!canSubmit) {
         const formPanel = document.getElementById('formPanel');

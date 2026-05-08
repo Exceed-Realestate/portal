@@ -1869,7 +1869,7 @@
   </div>
 
   <script type="module">
-    import { auth, db, isAdmin, can, ROLES, ROLE_LABELS, ROLE_CAPABILITIES, roleLabel, roleSummary, roleCapabilities, isValidRole } from './firebase-init.js';
+    import { auth, db, isAdmin, can, loadCapabilityOverrides, ROLES, ROLE_LABELS, ROLE_CAPABILITIES, roleLabel, roleSummary, roleCapabilities, isValidRole } from './firebase-init.js';
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
     import { doc, getDoc, updateDoc, collection, query, where, orderBy, limit, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
@@ -3005,6 +3005,15 @@
       loadNotifications();
       // Refresh notifications every 60 seconds while the tab is open
       setInterval(loadNotifications, 60000);
+
+      // Capability overrides from the matrix (Manage Access). Render
+      // tiles immediately with code defaults, then re-render once the
+      // override has merged in — flips visibility to match what admin
+      // toggled in the matrix without a hard reload.
+      loadCapabilityOverrides(db).then(() => {
+        renderTileGrid();
+        updateStats();
+      });
     });
 
     // ----- Access modal -----

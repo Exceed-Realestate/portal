@@ -198,6 +198,34 @@ export const CAPABILITIES = {
   usePayment:         ['admin', 'ceo', 'md', 'board', 'manager', 'agent', 'back_office']
 };
 
+/* Runtime capabilities — starts as a deep copy of CAPABILITIES, then gets
+   merged with any /config/capabilities overrides written by the Manage
+   Access matrix. can() reads from this map so toggling a cell in the
+   matrix immediately affects every page that imports can() (after the
+   loader has resolved). Pages that can't await the loader use defaults
+   and re-render once it lands. */
+const _runtimeCaps = JSON.parse(JSON.stringify(CAPABILITIES));
+
+/* Promise that resolves once overrides have been merged (or after a
+   single read attempt — failures are non-fatal and use defaults). */
+let _capsOverrideLoaded = null;
+export function loadCapabilityOverrides(db) {
+  if (_capsOverrideLoaded) return _capsOverrideLoaded;
+  _capsOverrideLoaded = (async () => {
+    try {
+      const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js");
+      const snap = await getDoc(doc(db, 'config', 'capabilities'));
+      if (snap.exists()) {
+        const ov = snap.data();
+        for (const [cap, roles] of Object.entries(ov)) {
+          if (Array.isArray(roles)) _runtimeCaps[cap] = roles.slice();
+        }
+      }
+    } catch (_) { /* defaults are fine if the read fails */ }
+  })();
+  return _capsOverrideLoaded;
+}
+
 // can(role, capability, email?) — central capability check.
 // `email` is optional and gives the legacy hard-coded ADMIN_EMAILS list a way in
 // even if the user's role hasn't been written to Firestore yet (cold-start case
@@ -206,6 +234,6 @@ export const CAPABILITIES = {
 export const can = (role, capability, email) => {
   if (email && isAdmin(email)) return true;
   if (!role || !capability) return false;
-  const allowed = CAPABILITIES[capability];
+  const allowed = _runtimeCaps[capability];
   return Array.isArray(allowed) && allowed.includes(role);
 };
