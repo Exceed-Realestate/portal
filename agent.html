@@ -1042,7 +1042,10 @@
        so legibility is guaranteed even if the image fails to load.
        Stacking pseudo-elements with var(url(...)) was unreliable on
        some iOS Safari versions, so the URL is inlined per rule. */
-    .tile.has-card { background-position: center; background-repeat: no-repeat; }
+    /* Photos were generated with the subject in the LOWER-RIGHT (so the
+       upper-left stays clean for title text). Anchor cover at right-bottom
+       so the subject stays visible at every tile aspect ratio. */
+    .tile.has-card { background-position: right bottom; background-repeat: no-repeat; }
     .tile.has-card .tile-art { display: none; }
 
     .tile.has-card[data-key="customer-register"] {
