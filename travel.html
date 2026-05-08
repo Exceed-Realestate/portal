@@ -75,6 +75,7 @@
       border-radius: 999px;
       padding: 4px;
       gap: 4px;
+      max-width: 100%;
     }
     .seg-control button {
       flex: 1; padding: 9px 18px;
@@ -90,7 +91,15 @@
       transition: all .15s;
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 6px;
+      min-width: 0;
+    }
+    /* Lock icon size — without explicit width/height the SVG defaulted to
+       its viewBox at full container size in Safari, producing giant icons. */
+    .seg-control button svg {
+      width: 16px; height: 16px;
+      flex: 0 0 16px;
     }
     .seg-control button.active {
       background: linear-gradient(135deg, var(--cream), var(--gold));
