@@ -85,6 +85,15 @@ service cloud.firestore {
       allow write: if isAdminEmail();
     }
 
+    // ------- Runtime config (capability matrix overrides) -------
+    // /config/capabilities is the live override of the in-code
+    // CAPABILITIES map. Anyone signed-in reads (so other pages can
+    // pick up the overrides); only admin writes via Manage Access.
+    match /config/{configId} {
+      allow read: if isSignedIn();
+      allow write: if isAdminEmail();
+    }
+
     // ------- Customers -------
     // Doc ID = registration number (e.g. EXC-AB12CD)
     match /customers/{regNumber} {

@@ -274,7 +274,7 @@
   <div class="toast" id="toast"></div>
 
   <script type="module">
-    import { auth, db, isAdmin } from './firebase-init.js';
+    import { auth, db, isAdmin, can } from './firebase-init.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
     import { doc, getDoc, setDoc, collection, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
@@ -597,6 +597,24 @@
     onAuthStateChanged(auth, async (user) => {
       if (!user) { window.location.href = 'index.html'; return; }
       currentUser = user;
+
+      // Hard gate: this page is restricted to admin / md / board (the same
+      // tier that sees the dashboard tile). Anyone else who guesses the URL
+      // is redirected to the dashboard. Capability check lives in
+      // firebase-init.js → CAPABILITIES.takeAttendance.
+      let role = null;
+      try {
+        const snap = await import("https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js")
+          .then(m => m.getDoc(m.doc(db, 'agents', user.uid)));
+        if (snap.exists()) role = snap.data().role || null;
+      } catch (_) {}
+      if (!can(role, 'takeAttendance', user.email)) {
+        // Not authorised — bounce back to dashboard with a toast hint
+        try { sessionStorage.setItem('toast', 'このページの閲覧権限がありません / You don\'t have access to this page'); } catch (_) {}
+        window.location.href = 'agent.html';
+        return;
+      }
+
       let firstName = (user.displayName || '').trim().split(/\s+/)[0];
       if (!firstName && user.email) {
         const local = user.email.split('@')[0].split(/[._-]/)[0];

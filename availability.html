@@ -290,7 +290,23 @@
       font-family: 'Inter', sans-serif; font-size: 11px;
       letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); font-weight: 600;
     }
-    .cal-event { display: grid; grid-template-columns: 100px 1fr; gap: 14px; padding: 8px 0; align-items: baseline; }
+    .cal-event { display: grid; grid-template-columns: 12px 100px 1fr; gap: 12px; padding: 8px 0; align-items: baseline; }
+    .cal-event-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      align-self: center; margin-top: 2px;
+    }
+    /* Same palette as the chips so the dot matches the month-grid color */
+    .cal-event-dot.gc-1  { background: #7986cb; }
+    .cal-event-dot.gc-2  { background: #33b679; }
+    .cal-event-dot.gc-3  { background: #8e24aa; }
+    .cal-event-dot.gc-4  { background: #e67c73; }
+    .cal-event-dot.gc-5  { background: #f6c026; }
+    .cal-event-dot.gc-6  { background: #f5511d; }
+    .cal-event-dot.gc-7  { background: #039be5; }
+    .cal-event-dot.gc-8  { background: #616161; }
+    .cal-event-dot.gc-9  { background: #3f51b5; }
+    .cal-event-dot.gc-10 { background: #0b8043; }
+    .cal-event-dot.gc-11 { background: #d60000; }
     .cal-event-time {
       font-size: 12px; color: var(--gold);
       font-variant-numeric: tabular-nums; font-weight: 600; letter-spacing: 0.3px;
@@ -389,22 +405,55 @@
     .cal-cell.selected { outline: 2px solid var(--gold); outline-offset: -2px; background: rgba(212,184,122,0.10); }
     .cal-cell-num { font-size: 14px; font-weight: 600; color: var(--cream); align-self: flex-start; }
     .cal-cell.other-month .cal-cell-num { color: var(--muted); }
+    /* Calendar chips — Apple-Calendar-style colorful blocks. Uses
+       Google's colorId (1-11) when set on the event, falls back to a
+       deterministic colour pick by hashing the title. Solid block,
+       white text, comfortable touch target. */
     .cal-chip {
       font-size: 11.5px; line-height: 1.35;
-      background: rgba(212,184,122,0.18);
-      color: var(--gold);
-      padding: 3px 7px;
-      border-radius: 5px;
+      padding: 3px 8px;
+      border-radius: 6px;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      border-left: 2px solid var(--gold);
-      max-width: 100%;     /* never pushes past the cell width */
-      min-width: 0;
+      max-width: 100%; min-width: 0;
       display: block;
+      color: #fff;
+      font-weight: 600;
+      letter-spacing: 0.1px;
+      box-shadow: 0 1px 0 rgba(0,0,0,0.18);
     }
+    /* All-day chips get a thinner, hollow look — they live above timed events. */
     .cal-chip.allday {
-      background: rgba(135,179,157,0.18); color: #87b39d;
-      border-left-color: #87b39d;
+      font-weight: 700;
+      padding: 2px 8px;
+      box-shadow: inset 0 0 0 1.5px currentColor;
+      background: transparent !important;
+      color: var(--cream);
     }
+    /* Google colorId palette (1-11). Source: Calendar API event.colorId. */
+    .cal-chip.gc-1  { background: #7986cb; }   /* Lavender */
+    .cal-chip.gc-2  { background: #33b679; }   /* Sage */
+    .cal-chip.gc-3  { background: #8e24aa; }   /* Grape */
+    .cal-chip.gc-4  { background: #e67c73; }   /* Flamingo */
+    .cal-chip.gc-5  { background: #f6c026; color: #1a1a1a; }   /* Banana — yellow text needs dark fg */
+    .cal-chip.gc-6  { background: #f5511d; }   /* Tangerine */
+    .cal-chip.gc-7  { background: #039be5; }   /* Peacock */
+    .cal-chip.gc-8  { background: #616161; }   /* Graphite */
+    .cal-chip.gc-9  { background: #3f51b5; }   /* Blueberry */
+    .cal-chip.gc-10 { background: #0b8043; }   /* Basil */
+    .cal-chip.gc-11 { background: #d60000; }   /* Tomato */
+    /* All-day variants use the same hue but as outline */
+    .cal-chip.allday.gc-1  { color: #7986cb; }
+    .cal-chip.allday.gc-2  { color: #33b679; }
+    .cal-chip.allday.gc-3  { color: #8e24aa; }
+    .cal-chip.allday.gc-4  { color: #e67c73; }
+    .cal-chip.allday.gc-5  { color: #f6c026; }
+    .cal-chip.allday.gc-6  { color: #f5511d; }
+    .cal-chip.allday.gc-7  { color: #039be5; }
+    .cal-chip.allday.gc-8  { color: #9aa8c2; }
+    .cal-chip.allday.gc-9  { color: #7986cb; }
+    .cal-chip.allday.gc-10 { color: #33b679; }
+    .cal-chip.allday.gc-11 { color: #d60000; }
+
     .cal-chip-more { font-size: 11px; color: var(--muted); padding: 0 4px; font-weight: 500; }
 
     .cal-day-detail {
@@ -1106,6 +1155,21 @@
     function dayKey(date) {
       return date.getFullYear() + '-' + String(date.getMonth()+1).padStart(2,'0') + '-' + String(date.getDate()).padStart(2,'0');
     }
+    /* Pick a colour class for a calendar event. Honour Google Calendar's
+       colorId field if set; otherwise hash the event title into the
+       palette (1-11) for a stable, varied look across events. */
+    function chipColorClass(ev) {
+      if (ev && ev.colorId && /^([1-9]|1[01])$/.test(String(ev.colorId))) {
+        return 'gc-' + ev.colorId;
+      }
+      const s = (ev && (ev.summary || ev.id)) || '';
+      let h = 0;
+      for (let i = 0; i < s.length; i++) h = ((h << 5) - h) + s.charCodeAt(i) | 0;
+      // Skip the dim "graphite" #8 in the auto-pool so events feel vibrant.
+      const POOL = [1, 2, 4, 6, 7, 9, 10, 11];
+      return 'gc-' + POOL[Math.abs(h) % POOL.length];
+    }
+
     function escHtml(s) {
       return String(s == null ? '' : s)
         .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
@@ -1164,7 +1228,8 @@
         const more = items.length - visible.length;
         const chips = visible.map(({ ev, start, allDay }) => {
           const t = allDay ? (dict.allDay || 'All day') : fmtTime(start);
-          return `<div class="cal-chip${allDay ? ' allday' : ''}" title="${escHtml((allDay ? '' : t + ' · ') + (ev.summary || ''))}">${escHtml(allDay ? (ev.summary || '(untitled)') : t + ' ' + (ev.summary || ''))}</div>`;
+          const cls = chipColorClass(ev);
+          return `<div class="cal-chip${allDay ? ' allday' : ''} ${cls}" title="${escHtml((allDay ? '' : t + ' · ') + (ev.summary || ''))}">${escHtml(allDay ? (ev.summary || '(untitled)') : t + ' ' + (ev.summary || ''))}</div>`;
         }).join('');
         const moreChip = more > 0 ? `<div class="cal-chip-more">+${more} ${dict.more || 'more'}</div>` : '';
         const cls = ['cal-cell', isOther ? 'other-month' : '', isToday ? 'today' : '', isSelected ? 'selected' : ''].filter(Boolean).join(' ');
@@ -1184,7 +1249,8 @@
               ? `<div class="cal-event-time allday">${dict.allDay || 'All day'}</div>`
               : `<div class="cal-event-time">${fmtTime(start)}${end ? ' – ' + fmtTime(end) : ''}</div>`;
             const loc = ev.location ? `<div class="cal-event-loc">${escHtml(ev.location)}</div>` : '';
-            return `<div class="cal-event">${time}<div><div class="cal-event-title">${escHtml(ev.summary || '(untitled)')}</div>${loc}</div></div>`;
+            const cls = chipColorClass(ev);
+            return `<div class="cal-event"><span class="cal-event-dot ${cls}"></span>${time}<div><div class="cal-event-title">${escHtml(ev.summary || '(untitled)')}</div>${loc}</div></div>`;
           }).join('');
           detailHtml = `<div class="cal-day-detail"><h3 class="cal-day-detail-head">${head.wk}<span class="meta">${head.md}</span></h3>${rows}</div>`;
         } else {

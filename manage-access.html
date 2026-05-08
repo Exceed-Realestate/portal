@@ -132,6 +132,49 @@
     }
     .check { color: var(--green); font-size: 16px; font-weight: 700; }
     .nocheck { color: rgba(154,168,194,0.30); font-size: 16px; }
+    /* Editable matrix cells */
+    table.matrix td.cell-toggle {
+      cursor: pointer;
+      transition: background .15s, transform .1s;
+      user-select: none;
+    }
+    table.matrix td.cell-toggle:hover {
+      background: rgba(212,184,122,0.10);
+    }
+    table.matrix td.cell-toggle:active { transform: scale(0.95); }
+    table.matrix td.cell-locked {
+      cursor: not-allowed; opacity: 0.65;
+    }
+    table.matrix td.cell-dirty {
+      box-shadow: inset 0 0 0 2px rgba(212,184,122,0.55);
+    }
+    .matrix-actions {
+      display: flex; gap: 10px; justify-content: flex-end;
+      margin-top: 18px; flex-wrap: wrap;
+    }
+    .matrix-actions .dirty-pill {
+      flex: 1; min-width: 0;
+      align-self: center;
+      color: var(--gold); font-size: 12px; font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .matrix-actions .dirty-pill.clean { color: var(--muted); font-weight: 500; }
+    .matrix-btn {
+      padding: 10px 18px; border-radius: 9px; font-family: inherit;
+      font-size: 12px; letter-spacing: 1.1px; text-transform: uppercase;
+      font-weight: 700; cursor: pointer;
+    }
+    .matrix-btn.primary {
+      background: linear-gradient(135deg, var(--cream), var(--gold));
+      color: var(--navy-1); border: 0;
+    }
+    .matrix-btn.primary:disabled { opacity: 0.45; cursor: not-allowed; }
+    .matrix-btn.ghost {
+      background: transparent; color: var(--muted);
+      border: 1px solid var(--line);
+    }
+    .matrix-btn.ghost:hover:not(:disabled) { color: var(--cream); border-color: var(--line-strong); }
+    .matrix-btn.ghost:disabled { opacity: 0.45; cursor: not-allowed; }
     .role-col-admin    { background: rgba(198,106,106,0.06); }
     .role-col-ceo      { background: rgba(212,184,122,0.06); }
     .role-col-md       { background: rgba(200,152,112,0.06); }
@@ -278,7 +321,7 @@
   <script type="module">
     import { auth, db, isAdmin, can, ROLES, ROLE_LABELS, ROLE_CAPABILITIES, CAPABILITIES, roleLabel, roleSummary, roleCapabilities, isValidRole } from './firebase-init.js';
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-    import { collection, getDocs, doc, getDoc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    import { collection, getDocs, doc, getDoc, setDoc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
     const I18N = {
       ja: {
@@ -290,7 +333,7 @@
         deniedTitle: 'アクセスが許可されていません',
         deniedBody: 'このページはシステム管理者専用です。',
         secMatrixTitle: '権限マトリクス',
-        secMatrixSub: '各ロールが利用できる機能。コードで管理されており、変更には開発者の対応が必要です（firebase-init.js → CAPABILITIES）。',
+        secMatrixSub: '各ロールが利用できる機能。セルをクリックで切り替え、保存すると即時反映されます（admin列は固定）。',
         secUsersTitle: 'ユーザーアクセス',
         secUsersSub: '各ユーザーのアクセスレベルを変更します。変更は即時反映されます。',
         searchPh: '名前・メールで検索…',
@@ -329,7 +372,7 @@
         deniedTitle: 'Access denied',
         deniedBody: 'This page is for the system admin only.',
         secMatrixTitle: 'Capability matrix',
-        secMatrixSub: 'What each role can do. Defined in code (firebase-init.js → CAPABILITIES); a developer is required to change them.',
+        secMatrixSub: 'What each role can do. Click any cell to toggle it; Save persists to Firestore. The Admin column is locked on by design.',
         secUsersTitle: 'User access',
         secUsersSub: 'Change any user\'s access level. Changes apply immediately.',
         searchPh: 'Search name or email…',
@@ -396,6 +439,82 @@
       return (s || '?').split(/\s+/).slice(0,2).map(x => (x[0] || '').toUpperCase()).join('');
     }
 
+    /* ---- Capability matrix: editable + persisted ---- */
+    /* Live matrix state — starts as a deep copy of CAPABILITIES from
+       firebase-init.js, then merged with any saved overrides at
+       /config/capabilities. Editing flips entries in this object;
+       Save writes the whole thing back. */
+    let _capsLive = JSON.parse(JSON.stringify(CAPABILITIES));
+    let _capsSaved = JSON.parse(JSON.stringify(CAPABILITIES)); // last-saved snapshot
+
+    async function loadCapsOverrides() {
+      try {
+        const snap = await getDoc(doc(db, 'config', 'capabilities'));
+        if (snap.exists()) {
+          const ov = snap.data();
+          for (const [cap, roles] of Object.entries(ov)) {
+            if (Array.isArray(roles)) _capsLive[cap] = [...roles];
+          }
+          _capsSaved = JSON.parse(JSON.stringify(_capsLive));
+        }
+      } catch (e) { console.warn('caps overrides load failed', e); }
+    }
+
+    function capsAreDirty() {
+      const keys = new Set([...Object.keys(_capsLive), ...Object.keys(_capsSaved)]);
+      for (const k of keys) {
+        const a = (_capsLive[k] || []).slice().sort();
+        const b = (_capsSaved[k] || []).slice().sort();
+        if (a.length !== b.length) return true;
+        for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return true;
+      }
+      return false;
+    }
+
+    window.toggleCap = function(cap, role) {
+      if (role === 'admin') return; // admin column locked
+      const arr = _capsLive[cap] || [];
+      const idx = arr.indexOf(role);
+      _capsLive[cap] = idx >= 0
+        ? arr.filter(r => r !== role)
+        : [...arr, role];
+      rerenderMatrix();
+    };
+
+    window.resetCaps = function() {
+      _capsLive = JSON.parse(JSON.stringify(_capsSaved));
+      rerenderMatrix();
+    };
+
+    window.saveCaps = async function() {
+      const btn = document.getElementById('matrixSaveBtn');
+      btn.disabled = true;
+      const orig = btn.textContent;
+      btn.textContent = currentLang === 'ja' ? '保存中…' : 'Saving…';
+      try {
+        // Build a clean object: cap → array of roles. Only include caps
+        // that exist in CAPABILITIES (avoid persisting stale keys).
+        const payload = {};
+        for (const cap of Object.keys(CAPABILITIES)) {
+          payload[cap] = _capsLive[cap] || [];
+        }
+        await setDoc(doc(db, 'config', 'capabilities'), payload, { merge: false });
+        _capsSaved = JSON.parse(JSON.stringify(_capsLive));
+        btn.textContent = currentLang === 'ja' ? '✓ 保存しました' : '✓ Saved';
+        setTimeout(() => { btn.textContent = orig; rerenderMatrix(); }, 1100);
+      } catch (e) {
+        console.error(e);
+        showToast((currentLang === 'ja' ? '保存に失敗しました: ' : 'Save failed: ') + (e.message || e));
+        btn.textContent = orig;
+        btn.disabled = false;
+      }
+    };
+
+    function rerenderMatrix() {
+      const host = document.getElementById('matrixHost');
+      if (host) host.outerHTML = renderMatrix();
+    }
+
     /* ---- Capability matrix renderer ---- */
     const CAP_LABEL_KEYS = {
       registerCustomer:    'capRegisterCustomer',
@@ -424,17 +543,36 @@
       const rows = Object.keys(CAPABILITIES).map(cap => {
         const labelKey = CAP_LABEL_KEYS[cap];
         const label = (labelKey && dict[labelKey]) || cap;
+        const liveArr  = _capsLive[cap]  || [];
+        const savedArr = _capsSaved[cap] || [];
         const cells = ROLES.map(r => {
-          const has = CAPABILITIES[cap].includes(r);
-          return `<td class="role-col-${r}">${has ? '<span class="check">✓</span>' : '<span class="nocheck">·</span>'}</td>`;
+          const has = liveArr.includes(r);
+          const wasSaved = savedArr.includes(r);
+          const dirty = has !== wasSaved;
+          const locked = (r === 'admin');           // admin column always on
+          const cls = ['role-col-' + r];
+          cls.push(locked ? 'cell-locked' : 'cell-toggle');
+          if (dirty) cls.push('cell-dirty');
+          // Admin gets a forced check regardless of array contents
+          const isOn = locked ? true : has;
+          const onclick = locked ? '' : ` onclick="toggleCap('${cap}','${r}')"`;
+          return `<td class="${cls.join(' ')}"${onclick}>
+            ${isOn ? '<span class="check">✓</span>' : '<span class="nocheck">·</span>'}
+          </td>`;
         }).join('');
         return `<tr>
           <th>${escHtml(label)}<span class="cap-key">${escHtml(cap)}</span></th>
           ${cells}
         </tr>`;
       }).join('');
+      const dirty = capsAreDirty();
+      const dirtyLabel = dirty
+        ? (currentLang === 'ja' ? '未保存の変更があります' : 'Unsaved changes')
+        : (currentLang === 'ja' ? '保存済' : 'All saved');
+      const saveLabel  = currentLang === 'ja' ? '保存' : 'Save';
+      const resetLabel = currentLang === 'ja' ? 'リセット' : 'Reset';
       return `
-        <section class="card">
+        <section class="card" id="matrixHost">
           <h2>${dict.secMatrixTitle}</h2>
           <p class="sub">${dict.secMatrixSub}</p>
           <div class="matrix-wrap">
@@ -442,6 +580,11 @@
               <thead><tr><th></th>${headers}</tr></thead>
               <tbody>${rows}</tbody>
             </table>
+          </div>
+          <div class="matrix-actions">
+            <span class="dirty-pill ${dirty ? '' : 'clean'}">${dirtyLabel}</span>
+            <button class="matrix-btn ghost"   onclick="resetCaps()" ${dirty ? '' : 'disabled'}>${resetLabel}</button>
+            <button class="matrix-btn primary" id="matrixSaveBtn" onclick="saveCaps()" ${dirty ? '' : 'disabled'}>${saveLabel}</button>
           </div>
         </section>`;
     }
@@ -641,7 +784,7 @@
         return;
       }
 
-      await loadUsers();
+      await Promise.all([loadUsers(), loadCapsOverrides()]);
       window._loaded = true;
       renderAll();
     });
