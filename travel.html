@@ -224,6 +224,16 @@
     .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 10px 24px -10px rgba(212,184,122,.5); }
     .country-tz { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: rgba(212,184,122,0.1); border: 1px solid rgba(212,184,122,0.3); color: var(--gold); border-radius: 999px; font-size: 11px; font-family: ui-monospace, 'SF Mono', monospace; }
 
+    .count-pill {
+      display: inline-block; margin-left: 10px;
+      padding: 2px 10px; border-radius: 999px;
+      background: rgba(212,184,122,0.14); color: var(--gold);
+      border: 1px solid rgba(212,184,122,0.35);
+      font-size: 11px; font-weight: 700; letter-spacing: 1.2px;
+      vertical-align: middle;
+    }
+    .count-pill:empty { display: none; }
+
     /* ---- Trip list cards ---- */
     .trip-card {
       background: linear-gradient(180deg, rgba(16,42,79,0.55), rgba(10,31,61,0.55));
@@ -435,10 +445,10 @@
       </div>
       <button class="btn-primary" id="saveTravelBtn" data-i18n="btnAddTravel">出張を追加</button>
 
-      <h2 style="margin-top:36px;" data-i18n="travelListTitle">あなたの出張予定</h2>
+      <h2 style="margin-top:36px;" data-i18n="travelListTitle">あなたの出張予定 <span id="myTripsCount" class="count-pill"></span></h2>
       <div id="myTripsWrap"><div class="empty-list" data-i18n="emptyTravel">登録された出張はありません。</div></div>
 
-      <h2 style="margin-top:36px;" data-i18n="teamTravelTitle">チームの出張予定</h2>
+      <h2 style="margin-top:36px;" data-i18n="teamTravelTitle">チームの出張予定 <span id="teamTripsCount" class="count-pill"></span></h2>
       <div id="teamTripsWrap"><div class="empty-list" data-i18n="emptyTeamTravel">チームメンバーの出張予定はまだありません。</div></div>
     </div>
   </main>
@@ -609,6 +619,12 @@
         document.getElementById('travelTo').value = '';
         document.getElementById('travelNote').value = '';
         btn.textContent = currentLang === 'ja' ? '✓ 保存しました' : '✓ Saved';
+        // Scroll the user down to where their new trip will appear
+        // so they don't think nothing happened.
+        setTimeout(() => {
+          const list = document.getElementById('myTripsWrap');
+          if (list && list.scrollIntoView) list.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 250);
         setTimeout(() => { btn.textContent = originalLabel; btn.disabled = false; }, 1200);
       } catch (err) {
         console.error(err);
@@ -656,14 +672,24 @@
         </div>`;
     }
 
-    function renderTrips(wrapId, items, isMine, emptyKey) {
+    function renderTrips(wrapId, items, isMine, emptyKey, countId) {
       const wrap = document.getElementById(wrapId);
+      const countEl = countId ? document.getElementById(countId) : null;
       if (!wrap) return;
+      if (countEl) countEl.textContent = items.length ? String(items.length) : '';
       if (!items.length) {
         wrap.innerHTML = `<div class="empty-list">${I18N[currentLang][emptyKey] || ''}</div>`;
         return;
       }
       wrap.innerHTML = items.map(([id, t]) => tripCardHtml(t, id, isMine)).join('');
+    }
+
+    function showSubscriptionError(wrapId, err) {
+      const wrap = document.getElementById(wrapId);
+      if (!wrap) return;
+      wrap.innerHTML = `<div class="empty-list" style="color:#ff6b6b;">${
+        currentLang === 'ja' ? '読み込みに失敗しました： ' : 'Failed to load: '
+      }${(err && err.message) || err}</div>`;
     }
 
     function subscribeTrips() {
@@ -676,23 +702,31 @@
       const qMine = query(collection(db, 'travel'),
         where('uid', '==', _me.uid));
       onSnapshot(qMine, (snap) => {
+        console.log('[travel] mine snapshot:', snap.size, 'docs');
         const list = [];
         snap.forEach(d => { const t = d.data(); if ((t.to || '') >= todayISO) list.push([d.id, t]); });
         list.sort(byFromAsc);
-        renderTrips('myTripsWrap', list, true, 'emptyTravel');
-      }, (err) => console.warn('mine onSnapshot', err));
+        renderTrips('myTripsWrap', list, true, 'emptyTravel', 'myTripsCount');
+      }, (err) => {
+        console.error('[travel] mine onSnapshot error', err);
+        showSubscriptionError('myTripsWrap', err);
+      });
 
       // No where on team — just stream all and filter mine out client-side.
       const qTeam = query(collection(db, 'travel'));
       onSnapshot(qTeam, (snap) => {
+        console.log('[travel] team snapshot:', snap.size, 'docs total');
         const list = [];
         snap.forEach(d => {
           const t = d.data();
           if (t.uid !== _me.uid && (t.to || '') >= todayISO) list.push([d.id, t]);
         });
         list.sort(byFromAsc);
-        renderTrips('teamTripsWrap', list, false, 'emptyTeamTravel');
-      }, (err) => console.warn('team onSnapshot', err));
+        renderTrips('teamTripsWrap', list, false, 'emptyTeamTravel', 'teamTripsCount');
+      }, (err) => {
+        console.error('[travel] team onSnapshot error', err);
+        showSubscriptionError('teamTripsWrap', err);
+      });
     }
 
     let TRAVEL_TYPE = 'work';
