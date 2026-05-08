@@ -154,6 +154,22 @@ service cloud.firestore {
       allow delete: if isAdminEmail();
     }
 
+    // ------- Travel (out-of-office trips) -------
+    // Each doc: { uid, email, name, from, to, country, countryLabel,
+    //   tz, tzLabel, type ('work'|'holiday'), note, createdAt }
+    match /travel/{tripId} {
+      // Anyone signed-in can read (the team-wide view depends on it).
+      allow read, list: if isSignedIn();
+      // Only the owner can create their own trip.
+      allow create: if isSignedIn()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.from is string
+        && request.resource.data.to is string;
+      // Owner or admin can edit / delete.
+      allow update, delete: if isAdminEmail()
+        || (isSignedIn() && resource.data.uid == request.auth.uid);
+    }
+
     // ------- Outbound email queue -------
     // The Trigger Email Firebase extension watches this collection; any doc
     // written here gets sent. Cloud Functions use admin SDK so they bypass

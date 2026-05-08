@@ -223,6 +223,43 @@
     .btn-primary { background: linear-gradient(135deg, var(--cream), var(--gold)); color: var(--navy-0); border: none; padding: 12px 24px; border-radius: 8px; font-weight: 700; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; font-family: inherit; transition: transform .15s, box-shadow .2s; }
     .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 10px 24px -10px rgba(212,184,122,.5); }
     .country-tz { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: rgba(212,184,122,0.1); border: 1px solid rgba(212,184,122,0.3); color: var(--gold); border-radius: 999px; font-size: 11px; font-family: ui-monospace, 'SF Mono', monospace; }
+
+    /* ---- Trip list cards ---- */
+    .trip-card {
+      background: linear-gradient(180deg, rgba(16,42,79,0.55), rgba(10,31,61,0.55));
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+    }
+    .trip-head { display: flex; align-items: center; gap: 14px; }
+    .trip-flag { font-size: 28px; line-height: 1; flex: 0 0 auto; }
+    .trip-meta { flex: 1; min-width: 0; }
+    .trip-owner { color: var(--muted); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+    .trip-country { color: var(--cream); font-weight: 600; font-size: 14px; line-height: 1.25; }
+    .trip-dates { color: var(--muted); font-size: 12px; margin-top: 2px; }
+    .trip-actions { display: flex; align-items: center; gap: 10px; }
+    .trip-pill {
+      font-size: 10.5px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase;
+      padding: 4px 10px; border-radius: 999px; border: 1px solid;
+      white-space: nowrap;
+    }
+    .trip-pill.work { background: rgba(212,184,122,0.14); color: var(--gold); border-color: rgba(212,184,122,0.4); }
+    .trip-pill.holiday { background: rgba(122,200,150,0.14); color: #7ac896; border-color: rgba(122,200,150,0.4); }
+    .trip-del {
+      background: transparent; border: 1px solid var(--line);
+      color: var(--muted); width: 26px; height: 26px; border-radius: 50%;
+      cursor: pointer; font-size: 16px; line-height: 1; padding: 0;
+      display: grid; place-items: center;
+    }
+    .trip-del:hover { color: #ff6b6b; border-color: rgba(255,107,107,0.5); }
+    .trip-note {
+      margin-top: 10px; padding: 8px 12px;
+      background: rgba(255,255,255,0.03);
+      border-left: 2px solid var(--gold);
+      border-radius: 6px;
+      color: var(--cream); font-size: 12.5px; line-height: 1.5;
+    }
     .empty-list { text-align: center; color: var(--muted); padding: 30px 20px; font-size: 13px; }
 
     @media (max-width: 700px) { .topbar { padding: 14px 18px; flex-wrap: wrap; gap: 12px; } .page-head, main { padding-left: 18px; padding-right: 18px; } .feature { padding: 20px; } }
@@ -393,16 +430,16 @@
       <div class="row">
         <div class="field" style="grid-column: 1 / -1;">
           <label data-i18n="travelNote">メモ（任意）</label>
-          <input type="text" placeholder="例: Tiger Properties 視察 / クライアント案件" />
+          <input type="text" id="travelNote" placeholder="例: Tiger Properties 視察 / クライアント案件" />
         </div>
       </div>
-      <button class="btn-primary" onclick="saveTravelStub()" data-i18n="btnAddTravel">出張を追加</button>
+      <button class="btn-primary" id="saveTravelBtn" data-i18n="btnAddTravel">出張を追加</button>
 
       <h2 style="margin-top:36px;" data-i18n="travelListTitle">あなたの出張予定</h2>
-      <div class="empty-list" data-i18n="emptyTravel">登録された出張はありません。</div>
+      <div id="myTripsWrap"><div class="empty-list" data-i18n="emptyTravel">登録された出張はありません。</div></div>
 
       <h2 style="margin-top:36px;" data-i18n="teamTravelTitle">チームの出張予定</h2>
-      <div class="empty-list" data-i18n="emptyTeamTravel">チームメンバーの出張予定はまだありません。</div>
+      <div id="teamTripsWrap"><div class="empty-list" data-i18n="emptyTeamTravel">チームメンバーの出張予定はまだありません。</div></div>
     </div>
   </main>
 
@@ -513,9 +550,143 @@
         out.textContent = '— ' + (I18N[currentLang].autoFill || '') + ' —';
       }
     };
-    window.saveTravelStub = function() {
-      alert(currentLang === 'ja' ? 'Firestore連携は次のステップで実装予定です。' : 'Firestore wiring comes in the next step.');
+    /* ---------- Firestore save + live lists ---------- */
+    let _me = null;
+    let _myFirstName = null;
+
+    function fmtDate(d) {
+      if (!d) return '';
+      try {
+        return new Date(d).toLocaleDateString(currentLang === 'ja' ? 'ja-JP' : 'en-GB',
+          { year: 'numeric', month: 'short', day: 'numeric', weekday: 'short' });
+      } catch (_) { return d; }
+    }
+    function tripCountryLabel(t) {
+      const sel = document.getElementById('travelCountry');
+      if (sel) {
+        const opt = [...sel.options].find(o => o.value === t.country);
+        if (opt) return opt.textContent.trim();
+      }
+      return t.countryLabel || t.country || '';
+    }
+
+    window.saveTravel = async function() {
+      if (!_me) return;
+      const dict = I18N[currentLang];
+      const from = document.getElementById('travelFrom').value;
+      const to   = document.getElementById('travelTo').value;
+      const sel  = document.getElementById('travelCountry');
+      const country = sel.value;
+      const opt = sel.options[sel.selectedIndex];
+      const tz = (opt && opt.dataset && opt.dataset.tz) || '';
+      const tzLabel = (opt && opt.dataset && opt.dataset.label) || '';
+      const note = (document.getElementById('travelNote').value || '').trim();
+      if (!from || !to || !country) {
+        alert(dict.toastNeedDates || 'Please fill in dates and country.');
+        return;
+      }
+      if (new Date(to) < new Date(from)) {
+        alert(currentLang === 'ja' ? '帰着日は出発日より後にしてください。' : 'Return date must be after depart date.');
+        return;
+      }
+      const btn = document.getElementById('saveTravelBtn');
+      btn.disabled = true;
+      const originalLabel = btn.textContent;
+      btn.textContent = currentLang === 'ja' ? '保存中…' : 'Saving…';
+      try {
+        await addDoc(collection(db, 'travel'), {
+          uid: _me.uid,
+          email: (_me.email || '').toLowerCase(),
+          name: _myFirstName || (_me.displayName || _me.email),
+          from, to,
+          country, countryLabel: opt ? opt.textContent.trim() : '',
+          tz, tzLabel,
+          type: TRAVEL_TYPE,
+          note,
+          createdAt: serverTimestamp()
+        });
+        document.getElementById('travelFrom').value = '';
+        document.getElementById('travelTo').value = '';
+        document.getElementById('travelNote').value = '';
+        btn.textContent = currentLang === 'ja' ? '✓ 保存しました' : '✓ Saved';
+        setTimeout(() => { btn.textContent = originalLabel; btn.disabled = false; }, 1200);
+      } catch (err) {
+        console.error(err);
+        alert((dict.toastSaveFail || 'Save failed: ') + (err.message || err));
+        btn.textContent = originalLabel;
+        btn.disabled = false;
+      }
     };
+
+    window.deleteTravel = async function(id) {
+      const dict = I18N[currentLang];
+      if (!confirm(dict.deleteConfirm || 'Delete this trip?')) return;
+      try { await deleteDoc(doc(db, 'travel', id)); }
+      catch (err) { alert('Delete failed: ' + (err.message || err)); }
+    };
+
+    function tripCardHtml(t, id, isMine) {
+      const flag = (t.country === 'JP') ? '🇯🇵'
+                 : (t.country === 'AE') ? '🇦🇪'
+                 : (t.country === 'ID') ? '🇮🇩'
+                 : (t.country === 'HK') ? '🇭🇰'
+                 : (t.country === 'SG') ? '🇸🇬'
+                 : (t.country === 'IN') ? '🇮🇳'
+                 : (t.country === 'GB') ? '🇬🇧'
+                 : (t.country === 'US') ? '🇺🇸'
+                 : (t.country === 'SA') ? '🇸🇦' : '✈️';
+      const typePill = t.type === 'holiday'
+        ? `<span class="trip-pill holiday">${currentLang === 'ja' ? '休暇' : 'Holiday'}</span>`
+        : `<span class="trip-pill work">${currentLang === 'ja' ? '仕事' : 'Work'}</span>`;
+      const owner = isMine ? '' : `<div class="trip-owner">${(t.name || t.email || '').replace(/</g,'&lt;')}</div>`;
+      const del   = isMine ? `<button class="trip-del" onclick="deleteTravel('${id}')" title="${I18N[currentLang].deleteBtn || 'Delete'}">×</button>` : '';
+      const note  = t.note ? `<div class="trip-note">${t.note.replace(/</g,'&lt;')}</div>` : '';
+      return `
+        <div class="trip-card">
+          <div class="trip-head">
+            <div class="trip-flag">${flag}</div>
+            <div class="trip-meta">
+              ${owner}
+              <div class="trip-country">${tripCountryLabel(t)}</div>
+              <div class="trip-dates">${fmtDate(t.from)} → ${fmtDate(t.to)}</div>
+            </div>
+            <div class="trip-actions">${typePill}${del}</div>
+          </div>
+          ${note}
+        </div>`;
+    }
+
+    function renderTrips(wrapId, items, isMine, emptyKey) {
+      const wrap = document.getElementById(wrapId);
+      if (!wrap) return;
+      if (!items.length) {
+        wrap.innerHTML = `<div class="empty-list">${I18N[currentLang][emptyKey] || ''}</div>`;
+        return;
+      }
+      wrap.innerHTML = items.map(([id, t]) => tripCardHtml(t, id, isMine)).join('');
+    }
+
+    function subscribeTrips() {
+      if (!_me) return;
+      const todayISO = new Date().toISOString().slice(0, 10);
+      const qMine = query(collection(db, 'travel'),
+        where('uid', '==', _me.uid),
+        orderBy('from', 'asc'));
+      onSnapshot(qMine, (snap) => {
+        const list = [];
+        snap.forEach(d => { const t = d.data(); if ((t.to || '') >= todayISO) list.push([d.id, t]); });
+        renderTrips('myTripsWrap', list, true, 'emptyTravel');
+      }, (err) => console.warn('mine onSnapshot', err));
+      const qTeam = query(collection(db, 'travel'), orderBy('from', 'asc'));
+      onSnapshot(qTeam, (snap) => {
+        const list = [];
+        snap.forEach(d => {
+          const t = d.data();
+          if (t.uid !== _me.uid && (t.to || '') >= todayISO) list.push([d.id, t]);
+        });
+        renderTrips('teamTripsWrap', list, false, 'emptyTeamTravel');
+      }, (err) => console.warn('team onSnapshot', err));
+    }
 
     let TRAVEL_TYPE = 'work';
     window.setTravelType = function(t) {
@@ -531,11 +702,19 @@
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) { window.location.href = 'index.html'; return; }
+      _me = user;
       let firstName = (user.displayName || '').trim().split(/\s+/)[0];
       try { const snap = await getDoc(doc(db, 'agents', user.uid)); if (snap.exists() && snap.data().firstName) firstName = snap.data().firstName; } catch (e) {}
       if (!firstName && user.email) { const local = user.email.split('@')[0].split(/[._-]/)[0]; firstName = local.charAt(0).toUpperCase() + local.slice(1); }
+      _myFirstName = firstName;
       document.getElementById('userName').textContent = firstName || 'Agent';
+      subscribeTrips();
     });
+    // Bind save button — script runs at the end of body so the element exists.
+    {
+      const _btn = document.getElementById('saveTravelBtn');
+      if (_btn) _btn.addEventListener('click', () => window.saveTravel());
+    }
 
     window.addEventListener('load', () => { setLang('ja'); });
     window.addEventListener('resize', positionPill);
