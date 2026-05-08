@@ -1042,16 +1042,13 @@
        so legibility is guaranteed even if the image fails to load.
        Stacking pseudo-elements with var(url(...)) was unreliable on
        some iOS Safari versions, so the URL is inlined per rule. */
-    /* Photo layer uses contain (not cover) so the entire image is visible
-       inside the tile — no more cropped subjects. The empty space left
-       over by contain shows the per-tile accent gradient as a backing
-       wash, which feels deliberate rather than empty. The diagonal
-       darkening gradient on top still keeps the title text legible. */
+    /* Photo fills the tile with cover but anchored slightly off-center
+       toward the lower-right so the hero subject lands in frame without
+       leaving any empty space. Looks composed, not cropped. */
     .tile.has-card {
-      background-position: center, right bottom;     /* gradient, photo */
-      background-size:     100% 100%, contain;       /* gradient, photo */
+      background-position: center, 75% 70%;          /* gradient, photo */
+      background-size:     100% 100%, cover;         /* gradient, photo */
       background-repeat:   no-repeat;
-      background-color:    rgba(10,31,61,0.95);      /* navy fallback under contain */
     }
     .tile.has-card .tile-art { display: none; }
 

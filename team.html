@@ -1401,7 +1401,8 @@
       { match: 'MOUAD',            target: 'dubai-office', role: 'Dubai Office · Admin', roleJa: 'ドバイオフィス・管理者' },
       { match: 'YUKA',             target: 'japan-office', role: 'Japan Office',          roleJa: '日本オフィス' },
       { match: 'YUPON',            target: 'japan-office', role: 'Japan Office',          roleJa: '日本オフィス' },
-      { match: 'KUNIYASU TOIZUMI', target: 'japan-office', role: 'Japan Office',          roleJa: '日本オフィス' }
+      { match: 'KUNIYASU TOIZUMI', target: 'japan-office', role: 'Japan Office',          roleJa: '日本オフィス' },
+      { match: 'HAMZA',            target: 'marketing',    role: 'Marketing',             roleJa: 'マーケティング' }
     ];
     // Members to ensure exist somewhere in TEAM (added to target if missing).
     const ENSURE_MEMBERS_2026_05 = [
@@ -1415,6 +1416,58 @@
           companyLogo: 'team/logos/sobha.png',
           phone: '+40749342647',   phoneDisplay: '+40 749 342 647',
           email: '', photo: 'team/sergio.png'
+        }
+      },
+      {
+        target: 'dubai-sales',
+        member: {
+          name: 'REBECCA XOLIE',
+          nameJa: 'レベッカ・ゾーリー',
+          role: 'Dubai Sales',
+          roleJa: 'ドバイ営業',
+          phone: '+971585988219',
+          phoneDisplay: '+971 58 598 8219',
+          email: '',
+          photo: 'team/rebecca-xolie.png'
+        }
+      },
+      {
+        target: 'dubai-sales',
+        member: {
+          name: 'DR MARYAM',
+          nameJa: 'ドクター・マリヤム',
+          role: 'Dubai Sales',
+          roleJa: 'ドバイ営業',
+          phone: '+97156198007',
+          phoneDisplay: '+971 56 198 0007',
+          email: '',
+          photo: ''
+        }
+      },
+      {
+        target: 'japan-sales',
+        member: {
+          name: 'AYUMI',
+          nameJa: 'あゆみ',
+          role: 'Japan Sales',
+          roleJa: '日本営業',
+          phone: '+971585847275',
+          phoneDisplay: '+971 58 584 7275',
+          email: '',
+          photo: ''
+        }
+      },
+      {
+        target: 'japan-sales',
+        member: {
+          name: 'KATSUYA',
+          nameJa: 'カツヤ',
+          role: 'Japan Sales',
+          roleJa: '日本営業',
+          phone: '+971585890267',
+          phoneDisplay: '+971 58 589 0267',
+          email: '',
+          photo: ''
         }
       }
     ];
@@ -1732,6 +1785,25 @@
       if (can(editorRole, 'editTeamTree', user.email)) {
         let touched = 0;
         if (!Array.isArray(TEAM.board)) TEAM.board = [];
+        // Silently apply moves (RESTRUCTURE) — moves a member from any
+        // section into the target if they're not already there. Picks up
+        // new rules added to the array (e.g. Hamza → marketing).
+        RESTRUCTURE_2026_05.forEach(rule => {
+          const matchKey = nameKey(rule.match);
+          let foundSection = null, foundIdx = -1, member = null;
+          Object.keys(TEAM).forEach(section => {
+            if (!Array.isArray(TEAM[section])) return;
+            const idx = TEAM[section].findIndex(m => nameKey(m.name) === matchKey);
+            if (idx >= 0) { foundSection = section; foundIdx = idx; member = TEAM[section][idx]; }
+          });
+          if (!member || foundSection === rule.target) return;
+          TEAM[foundSection].splice(foundIdx, 1);
+          member.role = rule.role;
+          member.roleJa = rule.roleJa;
+          if (!Array.isArray(TEAM[rule.target])) TEAM[rule.target] = [];
+          TEAM[rule.target].push(member);
+          touched++;
+        });
         ADD_TO_BOARD_2026_05.forEach(member => {
           const k = nameKey(member.name);
           if (!TEAM.board.some(m => nameKey(m.name) === k)) {
@@ -1747,6 +1819,18 @@
             TEAM[section] = TEAM[section].filter(m => nameKey(m.name) !== k);
             if (TEAM[section].length !== before) touched++;
           });
+        });
+        // Silently ensure new ENSURE_MEMBERS entries land in the live tree
+        // (Rebecca etc.) — only adds if missing, never overwrites.
+        ENSURE_MEMBERS_2026_05.forEach(rule => {
+          const k = nameKey(rule.member.name);
+          const existsAnywhere = Object.keys(TEAM).some(sec =>
+            Array.isArray(TEAM[sec]) && TEAM[sec].some(m => nameKey(m.name) === k));
+          if (!existsAnywhere) {
+            if (!Array.isArray(TEAM[rule.target])) TEAM[rule.target] = [];
+            TEAM[rule.target].push({ ...rule.member });
+            touched++;
+          }
         });
         if (touched > 0) {
           try { await saveTeamConfig(); } catch (e) { console.warn('silent migration save failed', e); }
