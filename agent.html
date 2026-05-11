@@ -2003,7 +2003,18 @@
       min-height: 0 !important;
       position: relative;
     }
-    .v2-card-tz .tz-flag-strip { display: none !important; }
+    .v2-card-tz .tz-flag-strip {
+      display: block !important;
+      width: 18px; height: 12px;
+      border-radius: 2px;
+      overflow: hidden;
+      flex: none;
+      margin-right: 10px;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.08);
+    }
+    .v2-card-tz .tz-card {
+      grid-template-columns: auto 1fr auto !important;
+    }
     .v2-card-tz .tz-meta {
       display: flex; align-items: baseline; gap: 6px;
       min-width: 0;
@@ -2056,7 +2067,8 @@
       border: 1px solid var(--navy-3);
       border-radius: 10px;
       padding: 8px;
-      display: flex !important; flex-wrap: wrap; gap: 6px;
+      flex-wrap: wrap; gap: 6px;
+      /* JS toggles inline style.display between 'none' and 'flex' — no !important here */
     }
     .v2-card-tz .tz-picker button {
       background: transparent !important;
