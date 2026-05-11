@@ -4,10 +4,13 @@
   "private": true,
   "description": "Exceed Real Estate internal staff portal — admin scripts only. The portal itself is static HTML and runs from GitHub Pages, no build step.",
   "scripts": {
-    "sync-drive": "node scripts/sync-drive.js"
+    "sync-drive": "node scripts/sync-drive.js",
+    "sync-dev": "node scripts/sync-developer-folder.js"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.1",
     "firebase-admin": "^12.7.0",
-    "googleapis": "^144.0.0"
+    "googleapis": "^144.0.0",
+    "pdf-parse": "^1.1.1"
   }
 }
