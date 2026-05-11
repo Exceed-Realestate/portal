@@ -1,5 +1,13 @@
 {
   "projects": {
     "default": "exceed-portal"
+  },
+  "targets": {},
+  "etags": {
+    "exceed-portal": {
+      "extensionInstances": {
+        "firestore-send-email": "9b2186fc1529842013a709e162b5309a6cb3392242b238d1739ac520ff43fcf0"
+      }
+    }
   }
 }

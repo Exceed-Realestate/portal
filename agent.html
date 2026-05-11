@@ -1686,6 +1686,320 @@
       .acc-bd .acc-card { padding: 18px 16px; }
       .acc-cur-grid { grid-template-columns: 1fr; gap: 14px; }
     }
+
+    /* ============================================================
+       v2 — Wise-style minimalist dashboard
+       ============================================================ */
+    body.dashboard-bg { background: var(--navy-0) !important; }
+    .v2-shell {
+      display: grid !important;
+      grid-template-columns: 240px 1fr !important;
+      min-height: 100vh;
+    }
+    .v2-side {
+      position: sticky; top: 0;
+      height: 100vh; width: 240px;
+      background: var(--navy-1);
+      border-right: 1px solid var(--navy-3);
+      display: flex; flex-direction: column;
+      padding: 20px 14px 14px;
+      z-index: 30;
+    }
+    .v2-brand {
+      display: flex; align-items: center; gap: 10px;
+      cursor: pointer; padding: 4px 6px 18px;
+      border-bottom: 1px solid var(--navy-3);
+    }
+    .v2-brand-mark {
+      width: 34px; height: 34px; border-radius: 8px;
+      background: var(--gold); color: #1a1a1a;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 13px; letter-spacing: .5px;
+    }
+    .v2-brand-text { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; }
+    .v2-brand-text strong { color: var(--cream); font-size: 14px; font-weight: 600; font-family: 'Inter', system-ui, sans-serif; }
+    .v2-brand-text span { color: var(--muted); font-size: 10.5px; letter-spacing: .5px; }
+
+    .v2-profile {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 8px; margin: 12px 0 6px;
+      cursor: pointer; border-radius: 10px;
+      transition: background .15s;
+    }
+    .v2-profile:hover { background: var(--navy-2); }
+    .v2-profile-avatar {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: var(--navy-3); color: var(--cream);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 14px; flex: none;
+      overflow: hidden;
+    }
+    .v2-profile-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .v2-profile-meta { display: flex; flex-direction: column; min-width: 0; }
+    .v2-profile-name {
+      color: var(--cream); font-size: 13px; font-weight: 600;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      max-width: 150px;
+    }
+    .v2-profile-edit { color: var(--muted); font-size: 10.5px; }
+
+    .v2-nav {
+      display: flex; flex-direction: column; gap: 2px;
+      margin-top: 8px; flex: 1;
+    }
+    .v2-nav-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 12px; border-radius: 8px;
+      color: var(--muted);
+      font-size: 13.5px; font-weight: 500;
+      font-family: 'Inter', system-ui, sans-serif;
+      text-decoration: none;
+      transition: background .15s, color .15s;
+      position: relative;
+    }
+    .v2-nav-item:hover { background: var(--navy-2); color: var(--cream); }
+    .v2-nav-item svg { width: 18px; height: 18px; flex: none; }
+    .v2-nav-item.active { background: var(--navy-2); color: var(--cream); }
+    .v2-nav-item.active::before {
+      content: ""; position: absolute; left: -14px; top: 8px; bottom: 8px;
+      width: 3px; background: var(--gold); border-radius: 0 3px 3px 0;
+    }
+
+    .v2-foot {
+      display: flex; flex-direction: column; gap: 2px;
+      padding-top: 8px; border-top: 1px solid var(--navy-3);
+    }
+    .v2-foot-btn {
+      display: flex; align-items: center; gap: 12px;
+      padding: 9px 12px; border-radius: 8px;
+      background: transparent; border: 0;
+      color: var(--muted); font-size: 12.5px; font-weight: 500;
+      font-family: 'Inter', system-ui, sans-serif;
+      text-align: left; cursor: pointer;
+      transition: background .15s, color .15s;
+    }
+    .v2-foot-btn:hover { background: var(--navy-2); color: var(--cream); }
+    .v2-foot-btn svg { width: 16px; height: 16px; flex: none; }
+    .v2-foot-logout:hover { color: #ff8c8c; }
+
+    .v2-main {
+      display: flex; flex-direction: column;
+      min-width: 0;
+      padding: 28px 32px 40px;
+      gap: 24px;
+    }
+
+    .v2-top {
+      display: flex; align-items: flex-end; justify-content: space-between;
+      gap: 20px; flex-wrap: wrap;
+    }
+    .v2-top-left { min-width: 0; flex: 1; }
+    .v2-eyebrow {
+      color: var(--muted); font-size: 10.5px; font-weight: 600;
+      letter-spacing: 1.8px; text-transform: uppercase;
+      margin: 0 0 6px;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+    .v2-page-title {
+      font-family: 'Inter', system-ui, sans-serif !important;
+      font-style: normal !important; font-weight: 600;
+      font-size: 28px; color: var(--cream); margin: 0;
+      letter-spacing: -.5px;
+      -webkit-text-fill-color: var(--cream) !important;
+      background: none !important;
+    }
+    .v2-page-title #welcomeName {
+      font-style: normal !important;
+      -webkit-text-fill-color: var(--gold) !important;
+      background: none !important;
+      color: var(--gold) !important;
+    }
+    .v2-top-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .v2-search {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 14px; border-radius: 999px;
+      background: var(--navy-1); border: 1px solid var(--navy-3);
+      min-width: 220px;
+    }
+    .v2-search svg { width: 14px; height: 14px; color: var(--muted); flex: none; }
+    .v2-search input {
+      background: transparent; border: 0; outline: 0;
+      color: var(--cream); font-size: 13px; width: 100%;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+    .v2-search input::placeholder { color: var(--muted); }
+
+    .v2-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 18px;
+    }
+    .v2-card {
+      background: var(--navy-1);
+      border: 1px solid var(--navy-3);
+      border-radius: 14px;
+      padding: 20px;
+      display: flex; flex-direction: column; gap: 14px;
+      min-width: 0;
+    }
+    .v2-card-schedule { grid-column: span 8; min-height: 240px; }
+    .v2-card-stats    { grid-column: span 4; }
+    .v2-card-bday     { grid-column: span 4; }
+    .v2-card-deals    { grid-column: span 4; }
+    .v2-card-short    { grid-column: span 4; }
+    .v2-card-tools    { grid-column: span 12; }
+
+    .v2-card-head {
+      display: flex; justify-content: space-between;
+      align-items: flex-start; gap: 12px;
+    }
+    .v2-card-eyebrow {
+      color: var(--muted); font-size: 10.5px; font-weight: 600;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+    .v2-card-title {
+      color: var(--cream); font-size: 20px; font-weight: 600;
+      margin-top: 4px; letter-spacing: -.3px;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+    .v2-card-title-sm {
+      font-size: 13px; color: var(--muted); font-weight: 500;
+      margin-top: 2px;
+    }
+    .v2-card-status {
+      color: var(--muted); font-size: 11px;
+      padding: 4px 10px;
+      border: 1px solid var(--navy-3);
+      border-radius: 999px;
+      background: var(--navy-2);
+    }
+
+    .v2-cta {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 16px; border-radius: 999px;
+      background: var(--gold); color: #1a1a1a;
+      font-size: 13px; font-weight: 600; text-decoration: none;
+      border: 0; cursor: pointer;
+      font-family: 'Inter', system-ui, sans-serif;
+      transition: filter .15s, transform .15s;
+      align-self: flex-start;
+    }
+    .v2-cta:hover { filter: brightness(1.08); transform: translateY(-1px); }
+    .v2-cta-ghost {
+      background: transparent; color: var(--cream);
+      border: 1px solid var(--navy-3);
+    }
+    .v2-cta-ghost:hover { background: var(--navy-2); filter: none; transform: none; }
+
+    .v2-schedule-empty {
+      flex: 1; display: flex; flex-direction: column;
+      gap: 10px; padding: 4px 0;
+      align-items: flex-start; text-align: left;
+    }
+    .v2-schedule-empty .schedule-empty-icon { display: none; }
+    .v2-schedule-empty .schedule-empty-title {
+      color: var(--cream); font-size: 15px; font-weight: 600;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+    .v2-schedule-empty p {
+      color: var(--muted); font-size: 13px; line-height: 1.5;
+      margin: 0; max-width: 460px;
+    }
+
+    .v2-stats { display: flex; gap: 28px; }
+    .v2-stat { display: flex; flex-direction: column; }
+    .v2-stat-num {
+      color: var(--cream); font-size: 28px; font-weight: 700;
+      line-height: 1; letter-spacing: -1px;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+    .v2-stat-lbl {
+      color: var(--muted); font-size: 10.5px;
+      text-transform: uppercase; letter-spacing: 1.2px;
+      margin-top: 6px;
+    }
+    .v2-stat-list {
+      display: flex; flex-direction: column; gap: 10px;
+      border-top: 1px solid var(--navy-3); padding-top: 12px;
+      margin-top: 4px;
+    }
+    .v2-stat-row {
+      display: flex; justify-content: space-between; align-items: center;
+      color: var(--cream); font-size: 12.5px; gap: 12px;
+    }
+    .v2-stat-row > span:first-child {
+      color: var(--muted); font-size: 10.5px;
+      text-transform: uppercase; letter-spacing: 1.2px;
+      flex: none;
+    }
+    .v2-stat-mini { font-size: 12px; text-align: right; min-width: 0; }
+    .v2-stat-mini .tz-row { display: inline; margin-right: 6px; }
+
+    .v2-bday-list {
+      list-style: none; margin: 4px 0 0; padding: 0;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+
+    .v2-edit {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 12px; border-radius: 999px;
+      background: transparent; border: 1px solid var(--navy-3);
+      color: var(--cream); font-size: 12px; cursor: pointer;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+    .v2-edit svg { width: 14px; height: 14px; }
+    .v2-edit:hover { background: var(--navy-2); }
+
+    .v2-short-list {
+      display: flex; flex-direction: column; gap: 6px; margin-top: 4px;
+    }
+
+    /* Hide legacy icon rail completely */
+    .rail { display: none !important; }
+
+    /* Slim the tile grid inside its card */
+    .v2-card-tools .tile-grid {
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)) !important;
+      gap: 12px !important;
+      margin-top: 4px;
+    }
+    .v2-card-tools .tile { min-height: 110px !important; }
+
+    /* Make notif button match v2 */
+    .v2-top-right .notif-btn,
+    .v2-top-right .theme-btn {
+      background: var(--navy-1) !important;
+      border: 1px solid var(--navy-3) !important;
+      color: var(--cream) !important;
+      padding: 8px !important;
+      border-radius: 50% !important;
+      width: 36px; height: 36px;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .v2-top-right .notif-btn svg,
+    .v2-top-right .theme-btn svg { width: 16px; height: 16px; }
+
+    /* Responsive */
+    @media (max-width: 1180px) {
+      .v2-card-schedule { grid-column: span 12; }
+      .v2-card-stats, .v2-card-bday,
+      .v2-card-deals, .v2-card-short { grid-column: span 6; }
+    }
+    @media (max-width: 820px) {
+      .v2-shell { grid-template-columns: 64px 1fr !important; }
+      .v2-side { width: 64px; padding: 16px 8px; }
+      .v2-brand-text, .v2-profile-meta,
+      .v2-nav-item span, .v2-foot-btn span { display: none; }
+      .v2-nav-item, .v2-foot-btn { justify-content: center; padding: 10px; }
+      .v2-profile { justify-content: center; padding: 8px; }
+      .v2-main { padding: 20px; }
+      .v2-card-stats, .v2-card-bday,
+      .v2-card-deals, .v2-card-short { grid-column: span 12; }
+      .v2-top { flex-direction: column; align-items: stretch; }
+      .v2-top-right { width: 100%; justify-content: space-between; }
+      .v2-search { min-width: 0; flex: 1; }
+    }
   </style>
   <script src="theme-init.js"></script>
 </head>
@@ -1699,47 +2013,79 @@
     <div class="orb o3"></div>
   </div>
 
-  <div class="shell">
+  <div class="shell v2-shell">
 
-    <!-- ===== Left Rail ===== -->
-    <aside class="rail">
-      <div class="rail-logo" onclick="window.location.href='index.html'" title="Exceed Real Estate">EX</div>
-      <nav class="rail-nav">
-        <a class="rail-icon active" title="Dashboard" href="#">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    <!-- ===== Sidebar (labeled, Wise-style) ===== -->
+    <aside class="v2-side">
+      <div class="v2-brand" onclick="window.location.href='index.html'" title="Exceed Real Estate">
+        <div class="v2-brand-mark">EX</div>
+        <div class="v2-brand-text">
+          <strong>Exceed</strong>
+          <span>REAL ESTATE</span>
+        </div>
+      </div>
+
+      <div class="v2-profile" onclick="openMeModal()" title="プロフィール編集">
+        <div class="v2-profile-avatar" id="userAvatar">A</div>
+        <div class="v2-profile-meta">
+          <div class="v2-profile-name" id="userName">Agent</div>
+          <div class="v2-profile-edit" data-i18n="profileEdit">プロフィール編集</div>
+        </div>
+      </div>
+
+      <nav class="v2-nav">
+        <a class="v2-nav-item active" href="#" data-i18n="navDash">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span>ダッシュボード</span>
         </a>
-        <a class="rail-icon" title="Team" href="team.html">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <a class="v2-nav-item" href="availability.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span>カレンダー</span>
         </a>
-        <a class="rail-icon" title="Calendar" href="availability.html">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+        <a class="v2-nav-item" href="team.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span>チーム</span>
         </a>
-        <a class="rail-icon" title="Travel" href="travel.html">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
+        <a class="v2-nav-item" href="travel.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
+          <span>出張</span>
         </a>
-        <a class="rail-icon" title="Logout" href="#" onclick="event.preventDefault(); logout();" style="margin-top:auto">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <a class="v2-nav-item" href="database.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+          <span>データベース</span>
         </a>
       </nav>
+
+      <div class="v2-foot">
+        <button class="v2-foot-btn" id="accessBtn" onclick="openAccessModal()" title="My access role">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span id="accessBtnLabel">アクセス</span>
+        </button>
+        <button class="v2-foot-btn" id="themeBtn" onclick="cycleTheme()" title="Switch theme">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+          <span id="themeLabel">Manor</span>
+        </button>
+        <button class="v2-foot-btn v2-foot-logout" onclick="logout()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          <span>ログアウト</span>
+        </button>
+      </div>
     </aside>
 
     <!-- ===== Main pane ===== -->
-    <div>
-      <!-- Top bar -->
-      <header class="topbar">
-        <div class="search">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" placeholder="検索..." id="searchInput" />
+    <div class="v2-main">
+
+      <!-- New topbar: page title left, search + lang + bell right -->
+      <header class="v2-top">
+        <div class="v2-top-left">
+          <p class="v2-eyebrow" data-i18n="eyebrow">AGENT DASHBOARD</p>
+          <h1 class="v2-page-title" data-i18n="welcome">ようこそ、<span id="welcomeName">エージェント</span>さん</h1>
         </div>
-        <div class="topbar-meta">
-          <button class="theme-btn" id="accessBtn" onclick="openAccessModal()" title="My access role">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            <span id="accessBtnLabel">アクセス</span>
-          </button>
-          <button class="theme-btn" id="themeBtn" onclick="cycleTheme()" title="Switch theme">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
-            <span id="themeLabel">Manor</span>
-          </button>
+        <div class="v2-top-right">
+          <div class="search v2-search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" placeholder="検索..." id="searchInput" />
+          </div>
           <div class="lang-toggle" id="langToggle">
             <span class="pill" id="langPill"></span>
             <button data-lang="ja" class="active">日本語</button>
@@ -1758,124 +2104,91 @@
               <div class="notif-list" id="notifList"></div>
             </div>
           </div>
-          <div class="user-chip" onclick="openMeModal()" title="Edit your profile">
-            <div class="user-chip-avatar" id="userAvatar">A</div>
-            <span class="user-chip-name" id="userName">Agent</span>
-          </div>
         </div>
       </header>
 
-      <!-- Dashboard body -->
+      <!-- Dashboard body — asymmetric 12-col grid -->
       <div class="dashboard-view" id="dashboardView">
-        <div class="body-grid">
+        <div class="v2-grid">
 
-          <!-- LEFT column: today's schedule -->
-          <section class="left-col">
-            <p class="page-sub" data-i18n="eyebrow">AGENT DASHBOARD</p>
-            <h1 data-i18n="welcome">ようこそ、<span id="welcomeName">エージェント</span>さん</h1>
-
-            <div class="schedule-card">
-              <div class="schedule-head">
-                <div>
-                  <div class="schedule-eyebrow" data-i18n="todayLabel">本日</div>
-                  <div class="schedule-date" id="scheduleDate">—</div>
-                </div>
-                <div class="schedule-status" id="scheduleStatus" data-i18n="notConnected">未連携</div>
+          <!-- Schedule (span 8) -->
+          <section class="v2-card v2-card-schedule">
+            <div class="v2-card-head">
+              <div>
+                <div class="v2-card-eyebrow" data-i18n="todayLabel">本日のスケジュール</div>
+                <div class="v2-card-title" id="scheduleDate">—</div>
               </div>
-
-              <div class="schedule-empty" id="scheduleEmpty">
-                <div class="schedule-empty-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="10" y2="14"/><line x1="14" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="10" y2="18"/><line x1="14" y1="18" x2="16" y2="18"/></svg>
-                </div>
-                <div class="schedule-empty-title" data-i18n="scTitle">今日の予定はここに表示されます</div>
-                <p data-i18n="scBody">「カレンダー」タブでGoogleカレンダーと連携すると、本日のミーティングや予定がここに自動表示されます。</p>
-                <a class="schedule-cta" href="availability.html" data-i18n="scCta">
-                  カレンダーを連携 →
-                </a>
-              </div>
-
-              <ul class="schedule-list" id="scheduleList" style="display:none"></ul>
+              <div class="v2-card-status" id="scheduleStatus" data-i18n="notConnected">未連携</div>
             </div>
 
-            <!-- This Month's Birthdays -->
-            <div class="birthday-card" id="birthdayCard">
-              <div class="bday-head">
-                <div>
-                  <div class="bday-eyebrow" data-i18n="bdayLabel">今月の誕生日</div>
-                  <div class="bday-month" id="bdayMonthName">—</div>
-                </div>
-                <div class="bday-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/><path d="M4 16h16"/><path d="M2 21h20"/><path d="M9 7c0-1.5-1.5-2-1.5-3.5C7.5 2.5 9 2 9 2s1.5.5 1.5 1.5C10.5 5 9 5.5 9 7"/><path d="M15 7c0-1.5-1.5-2-1.5-3.5C13.5 2.5 15 2 15 2s1.5.5 1.5 1.5C16.5 5 15 5.5 15 7"/></svg>
-                </div>
-              </div>
-              <ul class="bday-list" id="bdayList"></ul>
+            <div class="schedule-empty v2-schedule-empty" id="scheduleEmpty">
+              <div class="schedule-empty-title" data-i18n="scTitle">今日の予定はここに表示されます</div>
+              <p data-i18n="scBody">「カレンダー」タブでGoogleカレンダーと連携すると、本日のミーティングや予定がここに自動表示されます。</p>
+              <a class="v2-cta" href="availability.html" data-i18n="scCta">カレンダーを連携 →</a>
             </div>
 
-            <!-- Recent Deal Alerts (blurred until "Reveal") -->
-            <div class="recent-deals-card" id="recentDealsCard">
-              <div class="rd-head">
-                <div>
-                  <div class="rd-eyebrow" data-i18n="rdLabel">最近の成約</div>
-                  <div class="rd-sub" data-i18n="rdSub">クリックで表示</div>
-                </div>
-                <div class="rd-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                </div>
-              </div>
-              <div class="rd-body" id="recentDealsBody">
-                <div class="rd-blur-wrap" id="rdContent">
-                  <div class="rd-deal"><span class="rd-deal-amt">— —</span><div class="rd-deal-info"><div class="rd-deal-name">— — —</div><div class="rd-deal-prop">— — —</div></div></div>
-                  <div class="rd-deal"><span class="rd-deal-amt">— —</span><div class="rd-deal-info"><div class="rd-deal-name">— — —</div><div class="rd-deal-prop">— — —</div></div></div>
-                </div>
-                <button class="rd-reveal-btn" id="rdRevealBtn" onclick="revealRecentDeals()" data-i18n="rdReveal">🚨 Reveal recent deals</button>
-              </div>
+            <ul class="schedule-list" id="scheduleList" style="display:none"></ul>
+          </section>
+
+          <!-- Quick stats (span 4) -->
+          <section class="v2-card v2-card-stats">
+            <div class="v2-card-eyebrow" data-i18n="quickLabel">QUICK STATS</div>
+            <div class="v2-stats">
+              <div class="v2-stat"><span class="v2-stat-num" id="statTeam">5</span><span class="v2-stat-lbl" data-i18n="qsTeam">Team</span></div>
+              <div class="v2-stat"><span class="v2-stat-num" id="statTools">5</span><span class="v2-stat-lbl" data-i18n="qsTools">Tools</span></div>
+            </div>
+            <div class="v2-stat-list">
+              <div class="v2-stat-row"><span data-i18n="tzLabel">Time zones</span><span id="tzList" class="v2-stat-mini"></span></div>
+              <div class="v2-stat-row"><span data-i18n="travelingLabel">Travelling</span><span id="travelingList" class="v2-stat-mini traveling-list"></span></div>
             </div>
           </section>
 
-          <!-- CENTER column -->
-          <section class="center-col">
-            <div class="center-col-head">
-              <h2 data-i18n="quickAccess">QUICK ACCESS</h2>
-              <div class="right">
-                <span class="meta" id="tileCount">0 tools</span>
-                <button class="edit-btn" id="editBtn" onclick="toggleEdit()" title="Reorder tiles">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                  <span id="editLabel" data-i18n="editBtn">並び替え</span>
-                </button>
+          <!-- Birthdays (span 4) -->
+          <section class="v2-card v2-card-bday" id="birthdayCard">
+            <div class="v2-card-eyebrow" data-i18n="bdayLabel">今月の誕生日</div>
+            <div class="v2-card-title v2-card-title-sm" id="bdayMonthName">—</div>
+            <ul class="bday-list v2-bday-list" id="bdayList"></ul>
+          </section>
+
+          <!-- Deals (span 4) -->
+          <section class="v2-card v2-card-deals" id="recentDealsCard">
+            <div class="v2-card-head">
+              <div>
+                <div class="v2-card-eyebrow" data-i18n="rdLabel">最近の成約</div>
+                <div class="v2-card-title v2-card-title-sm" data-i18n="rdSub">クリックで表示</div>
               </div>
+            </div>
+            <div class="rd-body" id="recentDealsBody">
+              <div class="rd-blur-wrap" id="rdContent">
+                <div class="rd-deal"><span class="rd-deal-amt">— —</span><div class="rd-deal-info"><div class="rd-deal-name">— — —</div><div class="rd-deal-prop">— — —</div></div></div>
+                <div class="rd-deal"><span class="rd-deal-amt">— —</span><div class="rd-deal-info"><div class="rd-deal-name">— — —</div><div class="rd-deal-prop">— — —</div></div></div>
+              </div>
+              <button class="v2-cta v2-cta-ghost" id="rdRevealBtn" onclick="revealRecentDeals()" data-i18n="rdReveal">🚨 表示する</button>
+            </div>
+          </section>
+
+          <!-- Shortcuts (span 4) -->
+          <section class="v2-card v2-card-short">
+            <div class="v2-card-eyebrow" data-i18n="shortLabel">SHORTCUTS</div>
+            <div class="shortcut-list v2-short-list" id="shortcutList"></div>
+          </section>
+
+          <!-- Tools (span 12) -->
+          <section class="v2-card v2-card-tools">
+            <div class="v2-card-head">
+              <div>
+                <div class="v2-card-eyebrow" data-i18n="quickAccess">ツール</div>
+                <div class="v2-card-title v2-card-title-sm"><span id="tileCount">0 tools</span></div>
+              </div>
+              <button class="v2-edit" id="editBtn" onclick="toggleEdit()" title="Reorder tiles">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                <span id="editLabel" data-i18n="editBtn">並び替え</span>
+              </button>
             </div>
             <div class="tile-grid" id="tileGrid">
               <div class="edit-hint" data-i18n="editHint">タイルをドラッグして並び替え。完了したら ✓ を押してください。</div>
             </div>
           </section>
-
-          <!-- RIGHT column -->
-          <aside class="right-col">
-            <h3 data-i18n="rightTitle">クイックインフォ</h3>
-            <p class="panel-sub" data-i18n="rightSub">At a glance</p>
-
-            <div class="info-block">
-              <div class="info-label" data-i18n="tzLabel">TIME ZONES</div>
-              <div id="tzList"></div>
-            </div>
-
-            <div class="info-block">
-              <div class="info-label" data-i18n="travelingLabel">TRAVELING NOW</div>
-              <div id="travelingList" class="traveling-list"></div>
-            </div>
-
-            <div class="info-block">
-              <div class="info-label" data-i18n="quickLabel">QUICK STATS</div>
-              <div class="quick-row"><span data-i18n="qsTeam">Team members</span><span class="num" id="statTeam">5</span></div>
-              <div class="quick-row"><span data-i18n="qsTools">Tools available</span><span class="num" id="statTools">5</span></div>
-              <div class="quick-row"><span data-i18n="qsOnline">Currently online</span><span class="num" style="color: var(--green)">●</span></div>
-            </div>
-
-            <div class="info-block">
-              <div class="info-label" data-i18n="shortLabel">SHORTCUTS</div>
-              <div class="shortcut-list" id="shortcutList"></div>
-            </div>
-          </aside>
 
         </div>
       </div>
