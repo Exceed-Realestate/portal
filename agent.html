@@ -2003,17 +2003,16 @@
       min-height: 0 !important;
       position: relative;
     }
+    .v2-card-tz .tz-card {
+      overflow: hidden; /* so the flag strip clips to the card's radius */
+      padding-top: 14px !important;
+    }
     .v2-card-tz .tz-flag-strip {
       display: block !important;
-      width: 18px; height: 12px;
-      border-radius: 2px;
-      overflow: hidden;
-      flex: none;
-      margin-right: 10px;
-      box-shadow: 0 0 0 1px rgba(255,255,255,0.08);
-    }
-    .v2-card-tz .tz-card {
-      grid-template-columns: auto 1fr auto !important;
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      grid-column: 1 / -1;
     }
     .v2-card-tz .tz-meta {
       display: flex; align-items: baseline; gap: 6px;
