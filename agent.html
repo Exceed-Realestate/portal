@@ -1844,10 +1844,11 @@
     }
     .v2-card-schedule { grid-column: span 8; min-height: 240px; }
     .v2-card-stats    { grid-column: span 4; }
-    .v2-card-bday     { grid-column: span 4; }
-    .v2-card-deals    { grid-column: span 4; }
+    .v2-card-tz       { grid-column: span 6; }
+    .v2-card-bday     { grid-column: span 3; }
+    .v2-card-deals    { grid-column: span 3; }
+    .v2-card-tools    { grid-column: span 8; }
     .v2-card-short    { grid-column: span 4; }
-    .v2-card-tools    { grid-column: span 12; }
 
     .v2-card-head {
       display: flex; justify-content: space-between;
@@ -1980,11 +1981,111 @@
     .v2-top-right .notif-btn svg,
     .v2-top-right .theme-btn svg { width: 16px; height: 16px; }
 
+    /* v2 timezone cards — slim, no flag strip, neutral */
+    .v2-card-tz #tzList,
+    .v2-card-tz .tz-list {
+      display: grid !important;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
+      gap: 10px !important;
+      margin: 0 !important;
+    }
+    .v2-card-tz .tz-card {
+      background: var(--navy-2) !important;
+      border: 1px solid var(--navy-3) !important;
+      border-radius: 10px !important;
+      padding: 12px 14px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 4px !important;
+      box-shadow: none !important;
+      min-height: 0 !important;
+      position: relative;
+    }
+    .v2-card-tz .tz-flag-strip { display: none !important; }
+    .v2-card-tz .tz-city {
+      color: var(--cream) !important;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      font-family: 'Inter', system-ui, sans-serif !important;
+    }
+    .v2-card-tz .tz-tag {
+      color: var(--muted) !important;
+      font-size: 10.5px !important;
+      letter-spacing: 1px !important;
+    }
+    .v2-card-tz .tz-time {
+      color: var(--gold) !important;
+      font-size: 22px !important;
+      font-weight: 700 !important;
+      font-family: 'Inter', system-ui, sans-serif !important;
+      letter-spacing: -.5px !important;
+      margin-top: 4px !important;
+      -webkit-text-fill-color: var(--gold) !important;
+      background: none !important;
+    }
+    .v2-card-tz .tz-remove {
+      position: absolute; top: 6px; right: 8px;
+      background: transparent; border: 0;
+      color: var(--muted); cursor: pointer; font-size: 16px; line-height: 1;
+    }
+    .v2-card-tz .tz-remove:hover { color: var(--cream); }
+    .v2-card-tz .tz-add {
+      grid-column: 1 / -1;
+      background: transparent !important;
+      border: 1px dashed var(--navy-3) !important;
+      color: var(--muted) !important;
+      padding: 10px !important;
+      border-radius: 10px !important;
+      font-size: 12px !important;
+      cursor: pointer;
+      font-family: 'Inter', system-ui, sans-serif !important;
+    }
+    .v2-card-tz .tz-add:hover {
+      border-color: var(--gold) !important;
+      color: var(--cream) !important;
+    }
+    .v2-card-tz .tz-picker {
+      grid-column: 1 / -1;
+      background: var(--navy-2);
+      border: 1px solid var(--navy-3);
+      border-radius: 10px;
+      padding: 8px;
+      display: flex !important; flex-wrap: wrap; gap: 6px;
+    }
+    .v2-card-tz .tz-picker button {
+      background: transparent !important;
+      border: 1px solid var(--navy-3) !important;
+      color: var(--cream) !important;
+      padding: 6px 10px !important;
+      border-radius: 8px !important;
+      font-size: 12px !important;
+      cursor: pointer;
+    }
+    .v2-card-tz .tz-picker button:hover { background: var(--navy-3) !important; }
+    .v2-card-tz .tz-tag-mini { color: var(--muted); font-size: 10px; margin-left: 6px; }
+
+    /* v2 travel block inside stats card */
+    .v2-travel-block {
+      border-top: 1px solid var(--navy-3);
+      padding-top: 12px;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .v2-travel-list {
+      color: var(--cream); font-size: 12.5px; line-height: 1.5;
+    }
+    .v2-travel-list:empty::before {
+      content: "—"; color: var(--muted);
+    }
+
     /* Responsive */
     @media (max-width: 1180px) {
       .v2-card-schedule { grid-column: span 12; }
-      .v2-card-stats, .v2-card-bday,
-      .v2-card-deals, .v2-card-short { grid-column: span 6; }
+      .v2-card-stats    { grid-column: span 12; }
+      .v2-card-tz       { grid-column: span 12; }
+      .v2-card-bday,
+      .v2-card-deals    { grid-column: span 6; }
+      .v2-card-tools    { grid-column: span 12; }
+      .v2-card-short    { grid-column: span 12; }
     }
     @media (max-width: 820px) {
       .v2-shell { grid-template-columns: 64px 1fr !important; }
@@ -1994,8 +2095,8 @@
       .v2-nav-item, .v2-foot-btn { justify-content: center; padding: 10px; }
       .v2-profile { justify-content: center; padding: 8px; }
       .v2-main { padding: 20px; }
-      .v2-card-stats, .v2-card-bday,
-      .v2-card-deals, .v2-card-short { grid-column: span 12; }
+      .v2-card-bday,
+      .v2-card-deals { grid-column: span 12; }
       .v2-top { flex-direction: column; align-items: stretch; }
       .v2-top-right { width: 100%; justify-content: space-between; }
       .v2-search { min-width: 0; flex: 1; }
@@ -2130,34 +2231,35 @@
             <ul class="schedule-list" id="scheduleList" style="display:none"></ul>
           </section>
 
-          <!-- Quick stats (span 4) -->
+          <!-- Quick stats (span 4) — compact: numbers + travelling -->
           <section class="v2-card v2-card-stats">
             <div class="v2-card-eyebrow" data-i18n="quickLabel">QUICK STATS</div>
             <div class="v2-stats">
               <div class="v2-stat"><span class="v2-stat-num" id="statTeam">5</span><span class="v2-stat-lbl" data-i18n="qsTeam">Team</span></div>
               <div class="v2-stat"><span class="v2-stat-num" id="statTools">5</span><span class="v2-stat-lbl" data-i18n="qsTools">Tools</span></div>
             </div>
-            <div class="v2-stat-list">
-              <div class="v2-stat-row"><span data-i18n="tzLabel">Time zones</span><span id="tzList" class="v2-stat-mini"></span></div>
-              <div class="v2-stat-row"><span data-i18n="travelingLabel">Travelling</span><span id="travelingList" class="v2-stat-mini traveling-list"></span></div>
+            <div class="v2-travel-block">
+              <div class="v2-card-eyebrow" data-i18n="travelingLabel">出張中</div>
+              <div id="travelingList" class="traveling-list v2-travel-list"></div>
             </div>
           </section>
 
-          <!-- Birthdays (span 4) -->
+          <!-- Time Zones (span 6) — its own card -->
+          <section class="v2-card v2-card-tz">
+            <div class="v2-card-eyebrow" data-i18n="tzLabel">タイムゾーン</div>
+            <div id="tzList"></div>
+          </section>
+
+          <!-- Birthdays (span 3) -->
           <section class="v2-card v2-card-bday" id="birthdayCard">
             <div class="v2-card-eyebrow" data-i18n="bdayLabel">今月の誕生日</div>
             <div class="v2-card-title v2-card-title-sm" id="bdayMonthName">—</div>
             <ul class="bday-list v2-bday-list" id="bdayList"></ul>
           </section>
 
-          <!-- Deals (span 4) -->
+          <!-- Deals (span 3) -->
           <section class="v2-card v2-card-deals" id="recentDealsCard">
-            <div class="v2-card-head">
-              <div>
-                <div class="v2-card-eyebrow" data-i18n="rdLabel">最近の成約</div>
-                <div class="v2-card-title v2-card-title-sm" data-i18n="rdSub">クリックで表示</div>
-              </div>
-            </div>
+            <div class="v2-card-eyebrow" data-i18n="rdLabel">最近の成約</div>
             <div class="rd-body" id="recentDealsBody">
               <div class="rd-blur-wrap" id="rdContent">
                 <div class="rd-deal"><span class="rd-deal-amt">— —</span><div class="rd-deal-info"><div class="rd-deal-name">— — —</div><div class="rd-deal-prop">— — —</div></div></div>
@@ -2167,13 +2269,7 @@
             </div>
           </section>
 
-          <!-- Shortcuts (span 4) -->
-          <section class="v2-card v2-card-short">
-            <div class="v2-card-eyebrow" data-i18n="shortLabel">SHORTCUTS</div>
-            <div class="shortcut-list v2-short-list" id="shortcutList"></div>
-          </section>
-
-          <!-- Tools (span 12) -->
+          <!-- Tools (span 8) -->
           <section class="v2-card v2-card-tools">
             <div class="v2-card-head">
               <div>
@@ -2188,6 +2284,12 @@
             <div class="tile-grid" id="tileGrid">
               <div class="edit-hint" data-i18n="editHint">タイルをドラッグして並び替え。完了したら ✓ を押してください。</div>
             </div>
+          </section>
+
+          <!-- Shortcuts (span 4, beside tools) -->
+          <section class="v2-card v2-card-short">
+            <div class="v2-card-eyebrow" data-i18n="shortLabel">ショートカット</div>
+            <div class="shortcut-list v2-short-list" id="shortcutList"></div>
           </section>
 
         </div>
@@ -2400,6 +2502,7 @@
         shEdit: '編集', shDone: '完了', shAdd: '行を追加', shDelete: '削除',
         shLabel: 'ラベル',
         travelingLabel: '出張中', travelingEmpty: '現在、出張中のメンバーはいません。',
+        tzAdd: '追加',
         bdayLabel: '今月の誕生日', bdayEmpty: '今月のチームメンバーの誕生日はありません。管理者がチームメンバー編集画面から日付を入力できます。',
         rdLabel: '最近の成約 🚨', rdSub: 'ボタンをクリックして表示', rdReveal: '🚨 成約を表示', rdEmpty: '成約はまだありません。'
       },
@@ -2436,6 +2539,7 @@
         shEdit: 'Edit', shDone: 'Done', shAdd: 'Add row', shDelete: 'Delete',
         shLabel: 'Label',
         travelingLabel: 'TRAVELING NOW', travelingEmpty: 'No teammates traveling right now.',
+        tzAdd: 'Add',
         bdayLabel: 'THIS MONTH\'S BIRTHDAYS', bdayEmpty: 'No team birthdays this month yet. Admin can add dates from the Team Members → Edit Tree screen.',
         rdLabel: 'RECENT DEAL ALERTS 🚨', rdSub: 'Click to reveal', rdReveal: '🚨 Reveal recent deals', rdEmpty: 'No deal alerts yet — submit one from Deal Alert.'
       }
