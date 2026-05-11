@@ -19,33 +19,58 @@
        schedule card so the connection persists per-user (mirror of agents/{uid}.gcalConnected). -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
+    /* ─────────────────────────────────────────────────────────────────
+       Refined v2 — single accent yellow on charcoal, no gradients on
+       text, no ambient orbs, no glass-morphism on small surfaces.
+       Inter as the only typeface (Playfair removed from headlines).
+       Reference: Wise-style admin dashboards.
+       ───────────────────────────────────────────────────────────────── */
     :root {
-      --navy-0: #051428;
-      --navy-1: #0a1f3d;
-      --navy-2: #102a4f;
-      --navy-3: #173663;
-      --line: rgba(255,255,255,0.10);
-      --line-strong: rgba(255,255,255,0.18);
-      --text: #f5f7fb;
-      --muted: #9aa8c2;
-      --gold: #d4b87a;
-      --gold-soft: rgba(212,184,122,0.45);
-      --cream: #f1ead8;
+      --navy-0: #15171c;             /* page bg (was deep navy) */
+      --navy-1: #1c1f26;             /* card bg */
+      --navy-2: #262a33;             /* card hover / elevated */
+      --navy-3: #2f3340;             /* extra elevated */
+      --line: rgba(255,255,255,0.06);
+      --line-strong: rgba(255,255,255,0.12);
+      --text: #ecedef;
+      --muted: #8a909c;              /* neutral grey, not blue */
+      --gold: #ffd84d;               /* single accent yellow */
+      --gold-soft: rgba(255,216,77,0.35);
+      --cream: #f5f7fa;
       --green: #5cc98f;
-      --radius: 16px;
+      --radius: 18px;
       --rail-w: 72px;
     }
     * { box-sizing: border-box; }
     html, body { margin: 0; padding: 0; height: 100%; }
     html { background: var(--navy-0); }
     body {
-      font-family: 'Noto Sans JP', 'Inter', sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Noto Sans JP', sans-serif !important;
       color: var(--text);
       min-height: 100vh;
       overflow-x: hidden;
     }
 
-    /* Floating ambient orbs for premium feel */
+    /* Kill the ambient orbs, the skyline backdrop, the glass surfaces and
+       the gradient text — these are the "AI-looking" bits Balraj called
+       out. Strip them from this page only; other pages still use them
+       until I propagate the new system. */
+    .ambient, .bg-skyline, .bg-overlay { display: none !important; }
+    body.dashboard-bg { background: var(--navy-0) !important; }
+
+    /* Reset gradient-clipped text back to solid (Playfair → Inter elsewhere) */
+    .welcome h1, .welcome .lede,
+    .schedule-empty-title, .bday-name, .traveling-name, .rd-deal-amt,
+    .panel h2, .card h2, .center-col-head h2, .tile h3 {
+      -webkit-text-fill-color: currentColor !important;
+      background: none !important;
+      font-family: 'Inter', sans-serif !important;
+    }
+
+    /* Drop the decorative SVG art behind every tile */
+    .tile-art { display: none !important; }
+
+    /* Original ambient styles below (kept for fallback / non-dashboard pages) */
     .ambient { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
     .ambient .orb {
       position: absolute;
@@ -118,8 +143,7 @@
       gap: 16px;
       padding: 18px 28px;
       border-bottom: 1px solid var(--line);
-      background: rgba(5,20,40,0.55);
-      backdrop-filter: blur(10px);
+      background: var(--navy-0);     /* solid charcoal, no glass-blur */
       position: sticky; top: 0; z-index: 5;
     }
     .search {
@@ -563,7 +587,7 @@
       margin-top: 10px;
     }
     .schedule-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
-    .schedule-eyebrow { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; font-family: 'Inter', sans-serif; font-weight: 600; }
+    .schedule-eyebrow { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; font-family: 'Inter', sans-serif; font-weight: 500; }
     .schedule-date {
       font-family: 'Inter', 'Noto Sans JP', system-ui, sans-serif;
       font-size: 16px;
@@ -771,22 +795,23 @@
 
     /* ---- LEFT column: page head ---- */
     .left-col h1 {
-      font-family: 'Playfair Display', serif;
+      font-family: 'Inter', sans-serif;
       font-weight: 600;
-      font-size: clamp(28px, 3.4vw, 36px);
-      letter-spacing: -0.4px;
-      line-height: 1.1;
+      font-size: clamp(24px, 2.6vw, 28px);
+      letter-spacing: -0.5px;
+      line-height: 1.2;
       margin: 4px 0 6px;
+      color: var(--text);
     }
-    .left-col h1 #welcomeName { color: var(--cream); font-style: italic; font-weight: 600; }
-    html[lang="ja"] .left-col h1 { font-family: 'Noto Serif JP', serif; letter-spacing: 0; }
+    .left-col h1 #welcomeName { color: var(--text); font-weight: 600; }
+    html[lang="ja"] .left-col h1 { font-family: 'Inter','Noto Sans JP', sans-serif; letter-spacing: 0; }
     .left-col .page-sub {
-      color: var(--gold);
+      color: var(--muted);
       font-size: 11px;
-      margin: 0 0 16px;
-      letter-spacing: 4px;
+      margin: 0 0 12px;
+      letter-spacing: 1.5px;
       text-transform: uppercase;
-      font-weight: 600;
+      font-weight: 500;
     }
     .add-btn {
       display: inline-flex; align-items: center; gap: 6px;
@@ -1184,6 +1209,30 @@
       --tile-accent-strong: rgba(180,210,150,0.5);
       --tile-accent-color: #b4d296;            /* moss — property */
     }
+
+    /* v2 reset — collapse all per-tile rainbow accents to the single
+       yellow accent so the dashboard reads as ONE product, not 12. */
+    .tile[data-key] {
+      --tile-accent:        rgba(255,216,77,0.08) !important;
+      --tile-accent-strong: rgba(255,216,77,0.42) !important;
+      --tile-accent-color:  #ffd84d !important;
+    }
+    .tile {
+      background:
+        radial-gradient(140% 100% at 100% 100%, var(--tile-accent), transparent 65%),
+        var(--navy-1) !important;
+      border: 1px solid var(--line) !important;
+    }
+    /* Photo tiles: drop the heavy darkening overlay, just darken the photo
+       slightly for legibility and use the same charcoal frame. */
+    .tile.has-card { background-color: var(--navy-1) !important; }
+    .tile.has-card[data-key] {
+      /* Override the per-tile background-image stack: just the photo,
+         with a single solid scrim. No diagonal gradient. */
+      background-blend-mode: multiply, normal;
+      background-color: rgba(28,31,38,0.55) !important;
+    }
+    .tile:hover { border-color: rgba(255,216,77,0.30) !important; }
 
     /* Themed inline-SVG illustration per tile — positioned bottom-right behind content */
     .tile-art {
