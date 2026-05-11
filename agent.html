@@ -2004,15 +2004,13 @@
       position: relative;
     }
     .v2-card-tz .tz-card {
-      overflow: hidden; /* so the flag strip clips to the card's radius */
-      padding-top: 14px !important;
+      grid-template-columns: auto 1fr auto !important;
     }
-    .v2-card-tz .tz-flag-strip {
-      display: block !important;
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 4px;
-      grid-column: 1 / -1;
+    .v2-card-tz .tz-flag-strip { display: none !important; }
+    .v2-card-tz .tz-flag-emoji {
+      font-size: 22px;
+      line-height: 1;
+      flex: none;
     }
     .v2-card-tz .tz-meta {
       display: flex; align-items: baseline; gap: 6px;
@@ -2606,30 +2604,30 @@
     };
     // Locked default TZs (always shown, cannot be removed)
     const TZS_DEFAULT = [
-      { id: 'dubai',  name: 'Dubai',  tz: 'Asia/Dubai',     tag: 'GST',
+      { id: 'dubai',  name: 'Dubai',  tz: 'Asia/Dubai',     tag: 'GST',  flag: '🇦🇪',
         flagBg: 'linear-gradient(90deg, #ce1126 0 25%, #007a3d 25% 50%, #ffffff 50% 75%, #000 75%)' },
-      { id: 'tokyo',  name: 'Tokyo',  tz: 'Asia/Tokyo',     tag: 'JST',
+      { id: 'tokyo',  name: 'Tokyo',  tz: 'Asia/Tokyo',     tag: 'JST',  flag: '🇯🇵',
         flagBg: 'radial-gradient(circle at 50% 50%, #bc002d 0 22%, #ffffff 22%)' },
-      { id: 'lombok', name: 'Lombok', tz: 'Asia/Makassar',  tag: 'WITA',
+      { id: 'lombok', name: 'Lombok', tz: 'Asia/Makassar',  tag: 'WITA', flag: '🇮🇩',
         flagBg: 'linear-gradient(180deg, #ce1126 50%, #ffffff 50%)' }
     ];
 
     // User can add up to 2 more from this catalogue
     const TZ_CATALOG = [
-      { id: 'hong-kong',    name: 'Hong Kong',    tz: 'Asia/Hong_Kong',  tag: 'HKT', flagBg: 'radial-gradient(ellipse at 50% 50%, #de2910, #b91e0d)' },
-      { id: 'singapore',    name: 'Singapore',    tz: 'Asia/Singapore',  tag: 'SGT', flagBg: 'linear-gradient(180deg, #ed2939 50%, #ffffff 50%)' },
-      { id: 'jakarta',      name: 'Jakarta',      tz: 'Asia/Jakarta',    tag: 'WIB', flagBg: 'linear-gradient(180deg, #ce1126 50%, #ffffff 50%)' },
-      { id: 'mumbai',       name: 'Mumbai',       tz: 'Asia/Kolkata',    tag: 'IST', flagBg: 'linear-gradient(180deg, #ff9933 0 33%, #ffffff 33% 66%, #138808 66%)' },
-      { id: 'bangkok',      name: 'Bangkok',      tz: 'Asia/Bangkok',    tag: 'ICT', flagBg: 'linear-gradient(180deg, #ed1c24 0 17%, #ffffff 17% 33%, #241d4f 33% 67%, #ffffff 67% 83%, #ed1c24 83%)' },
-      { id: 'london',       name: 'London',       tz: 'Europe/London',   tag: 'GMT', flagBg: 'linear-gradient(135deg, #012169 50%, #c8102e 50%)' },
-      { id: 'new-york',     name: 'New York',     tz: 'America/New_York', tag: 'ET',  flagBg: 'repeating-linear-gradient(180deg, #b22234 0 6%, #ffffff 6% 12%)' },
-      { id: 'paris',        name: 'Paris',        tz: 'Europe/Paris',    tag: 'CET', flagBg: 'linear-gradient(90deg, #002654 33%, #ffffff 33% 66%, #ed2939 66%)' },
-      { id: 'beijing',      name: 'Beijing',      tz: 'Asia/Shanghai',   tag: 'CST', flagBg: 'linear-gradient(135deg, #de2910, #b91e0d)' },
-      { id: 'sydney',       name: 'Sydney',       tz: 'Australia/Sydney', tag: 'AEDT', flagBg: 'linear-gradient(135deg, #012169, #c8102e)' },
-      { id: 'riyadh',       name: 'Riyadh',       tz: 'Asia/Riyadh',     tag: 'AST', flagBg: 'linear-gradient(135deg, #006c35, #003d1f)' },
-      { id: 'kuala-lumpur', name: 'Kuala Lumpur', tz: 'Asia/Kuala_Lumpur', tag: 'MYT', flagBg: 'linear-gradient(135deg, #cc0001 50%, #010066 50%)' },
-      { id: 'manila',       name: 'Manila',       tz: 'Asia/Manila',     tag: 'PHT', flagBg: 'linear-gradient(180deg, #0038a8 50%, #ce1126 50%)' },
-      { id: 'seoul',        name: 'Seoul',        tz: 'Asia/Seoul',      tag: 'KST', flagBg: 'radial-gradient(circle at 50% 50%, #c60c30 0 18%, #003478 18% 28%, #ffffff 28%)' }
+      { id: 'hong-kong',    name: 'Hong Kong',    tz: 'Asia/Hong_Kong',  tag: 'HKT',  flag: '🇭🇰', flagBg: 'radial-gradient(ellipse at 50% 50%, #de2910, #b91e0d)' },
+      { id: 'singapore',    name: 'Singapore',    tz: 'Asia/Singapore',  tag: 'SGT',  flag: '🇸🇬', flagBg: 'linear-gradient(180deg, #ed2939 50%, #ffffff 50%)' },
+      { id: 'jakarta',      name: 'Jakarta',      tz: 'Asia/Jakarta',    tag: 'WIB',  flag: '🇮🇩', flagBg: 'linear-gradient(180deg, #ce1126 50%, #ffffff 50%)' },
+      { id: 'mumbai',       name: 'Mumbai',       tz: 'Asia/Kolkata',    tag: 'IST',  flag: '🇮🇳', flagBg: 'linear-gradient(180deg, #ff9933 0 33%, #ffffff 33% 66%, #138808 66%)' },
+      { id: 'bangkok',      name: 'Bangkok',      tz: 'Asia/Bangkok',    tag: 'ICT',  flag: '🇹🇭', flagBg: 'linear-gradient(180deg, #ed1c24 0 17%, #ffffff 17% 33%, #241d4f 33% 67%, #ffffff 67% 83%, #ed1c24 83%)' },
+      { id: 'london',       name: 'London',       tz: 'Europe/London',   tag: 'GMT',  flag: '🇬🇧', flagBg: 'linear-gradient(135deg, #012169 50%, #c8102e 50%)' },
+      { id: 'new-york',     name: 'New York',     tz: 'America/New_York', tag: 'ET',  flag: '🇺🇸', flagBg: 'repeating-linear-gradient(180deg, #b22234 0 6%, #ffffff 6% 12%)' },
+      { id: 'paris',        name: 'Paris',        tz: 'Europe/Paris',    tag: 'CET',  flag: '🇫🇷', flagBg: 'linear-gradient(90deg, #002654 33%, #ffffff 33% 66%, #ed2939 66%)' },
+      { id: 'beijing',      name: 'Beijing',      tz: 'Asia/Shanghai',   tag: 'CST',  flag: '🇨🇳', flagBg: 'linear-gradient(135deg, #de2910, #b91e0d)' },
+      { id: 'sydney',       name: 'Sydney',       tz: 'Australia/Sydney', tag: 'AEDT', flag: '🇦🇺', flagBg: 'linear-gradient(135deg, #012169, #c8102e)' },
+      { id: 'riyadh',       name: 'Riyadh',       tz: 'Asia/Riyadh',     tag: 'AST',  flag: '🇸🇦', flagBg: 'linear-gradient(135deg, #006c35, #003d1f)' },
+      { id: 'kuala-lumpur', name: 'Kuala Lumpur', tz: 'Asia/Kuala_Lumpur', tag: 'MYT', flag: '🇲🇾', flagBg: 'linear-gradient(135deg, #cc0001 50%, #010066 50%)' },
+      { id: 'manila',       name: 'Manila',       tz: 'Asia/Manila',     tag: 'PHT',  flag: '🇵🇭', flagBg: 'linear-gradient(180deg, #0038a8 50%, #ce1126 50%)' },
+      { id: 'seoul',        name: 'Seoul',        tz: 'Asia/Seoul',      tag: 'KST',  flag: '🇰🇷', flagBg: 'radial-gradient(circle at 50% 50%, #c60c30 0 18%, #003478 18% 28%, #ffffff 28%)' }
     ];
 
     function loadCustomTZs() {
@@ -2779,12 +2777,11 @@
       const active = getActiveTZs();
       const customIds = new Set(loadCustomTZs().map(t => t.id));
       const cards = active.map(t => {
-        const safeFlag = (t.flagBg || '').replace(/"/g, "'");
         const isCustom = customIds.has(t.id);
         return `
         <div class="tz-card">
-          <div class="tz-flag-strip" style="background:${safeFlag}"></div>
           ${isCustom ? `<button class="tz-remove" onclick="removeTZ('${t.id}')" title="Remove">×</button>` : ''}
+          <span class="tz-flag-emoji" aria-hidden="true">${t.flag || '🏳️'}</span>
           <div class="tz-meta">
             <div class="tz-city">${t.name}</div>
             <div class="tz-tag">${t.tag}</div>
