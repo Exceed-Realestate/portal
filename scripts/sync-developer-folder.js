@@ -89,6 +89,21 @@ function safeName(s) {
     .slice(0, 200);
 }
 
+/* Junk filter — keeps real-estate content, drops software/system noise.
+   Triggered by Unreal-Engine crash dumps in Jacob & Co/One by Binghatti
+   (a VR tour project). Catches the obvious culprits. */
+function isJunk(file) {
+  const p = (file._path || '').toLowerCase();
+  const name = (file.name || '').toLowerCase();
+  // Path segments that scream "not a real-estate document"
+  if (/\/(crashes|saved|cache|tmp|temp|node_modules|\.git|__pycache__)\//i.test('/' + p)) return true;
+  if (/\.(dmp|log|ini|runtime-xml|crash|tmp|bak|swp|pyc|class)$/i.test(name)) return true;
+  if (/^(thumbs\.db|desktop\.ini|\.ds_store)$/i.test(name)) return true;
+  // Unreal Engine prefixes
+  if (/^uecc-windows-/i.test(name) || /crashreportclient/i.test(name)) return true;
+  return false;
+}
+
 function slugFromDrivePath(p) {
   // First segment of the drive path = project folder name (e.g. "Skyrise")
   const seg = (p || '').split('/').filter(Boolean)[0] || 'general';
@@ -316,17 +331,20 @@ async function syncDeveloper(developer) {
     throw e;
   }
   const seen = await loadAlreadyImported(developer.slug);
-  console.log(`  ${files.length} files in Drive  |  ${seen.size} already synced`);
+  const beforeJunk = files.length;
+  const usable = files.filter(f => !isJunk(f));
+  const junk = beforeJunk - usable.length;
+  console.log(`  ${beforeJunk} files in Drive | junk filtered: ${junk} | already synced: ${seen.size}`);
 
   let added = 0, skipped = 0, failed = 0;
-  for (const f of files) {
+  for (const f of usable) {
     if (seen.has(f.id)) { skipped++; continue; }
     if (added >= LIMIT) { console.log(`  (limit ${LIMIT} hit — stopping)`); break; }
     try { await ingest(developer, f); added++; }
     catch (e) { console.error(`   ✗ ${f._path}: ${e.message}`); failed++; }
   }
-  console.log(`  ✓ added ${added}, skipped ${skipped}, failed ${failed}`);
-  return { added, skipped, failed };
+  console.log(`  ✓ added ${added}, skipped ${skipped}, failed ${failed}, junk ${junk}`);
+  return { added, skipped, failed, junk };
 }
 
 /* ----- Main ----- */
