@@ -1844,11 +1844,12 @@
     }
     .v2-card-schedule { grid-column: span 8; min-height: 240px; }
     .v2-card-stats    { grid-column: span 4; }
-    .v2-card-tz       { grid-column: span 6; }
-    .v2-card-bday     { grid-column: span 3; }
-    .v2-card-deals    { grid-column: span 3; }
+    .v2-card-payment  { grid-column: span 4; }
+    .v2-card-tz       { grid-column: span 4; }
+    .v2-card-bday     { grid-column: span 4; }
     .v2-card-tools    { grid-column: span 8; }
-    .v2-card-short    { grid-column: span 4; }
+    .v2-card-deals    { grid-column: span 4; }
+    .v2-card-short    { grid-column: span 12; }
 
     .v2-card-head {
       display: flex; justify-content: space-between;
@@ -1981,45 +1982,50 @@
     .v2-top-right .notif-btn svg,
     .v2-top-right .theme-btn svg { width: 16px; height: 16px; }
 
-    /* v2 timezone cards — slim, no flag strip, neutral */
+    /* v2 timezone cards — compact horizontal rows */
     .v2-card-tz #tzList,
     .v2-card-tz .tz-list {
-      display: grid !important;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
-      gap: 10px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 6px !important;
       margin: 0 !important;
     }
     .v2-card-tz .tz-card {
       background: var(--navy-2) !important;
       border: 1px solid var(--navy-3) !important;
-      border-radius: 10px !important;
-      padding: 12px 14px !important;
-      display: flex !important;
-      flex-direction: column !important;
-      gap: 4px !important;
+      border-radius: 8px !important;
+      padding: 8px 12px !important;
+      display: grid !important;
+      grid-template-columns: 1fr auto !important;
+      align-items: center !important;
+      gap: 6px 10px !important;
       box-shadow: none !important;
       min-height: 0 !important;
       position: relative;
     }
     .v2-card-tz .tz-flag-strip { display: none !important; }
+    .v2-card-tz .tz-meta {
+      display: flex; align-items: baseline; gap: 6px;
+      min-width: 0;
+    }
     .v2-card-tz .tz-city {
       color: var(--cream) !important;
-      font-size: 13px !important;
+      font-size: 12.5px !important;
       font-weight: 600 !important;
       font-family: 'Inter', system-ui, sans-serif !important;
     }
     .v2-card-tz .tz-tag {
       color: var(--muted) !important;
-      font-size: 10.5px !important;
+      font-size: 10px !important;
       letter-spacing: 1px !important;
     }
     .v2-card-tz .tz-time {
       color: var(--gold) !important;
-      font-size: 22px !important;
-      font-weight: 700 !important;
+      font-size: 15px !important;
+      font-weight: 600 !important;
       font-family: 'Inter', system-ui, sans-serif !important;
-      letter-spacing: -.5px !important;
-      margin-top: 4px !important;
+      letter-spacing: -.3px !important;
+      margin: 0 !important;
       -webkit-text-fill-color: var(--gold) !important;
       background: none !important;
     }
@@ -2081,7 +2087,8 @@
     @media (max-width: 1180px) {
       .v2-card-schedule { grid-column: span 12; }
       .v2-card-stats    { grid-column: span 12; }
-      .v2-card-tz       { grid-column: span 12; }
+      .v2-card-payment,
+      .v2-card-tz,
       .v2-card-bday,
       .v2-card-deals    { grid-column: span 6; }
       .v2-card-tools    { grid-column: span 12; }
@@ -2095,11 +2102,27 @@
       .v2-nav-item, .v2-foot-btn { justify-content: center; padding: 10px; }
       .v2-profile { justify-content: center; padding: 8px; }
       .v2-main { padding: 20px; }
+      .v2-card-payment,
+      .v2-card-tz,
       .v2-card-bday,
       .v2-card-deals { grid-column: span 12; }
       .v2-top { flex-direction: column; align-items: stretch; }
       .v2-top-right { width: 100%; justify-content: space-between; }
       .v2-search { min-width: 0; flex: 1; }
+    }
+
+    /* Payment widget */
+    .v2-card-payment .v2-pay-num {
+      color: var(--cream); font-size: 40px; font-weight: 700;
+      line-height: 1; letter-spacing: -1.5px;
+      font-family: 'Inter', system-ui, sans-serif;
+      margin-top: 2px;
+    }
+    .v2-card-payment .v2-pay-num.pending { color: var(--gold); }
+    .v2-card-payment .v2-pay-meta {
+      color: var(--muted); font-size: 12px;
+      margin-top: -2px;
+      font-family: 'Inter', system-ui, sans-serif;
     }
   </style>
   <script src="theme-init.js"></script>
@@ -2244,7 +2267,16 @@
             </div>
           </section>
 
-          <!-- Time Zones (span 6) — its own card -->
+          <!-- Payment Approval (span 4) -->
+          <section class="v2-card v2-card-payment" id="paymentCard">
+            <div class="v2-card-eyebrow" data-i18n="payLabel">支払い承認</div>
+            <div class="v2-card-title v2-card-title-sm" id="paySubtitle" data-i18n="payPendingMine">あなたの提出中</div>
+            <div class="v2-pay-num" id="payCount">—</div>
+            <div class="v2-pay-meta" id="payMeta"></div>
+            <a class="v2-cta v2-cta-ghost" id="payCta" href="payment.html" data-i18n="payOpenMine">新規申請 →</a>
+          </section>
+
+          <!-- Time Zones (span 4) -->
           <section class="v2-card v2-card-tz">
             <div class="v2-card-eyebrow" data-i18n="tzLabel">タイムゾーン</div>
             <div id="tzList"></div>
@@ -2512,6 +2544,10 @@
         shLabel: 'ラベル',
         travelingLabel: '出張中', travelingEmpty: '現在、出張中のメンバーはいません。',
         tzAdd: '追加',
+        payLabel: '支払い承認',
+        payPendingMine: 'あなたの提出中', payPendingApprover: 'あなたの承認待ち',
+        payOpenMine: '新規申請 →', payOpenApprover: '確認 →',
+        payAllClear: 'すべて完了',
         bdayLabel: '今月の誕生日', bdayEmpty: '今月のチームメンバーの誕生日はありません。管理者がチームメンバー編集画面から日付を入力できます。',
         rdLabel: '最近の成約 🚨', rdSub: 'ボタンをクリックして表示', rdReveal: '🚨 成約を表示', rdEmpty: '成約はまだありません。'
       },
@@ -2549,6 +2585,10 @@
         shLabel: 'Label',
         travelingLabel: 'TRAVELING NOW', travelingEmpty: 'No teammates traveling right now.',
         tzAdd: 'Add',
+        payLabel: 'PAYMENT APPROVAL',
+        payPendingMine: 'Your pending', payPendingApprover: 'Awaiting your approval',
+        payOpenMine: 'New request →', payOpenApprover: 'Review →',
+        payAllClear: 'All clear',
         bdayLabel: 'THIS MONTH\'S BIRTHDAYS', bdayEmpty: 'No team birthdays this month yet. Admin can add dates from the Team Members → Edit Tree screen.',
         rdLabel: 'RECENT DEAL ALERTS 🚨', rdSub: 'Click to reveal', rdReveal: '🚨 Reveal recent deals', rdEmpty: 'No deal alerts yet — submit one from Deal Alert.'
       }
@@ -2773,6 +2813,74 @@
       saveCustomTZs(list);
       renderTzList();
     };
+
+    // ----- Payment Approval widget -----
+    // Approvers see "awaiting your approval" (count of submitted payments
+    // they can act on); everyone else sees their own submitted count.
+    const FIN_EMAILS = {
+      mouad: 'mouad@exceed-re.ae',
+      hira:  'hira@exceed-re.ae',
+      ceo:   'teruo@exceed-re.ae'
+    };
+    const PAY_SMALL_AED = 1000;
+    async function renderPaymentWidget() {
+      if (!currentUser) return;
+      const numEl   = document.getElementById('payCount');
+      const subEl   = document.getElementById('paySubtitle');
+      const metaEl  = document.getElementById('payMeta');
+      const ctaEl   = document.getElementById('payCta');
+      if (!numEl) return;
+      const dict = I18N[currentLang];
+      const myEmail = (currentUser.email || '').toLowerCase();
+      const myRole  = currentUserRole;
+      const isApprover = (myRole === 'admin' || myRole === 'ceo'
+        || myEmail === FIN_EMAILS.mouad
+        || myEmail === FIN_EMAILS.hira
+        || myEmail === FIN_EMAILS.ceo);
+      try {
+        const { collection, query, where, getDocs } = await import("https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js");
+        if (isApprover) {
+          const snap = await getDocs(query(
+            collection(db, 'payments'),
+            where('status', '==', 'submitted')
+          ));
+          let count = 0, total = 0;
+          snap.forEach(d => {
+            const p = d.data();
+            let canAct = false;
+            if (myRole === 'admin' || myRole === 'ceo') canAct = true;
+            else if (myEmail === FIN_EMAILS.mouad || myEmail === FIN_EMAILS.hira) {
+              canAct = (p.amount || 0) <= PAY_SMALL_AED;
+            } else if (myEmail === FIN_EMAILS.ceo) {
+              canAct = (p.amount || 0) > PAY_SMALL_AED;
+            }
+            if (canAct) { count++; total += (p.amount || 0); }
+          });
+          numEl.textContent = count;
+          numEl.classList.toggle('pending', count > 0);
+          subEl.textContent = dict.payPendingApprover;
+          metaEl.textContent = count > 0 ? `AED ${total.toLocaleString()}` : dict.payAllClear;
+          ctaEl.textContent = dict.payOpenApprover;
+          ctaEl.setAttribute('href', 'payment.html');
+        } else {
+          const snap = await getDocs(query(
+            collection(db, 'payments'),
+            where('requesterUid', '==', currentUser.uid),
+            where('status', '==', 'submitted')
+          ));
+          const count = snap.size;
+          numEl.textContent = count;
+          numEl.classList.toggle('pending', count > 0);
+          subEl.textContent = dict.payPendingMine;
+          metaEl.textContent = count > 0 ? '' : dict.payAllClear;
+          ctaEl.textContent = dict.payOpenMine;
+          ctaEl.setAttribute('href', 'payment.html');
+        }
+      } catch (e) {
+        console.warn('payment widget failed:', e?.message);
+        numEl.textContent = '—';
+      }
+    }
 
     // ----- Recent Deal Alerts (blurred until reveal) -----
     let RECENT_DEALS = [];
@@ -3288,6 +3396,7 @@
       renderTraveling();
       renderBirthdays();
       loadRecentDeals();
+      renderPaymentWidget();
       updateStats();
     }
     function positionPill() {
@@ -3517,6 +3626,7 @@
       renderTileGrid();
       applyOnboardingState();   // re-apply now that we know admin status
       updateStats();
+      renderPaymentWidget();   // dashboard payment-approval card
       loadNotifications();
       // Refresh notifications every 60 seconds while the tab is open
       setInterval(loadNotifications, 60000);
