@@ -33,8 +33,8 @@ const Anthropic = require('@anthropic-ai/sdk').default || require('@anthropic-ai
 const pdf = require('pdf-parse');
 
 const CATEGORIES = [
-  'brochure', 'inventory', 'payment_plan', 'floor_plan',
-  'fact_sheet', 'video', 'image', 'other'
+  'brochure', 'render', 'inventory', 'payment_plan', 'floor_plan',
+  'fact_sheet', 'logo', 'video', 'image', 'other'
 ];
 
 // ---------- Service-account credentials ----------
@@ -157,11 +157,19 @@ async function extractPdfHead(streamRes) {
 async function classifyWithClaude({ filename, drivePath, sampleText }) {
   if (!anthropic) return { category: classifyByName(filename), confidence: 0.6, via: 'heuristic' };
   try {
-    const sys = `You classify real-estate developer documents into one of these categories:
-${CATEGORIES.map(c => `- ${c}`).join('\n')}
+    const sys = `You classify real-estate developer documents into ONE of:
+- brochure        — multi-page marketing brochure / sales deck
+- render          — single architectural render (exterior/interior/aerial)
+- floor_plan      — unit layout drawing
+- inventory       — unit availability / price list table
+- payment_plan    — payment schedule / instalment table
+- fact_sheet      — one-page project summary
+- logo            — developer or project logo
+- video           — video file
+- image           — generic real photo
+- other           — anything else
 
-Return ONLY a JSON object: {"category": "<one of above>", "confidence": 0..1}.
-No prose, no markdown.`;
+Return ONLY JSON: {"category":"<one>","confidence":0..1}. No prose.`;
     const user = `Filename: ${filename}
 Drive path: ${drivePath}
 First-page extract:
