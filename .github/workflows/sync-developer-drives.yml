@@ -1,10 +1,11 @@
 name: Sync developer Drive folders → Firestore
 
-# Runs every day at 02:00 UTC = 06:00 Dubai. Adjust cron as needed.
-# Also can be triggered manually from Actions tab.
+# Runs every 15 minutes. The sync is idempotent (already-imported files
+# skip via driveFileId before any download), so empty runs are fast (~30s).
+# Also triggerable manually from the Actions tab.
 on:
   schedule:
-    - cron: '0 2 * * *'
+    - cron: '*/15 * * * *'
   workflow_dispatch:
 
 jobs:
