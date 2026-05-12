@@ -179,6 +179,14 @@ service cloud.firestore {
         || (isSignedIn() && resource.data.uid == request.auth.uid);
     }
 
+    // ------- Developer registry -------
+    // Each doc: { name, folderId, whatsapp, active, createdAt }
+    // Drives the Developer → Project → Category navigation in database.html.
+    match /developers/{devId} {
+      allow read, list: if isSignedIn();
+      allow write: if isAdminEmail();
+    }
+
     // ------- Database files (Internal / Developer / Lombok / Japan library) -------
     // Each doc: { section, subcategory, name, storagePath, size, type,
     //   uploadedBy, uploadedByName, uploadedByEmail, downloadUrl, createdAt }
