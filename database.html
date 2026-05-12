@@ -256,6 +256,68 @@
       font-size: 10px;
       letter-spacing: 0.6px;
     }
+
+    /* ===== Preview modal ===== */
+    .file-row { cursor: pointer; }
+    .preview-modal {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.78);
+      display: none;
+      align-items: center; justify-content: center;
+      padding: 24px;
+      z-index: 100;
+      backdrop-filter: blur(4px);
+    }
+    .preview-modal.show { display: flex; }
+    .preview-card {
+      background: var(--navy-1);
+      border: 1px solid var(--navy-3);
+      border-radius: 14px;
+      max-width: 1100px; width: 100%;
+      max-height: 92vh;
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    .preview-head {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 14px;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--navy-3);
+    }
+    .preview-title-wrap { min-width: 0; flex: 1; }
+    .preview-title {
+      color: var(--cream); font-weight: 600; font-size: 15px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .preview-tags { margin-top: 6px; }
+    .preview-actions { display: flex; gap: 6px; flex: none; }
+    .preview-body {
+      flex: 1; min-height: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: #0a0c11;
+      padding: 16px;
+    }
+    .preview-img {
+      max-width: 100%; max-height: 100%;
+      object-fit: contain; display: block;
+      border-radius: 6px;
+    }
+    .preview-frame {
+      width: 100%; height: 78vh;
+      border: 0; background: #1a1a1f; border-radius: 6px;
+    }
+    .preview-video { max-width: 100%; max-height: 78vh; border-radius: 6px; }
+    .preview-audio { width: 100%; max-width: 480px; }
+    .preview-fallback {
+      text-align: center; padding: 60px 20px; color: var(--muted);
+      display: flex; flex-direction: column; gap: 6px; align-items: center;
+    }
+    .preview-fallback strong { color: var(--cream); font-size: 16px; }
+    @media (max-width: 720px) {
+      .preview-modal { padding: 8px; }
+      .preview-head { padding: 12px 14px; }
+      .preview-frame { height: 68vh; }
+    }
     .file-tag-cat {
       background: rgba(255,216,77,0.14);
       color: var(--gold);
@@ -507,6 +569,27 @@
   </main>
 
   <div class="toast" id="toast"></div>
+
+  <!-- Preview modal -->
+  <div class="preview-modal" id="previewModal" onclick="if (event.target === this) closePreview()">
+    <div class="preview-card">
+      <header class="preview-head">
+        <div class="preview-title-wrap">
+          <div class="preview-title"></div>
+          <div class="preview-tags file-tags"></div>
+        </div>
+        <div class="preview-actions">
+          <a class="action-btn preview-download" target="_blank" rel="noopener" title="Download">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </a>
+          <button class="action-btn" onclick="closePreview()" title="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      </header>
+      <div class="preview-body"></div>
+    </div>
+  </div>
     </div><!-- /v2-main -->
   </div><!-- /v2-shell -->
 
@@ -936,9 +1019,64 @@
         </div>`;
       }).join('');
       list.querySelectorAll('button[data-del]').forEach(btn =>
-        btn.addEventListener('click', () => deleteFile(btn.dataset.del))
+        btn.addEventListener('click', (e) => { e.stopPropagation(); deleteFile(btn.dataset.del); })
+      );
+      // Click anywhere on a row (other than the action buttons) to open a preview.
+      list.querySelectorAll('.file-row').forEach(row =>
+        row.addEventListener('click', (e) => {
+          if (e.target.closest('.action-btn')) return; // don't intercept download / delete
+          const f = filtered.find(x => x.id === row.dataset.id);
+          if (f) openPreview(f);
+        })
       );
     }
+
+    /* ===== File preview modal ===== */
+    function openPreview(f) {
+      const dict = I18N[currentLang];
+      const url = f.downloadUrl;
+      const type = (f.type || '').toLowerCase();
+      const name = (f.name || '').toLowerCase();
+      let body = '';
+      if (type.startsWith('image/') || /\.(jpe?g|png|webp|gif|svg)$/.test(name)) {
+        body = `<img src="${url}" alt="" class="preview-img"/>`;
+      } else if (type === 'application/pdf' || name.endsWith('.pdf')) {
+        body = `<iframe src="${url}" class="preview-frame" title="${(f.name || '').replace(/"/g, '&quot;')}"></iframe>`;
+      } else if (type.startsWith('video/') || /\.(mp4|webm|mov|m4v)$/.test(name)) {
+        body = `<video src="${url}" controls class="preview-video"></video>`;
+      } else if (type.startsWith('audio/')) {
+        body = `<audio src="${url}" controls class="preview-audio"></audio>`;
+      } else {
+        body = `<div class="preview-fallback">
+          <strong>${dict.previewNoneTitle || (currentLang === 'ja' ? 'プレビューできません' : 'No inline preview')}</strong>
+          <span>${dict.previewNoneBody || (currentLang === 'ja' ? 'ダウンロードしてご覧ください。' : 'Click "Download" to view this file.')}</span>
+        </div>`;
+      }
+      const catKey = f.aiCategory || f.subcategory;
+      const catLabel = catKey
+        ? (dict['cat' + catKey.split('_').map(s => s[0].toUpperCase() + s.slice(1)).join('')] || catKey)
+        : '';
+      const tagRow =
+        (f.developerName ? `<span class="file-tag file-tag-dev">${f.developerName}</span>` : '') +
+        (f.project ? `<span class="file-tag file-tag-project">${f.project}</span>` : '') +
+        (catLabel ? `<span class="file-tag file-tag-cat" data-cat="${catKey}">${catLabel}</span>` : '') +
+        `<span class="file-tag file-tag-type">${extOf(f.name)}</span>`;
+      const modal = document.getElementById('previewModal');
+      modal.querySelector('.preview-title').textContent = f.name || '';
+      modal.querySelector('.preview-tags').innerHTML = tagRow;
+      modal.querySelector('.preview-body').innerHTML = body;
+      modal.querySelector('.preview-download').href = url;
+      modal.classList.add('show');
+    }
+    function closePreview() {
+      const modal = document.getElementById('previewModal');
+      modal.classList.remove('show');
+      modal.querySelector('.preview-body').innerHTML = ''; // stop video/audio
+    }
+    window.closePreview = closePreview;
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closePreview();
+    });
 
     /* ===== Search ===== */
     document.getElementById('searchInput').addEventListener('input', (e) => {
