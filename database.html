@@ -223,9 +223,21 @@
       line-height: 1.6;
       border: 1px solid var(--line);
     }
+    .file-tag-dev {
+      background: rgba(255,216,77,0.10);
+      color: var(--gold);
+      border-color: rgba(255,216,77,0.35);
+    }
     .file-tag-project {
       background: rgba(255,255,255,0.06);
       color: var(--cream);
+    }
+    .file-tag-type {
+      background: rgba(255,255,255,0.04);
+      color: var(--muted);
+      font-family: ui-monospace, 'SF Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.6px;
     }
     .file-tag-cat {
       background: rgba(255,216,77,0.14);
@@ -882,18 +894,20 @@
         const canDelete = _isAdminUser || (f.uploadedBy && _me && f.uploadedBy === _me.uid);
         const ext = extOf(f.name);
         const sub = `${dict.uploadedBy}${(f.uploadedByName || f.uploadedByEmail || '').replace(/</g,'&lt;')} · ${fmtDate(f.createdAt)} · ${fmtBytes(f.size)}`;
-        // Build a small badge next to the filename showing project + AI category
+        // Tag chain: developer · project · category · file type
         const catKey = f.aiCategory || f.subcategory;
         const catLabel = catKey
           ? (dict['cat' + catKey.split('_').map(s => s[0].toUpperCase() + s.slice(1)).join('')] || catKey)
           : '';
-        const projTag = f.project ? `<span class="file-tag file-tag-project">${f.project.replace(/</g,'&lt;')}</span>` : '';
-        const catTag = catLabel ? `<span class="file-tag file-tag-cat" data-cat="${catKey}">${catLabel}</span>` : '';
+        const devTag  = f.developerName ? `<span class="file-tag file-tag-dev">${f.developerName.replace(/</g,'&lt;')}</span>` : '';
+        const projTag = f.project       ? `<span class="file-tag file-tag-project">${f.project.replace(/</g,'&lt;')}</span>` : '';
+        const catTag  = catLabel        ? `<span class="file-tag file-tag-cat" data-cat="${catKey}">${catLabel}</span>` : '';
+        const typeTag = ext             ? `<span class="file-tag file-tag-type">${ext}</span>` : '';
         return `<div class="file-row" data-id="${f.id}">
           <div class="file-icon">${ext}</div>
           <div class="file-meta">
             <div class="file-name">${(f.name || '').replace(/</g,'&lt;')}</div>
-            <div class="file-tags">${projTag}${catTag}</div>
+            <div class="file-tags">${devTag}${projTag}${catTag}${typeTag}</div>
             <div class="file-sub">${sub}</div>
           </div>
           <div class="file-actions">
