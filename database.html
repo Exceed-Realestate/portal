@@ -211,7 +211,37 @@
       color: var(--cream); font-weight: 600; font-size: 14px;
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
-    .file-sub { color: var(--muted); font-size: 11.5px; margin-top: 2px; }
+    .file-sub { color: var(--muted); font-size: 11.5px; margin-top: 4px; }
+    .file-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+    .file-tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+      line-height: 1.6;
+      border: 1px solid var(--line);
+    }
+    .file-tag-project {
+      background: rgba(255,255,255,0.06);
+      color: var(--cream);
+    }
+    .file-tag-cat {
+      background: rgba(255,216,77,0.14);
+      color: var(--gold);
+      border-color: rgba(255,216,77,0.35);
+    }
+    .file-tag-cat[data-cat="render"]       { background: rgba(99,179,255,0.14); color: #8fc4ff; border-color: rgba(99,179,255,0.35); }
+    .file-tag-cat[data-cat="brochure"]     { background: rgba(255,216,77,0.16); color: var(--gold); }
+    .file-tag-cat[data-cat="floor_plan"]   { background: rgba(140,255,170,0.12); color: #9be6b3; border-color: rgba(140,255,170,0.32); }
+    .file-tag-cat[data-cat="inventory"]    { background: rgba(255,180,90,0.14); color: #ffc78a; border-color: rgba(255,180,90,0.35); }
+    .file-tag-cat[data-cat="payment_plan"] { background: rgba(220,140,255,0.14); color: #d6a8ff; border-color: rgba(220,140,255,0.35); }
+    .file-tag-cat[data-cat="fact_sheet"]   { background: rgba(255,200,160,0.12); color: #ffd1b3; border-color: rgba(255,200,160,0.32); }
+    .file-tag-cat[data-cat="video"]        { background: rgba(255,120,120,0.12); color: #ff9c9c; border-color: rgba(255,120,120,0.32); }
+    .file-tag-cat[data-cat="logo"]         { background: rgba(180,200,220,0.10); color: #cdd6e1; border-color: rgba(180,200,220,0.28); }
+    .file-tag-cat[data-cat="other"],
+    .file-tag-cat[data-cat="image"]        { background: rgba(255,255,255,0.05); color: var(--muted); }
     .file-actions { display: flex; gap: 6px; }
     .action-btn {
       background: transparent; border: 1px solid var(--line);
@@ -852,10 +882,18 @@
         const canDelete = _isAdminUser || (f.uploadedBy && _me && f.uploadedBy === _me.uid);
         const ext = extOf(f.name);
         const sub = `${dict.uploadedBy}${(f.uploadedByName || f.uploadedByEmail || '').replace(/</g,'&lt;')} · ${fmtDate(f.createdAt)} · ${fmtBytes(f.size)}`;
+        // Build a small badge next to the filename showing project + AI category
+        const catKey = f.aiCategory || f.subcategory;
+        const catLabel = catKey
+          ? (dict['cat' + catKey.split('_').map(s => s[0].toUpperCase() + s.slice(1)).join('')] || catKey)
+          : '';
+        const projTag = f.project ? `<span class="file-tag file-tag-project">${f.project.replace(/</g,'&lt;')}</span>` : '';
+        const catTag = catLabel ? `<span class="file-tag file-tag-cat" data-cat="${catKey}">${catLabel}</span>` : '';
         return `<div class="file-row" data-id="${f.id}">
           <div class="file-icon">${ext}</div>
           <div class="file-meta">
             <div class="file-name">${(f.name || '').replace(/</g,'&lt;')}</div>
+            <div class="file-tags">${projTag}${catTag}</div>
             <div class="file-sub">${sub}</div>
           </div>
           <div class="file-actions">
