@@ -134,8 +134,25 @@
     html[lang="ja"] .dev-row-projects::before   { content: 'プロジェクト'; min-width: 100px; }
     html[lang="ja"] .dev-row-categories::before { content: 'カテゴリ'; min-width: 100px; }
     .dev-chip.active  { background: rgba(255,216,77,0.18); color: var(--gold); border-color: rgba(255,216,77,0.45); }
-    .proj-chip.active { background: rgba(255,216,77,0.10); color: var(--cream); border-color: rgba(255,216,77,0.30); }
     .cat-chip.active  { background: rgba(255,216,77,0.10); color: var(--cream); border-color: rgba(255,216,77,0.30); }
+    .dev-select {
+      padding: 8px 32px 8px 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+      color: var(--cream);
+      font-family: inherit; font-size: 12.5px; font-weight: 500;
+      border-radius: 999px;
+      cursor: pointer;
+      min-width: 220px;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a91a3' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+    }
+    .dev-select:hover { border-color: var(--line-strong); }
+    .dev-select:focus { outline: 0; border-color: rgba(255,216,77,0.5); }
+    .dev-select option { background: var(--navy-1); color: var(--cream); }
     @media (max-width: 720px) {
       .dev-row::before { min-width: 100%; padding-bottom: 4px; }
     }
@@ -778,16 +795,15 @@
         </button>`;
       }).join('');
 
-      // Row 2: project chips for the active developer
+      // Row 2: project dropdown for the active developer (45+ projects → chips are too many)
       const projects = projectsForActiveDev();
       const totalProj = devFilesFor(_devSlug).length;
-      const projChips =
-        `<button class="subcat proj-chip ${_devProject === 'all' ? 'active' : ''}" data-proj="all">
-           ${dict.devAllProjects}<span class="count">${totalProj}</span>
-         </button>` +
-        projects.map(p => `<button class="subcat proj-chip ${_devProject === p.name ? 'active' : ''}" data-proj="${p.name.replace(/"/g, '&quot;')}">
-          ${p.name}<span class="count">${p.count}</span>
-        </button>`).join('');
+      const projOpts =
+        `<option value="all" ${_devProject === 'all' ? 'selected' : ''}>${dict.devAllProjects} (${totalProj})</option>` +
+        projects.map(p => `<option value="${p.name.replace(/"/g, '&quot;')}" ${_devProject === p.name ? 'selected' : ''}>
+          ${p.name} (${p.count})
+        </option>`).join('');
+      const projSelect = `<select class="dev-select" id="devProjectSelect">${projOpts}</select>`;
 
       // Row 3: category chips
       const catChips = CATEGORIES.map(c => {
@@ -800,7 +816,7 @@
 
       wrap.innerHTML = `
         <div class="dev-row dev-row-developers">${devChips}</div>
-        <div class="dev-row dev-row-projects">${projChips}</div>
+        <div class="dev-row dev-row-projects">${projSelect}</div>
         <div class="dev-row dev-row-categories">${catChips}</div>
       `;
 
@@ -810,12 +826,11 @@
           renderDeveloperHierarchy(); renderFiles();
         })
       );
-      wrap.querySelectorAll('button[data-proj]').forEach(b =>
-        b.addEventListener('click', () => {
-          _devProject = b.dataset.proj;
-          renderDeveloperHierarchy(); renderFiles();
-        })
-      );
+      const projSel = wrap.querySelector('#devProjectSelect');
+      if (projSel) projSel.addEventListener('change', e => {
+        _devProject = e.target.value;
+        renderDeveloperHierarchy(); renderFiles();
+      });
       wrap.querySelectorAll('button[data-cat]').forEach(b =>
         b.addEventListener('click', () => {
           _devCategory = b.dataset.cat;
