@@ -50,18 +50,27 @@ function mediaTypeFor(name, contentType) {
 /* Claude vision max 5MB per image. Resize anything bigger to ~1024px on the
    long edge and re-encode as JPEG at q80 — keeps it well under 1MB. */
 async function shrinkIfNeeded(buf, mime) {
-  const MAX = 4.5 * 1024 * 1024; // leave headroom under 5MB
+  // Claude's 5MB limit. Base64 inflates payload by ~33%, so encoded size also
+  // matters. Aim for ≤3MB raw to leave plenty of headroom.
+  const MAX = 3 * 1024 * 1024;
   if (buf.length <= MAX) return { buf, mime };
-  try {
-    const out = await sharp(buf, { failOn: 'none' })
-      .rotate()
-      .resize({ width: 1280, height: 1280, fit: 'inside', withoutEnlargement: true })
-      .jpeg({ quality: 80, mozjpeg: true })
-      .toBuffer();
-    return { buf: out, mime: 'image/jpeg' };
-  } catch (e) {
-    throw new Error(`resize failed: ${e.message}`);
+  // Iterate down until under threshold — handles odd aspect ratios where the
+  // first pass still overflows.
+  const sizes = [1280, 1024, 768, 600];
+  const qualities = [80, 70, 60];
+  for (const w of sizes) {
+    for (const q of qualities) {
+      try {
+        const out = await sharp(buf, { failOn: 'none' })
+          .rotate()
+          .resize({ width: w, height: w, fit: 'inside', withoutEnlargement: true })
+          .jpeg({ quality: q, mozjpeg: true })
+          .toBuffer();
+        if (out.length <= MAX) return { buf: out, mime: 'image/jpeg' };
+      } catch (_) { /* try next */ }
+    }
   }
+  throw new Error('could not shrink under 3MB');
 }
 
 async function classifyImage({ name, drivePath, project, buf, mime }) {
