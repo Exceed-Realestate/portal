@@ -113,11 +113,13 @@ export async function buildPaymentPdfBase64(p, paymentId) {
               : status === 'CANCELLED' ? [180, 180, 190]
               : [212, 184, 122];
   doc.setFillColor(accent[0], accent[1], accent[2]);
-  doc.roundedRect(40, 184, 170, 22, 4, 4, 'F');
+  doc.roundedRect(40, 184, 200, 22, 4, 4, 'F');
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(10);
-  const statusLabel = status === 'SUBMITTED' ? 'PENDING APPROVAL' : status;
+  const statusLabel = status === 'SUBMITTED'      ? 'PENDING — MOUAD REVIEW'
+                    : status === 'MOUAD-APPROVED' ? 'PENDING — CEO CO-SIGN'
+                    : status;
   doc.text(statusLabel, 50, 199);
 
   /* ===== Big amount ===== */
@@ -126,18 +128,30 @@ export async function buildPaymentPdfBase64(p, paymentId) {
   doc.setTextColor(10, 31, 61);
   doc.text(fmtAmount(p.amount), 40, 250);
 
-  /* ===== Field rows ===== */
+  /* ===== Field rows — include the optional receiving-bank block ===== */
+  const bank = p.bankAccount;
+  const bankLines = [];
+  if (bank && (bank.bankName || bank.accountHolderName)) {
+    if (bank.label) bankLines.push(bank.label);
+    if (bank.bankName) bankLines.push(bank.bankName + (bank.accountHolderName ? ` — ${bank.accountHolderName}` : ''));
+    else if (bank.accountHolderName) bankLines.push(bank.accountHolderName);
+    if (bank.accountNumber) bankLines.push(`Account: ${bank.accountNumber}`);
+    if (bank.iban) bankLines.push(`IBAN: ${bank.iban}`);
+    if (bank.swift) bankLines.push(`SWIFT: ${bank.swift}`);
+  }
+
   const rows = [
     ['Requester',      p.requesterName || '—'],
     ['Email',          p.requesterEmail || '—'],
     ['Pay to',         p.recipient || '—'],
+    ...(bankLines.length ? [['Receiving bank', bankLines.join('\n')]] : []),
     ['Purpose',        p.purpose || '—'],
     ['Category',       p.category || '—'],
     ['Due date',       fmtDate(p.dueDate)],
     ['Notes',          p.notes || '—'],
-    ['Approval tier',  (p.amount || 0) > SMALL_AMOUNT_AED
-        ? '> 1,000 AED · CEO approval required'
-        : '≤ 1,000 AED · Mouad / Hira (CEO cc)']
+    ['Approval flow',  (p.amount || 0) > SMALL_AMOUNT_AED
+        ? '> 1,000 AED · Mouad → Teruo (CEO co-sign)'
+        : '≤ 1,000 AED · Mouad (final) · Hira on cc']
   ];
   let y = 290;
   doc.setFontSize(9);
@@ -152,7 +166,7 @@ export async function buildPaymentPdfBase64(p, paymentId) {
     y += Math.max(20, lines.length * 12 + 8);
   }
 
-  /* ===== Approved by / Requested by signature block ===== */
+  /* ===== Signature block — up to three columns when both approvers sign ===== */
   y += 14;
   doc.setDrawColor(212, 184, 122);
   doc.setLineWidth(0.6);
@@ -165,51 +179,64 @@ export async function buildPaymentPdfBase64(p, paymentId) {
   doc.text('SIGNATURES', 40, y);
   y += 18;
 
-  // Two-column layout: Requested by (left) | Approved by (right)
-  const colW = (pageW - 80) / 2;
-  const leftX  = 40;
-  const rightX = 40 + colW + 10;
+  const needsCeo = (p.amount || 0) > SMALL_AMOUNT_AED;
+  const cols = needsCeo
+    ? ['REQUESTED BY', 'APPROVED BY (MOUAD)', 'CO-SIGNED BY (CEO)']
+    : ['REQUESTED BY', 'APPROVED BY (MOUAD)'];
+  const colCount = cols.length;
+  const gutter = 10;
+  const colW = (pageW - 80 - gutter * (colCount - 1)) / colCount;
+  const xOf = (i) => 40 + i * (colW + gutter);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
   doc.setTextColor(154, 168, 194);
-  doc.text('REQUESTED BY', leftX, y);
-  doc.text('APPROVED BY',  rightX, y);
+  cols.forEach((label, i) => doc.text(label, xOf(i), y));
   y += 28;
 
   doc.setLineWidth(0.5);
   doc.setDrawColor(120, 120, 120);
-  doc.line(leftX,  y, leftX  + colW - 10, y);
-  doc.line(rightX, y, rightX + colW - 10, y);
+  cols.forEach((_, i) => doc.line(xOf(i), y, xOf(i) + colW, y));
   y += 12;
+
+  const names = needsCeo
+    ? [p.requesterName || '', p.mouadDecisionBy || '', p.ceoDecisionBy || '']
+    : [p.requesterName || '', p.mouadDecisionBy || p.decisionBy || ''];
   doc.setTextColor(10, 31, 61);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(10);
-  doc.text(p.requesterName || '', leftX, y);
-  if (p.decisionBy) doc.text(p.decisionBy, rightX, y);
+  names.forEach((n, i) => { if (n) doc.text(n, xOf(i), y); });
 
-  // Date + signature lines
+  // Date + signature placeholder lines under each name
   y += 22;
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   doc.setTextColor(120, 120, 120);
-  doc.text('Date',      leftX, y);
-  doc.text('Date',      rightX, y);
-  doc.text('Signature', leftX  + 80, y);
-  doc.text('Signature', rightX + 80, y);
+  cols.forEach((_, i) => {
+    doc.text('Date',      xOf(i),       y);
+    doc.text('Signature', xOf(i) + 70,  y);
+  });
   y += 6;
   doc.setDrawColor(160, 160, 160);
-  doc.line(leftX,        y + 12, leftX  + 70,        y + 12);
-  doc.line(rightX,       y + 12, rightX + 70,        y + 12);
-  doc.line(leftX  + 80,  y + 12, leftX  + colW - 10, y + 12);
-  doc.line(rightX + 80,  y + 12, rightX + colW - 10, y + 12);
+  cols.forEach((_, i) => {
+    doc.line(xOf(i),       y + 12, xOf(i) + 60,    y + 12);
+    doc.line(xOf(i) + 70,  y + 12, xOf(i) + colW,  y + 12);
+  });
 
-  // Pre-fill requester date with submission date
+  // Pre-fill dates for any step that already happened
   doc.setFontSize(9);
   doc.setTextColor(80, 80, 80);
-  doc.text(submitted.toLocaleDateString('en-GB'), leftX, y + 8);
-  if (p.decisionAt) {
-    try { doc.text(new Date(p.decisionAt).toLocaleDateString('en-GB'), rightX, y + 8); }
+  doc.text(submitted.toLocaleDateString('en-GB'), xOf(0), y + 8);
+  if (p.mouadDecisionAt) {
+    try { doc.text(new Date(p.mouadDecisionAt).toLocaleDateString('en-GB'), xOf(1), y + 8); }
+    catch (_) {}
+  } else if (p.decisionAt && !needsCeo) {
+    // Backward compat: pre-sequential records had only decisionAt/By.
+    try { doc.text(new Date(p.decisionAt).toLocaleDateString('en-GB'), xOf(1), y + 8); }
+    catch (_) {}
+  }
+  if (needsCeo && p.ceoDecisionAt) {
+    try { doc.text(new Date(p.ceoDecisionAt).toLocaleDateString('en-GB'), xOf(2), y + 8); }
     catch (_) {}
   }
 

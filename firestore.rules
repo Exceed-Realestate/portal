@@ -151,7 +151,8 @@ service cloud.firestore {
         && request.resource.data.amount is number
         && request.resource.data.amount > 0;
 
-      // Updates: admin OR (requester withdraws) OR (finance approver decides).
+      // Updates: admin OR (requester withdraws / attaches signed PDF) OR
+      // (finance approver decides — mouad-approved, approved, declined).
       // Approval rights are ALSO checked client-side via canApprovePayment(p, role, email).
       allow update: if isAdminEmail()
         || (isSignedIn() && resource.data.requesterUid == request.auth.uid
@@ -163,7 +164,8 @@ service cloud.firestore {
               'balraj@exceed-re.ae',
               'admin@exceed-re.ae'
             ]
-            && (request.resource.data.status == 'approved'
+            && (request.resource.data.status == 'mouad-approved'
+                || request.resource.data.status == 'approved'
                 || request.resource.data.status == 'declined'));
 
       allow delete: if isAdminEmail();

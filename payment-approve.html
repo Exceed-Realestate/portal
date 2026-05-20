@@ -111,6 +111,62 @@
     .approver-line { margin-top: 12px; color: var(--muted); font-size: 12px; }
     .approver-line strong { color: var(--cream); }
 
+    /* ----- Attachment & signature blocks ----- */
+    .attach-list { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+    .attach-link {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px;
+      background: rgba(255,255,255,0.03); text-decoration: none; color: var(--cream);
+      font-size: 13px;
+    }
+    .attach-link:hover { background: rgba(212,184,122,0.06); border-color: rgba(212,184,122,0.4); }
+    .attach-link .ico { color: var(--gold); font-size: 16px; }
+    .attach-link .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .attach-link .ext { color: var(--muted); font-size: 11px; }
+
+    .sig-block {
+      margin-top: 22px; padding: 18px; border-radius: 12px;
+      background: rgba(212,184,122,0.04); border: 1px solid rgba(212,184,122,0.25);
+    }
+    .sig-block .sig-h {
+      font-family: 'Playfair Display','Noto Serif JP',serif; font-size: 16px;
+      font-weight: 600; color: var(--cream); margin: 0 0 6px;
+    }
+    .sig-block .sig-sub { color: var(--muted); font-size: 12.5px; line-height: 1.6; margin: 0 0 14px; }
+    .sig-block .step-row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;
+    }
+    @media (max-width: 540px) { .sig-block .step-row { grid-template-columns: 1fr; } }
+    .sig-block .step {
+      padding: 12px; background: rgba(0,0,0,0.18); border: 1px solid var(--line);
+      border-radius: 8px; font-size: 12.5px;
+    }
+    .sig-block .step strong { color: var(--cream); }
+    .sig-block .step.done { border-color: rgba(92,201,143,0.4); }
+    .sig-block .upload-row {
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      padding: 12px 14px; background: rgba(255,255,255,0.03); border: 1px dashed var(--line-strong);
+      border-radius: 10px; margin-top: 12px; cursor: pointer;
+    }
+    .sig-block .upload-row:hover { border-color: var(--gold); background: rgba(212,184,122,0.05); }
+    .sig-block .upload-row input[type="file"] { display: none; }
+    .sig-block .uploaded {
+      display: flex; align-items: center; gap: 10px; margin-top: 10px;
+      padding: 10px 12px; background: rgba(92,201,143,0.08); border: 1px solid rgba(92,201,143,0.3);
+      border-radius: 10px; font-size: 12.5px; color: var(--cream);
+    }
+    .sig-block .uploaded .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .wa-cta {
+      display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+      width: 100%; padding: 14px 22px; border-radius: 10px;
+      background: #25d366; color: #fff; font-family: inherit; font-weight: 700;
+      font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer;
+      text-decoration: none; border: 0; margin-top: 14px;
+    }
+    .wa-cta:hover { background: #1ec159; }
+    .wa-cta svg { width: 14px; height: 14px; }
+
     .toast {
       position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
       background: rgba(10,31,61,0.95); border: 1px solid var(--gold); color: var(--cream);
@@ -282,13 +338,23 @@
   </div><!-- /v2-shell -->
 
   <script type="module">
-    import { auth, db, isAdmin } from './firebase-init.js';
+    import { auth, db, storage, isAdmin } from './firebase-init.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
     import { doc, getDoc, updateDoc, serverTimestamp } from
       "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
-    import { sendPaymentNotifications, canApprovePayment, FINANCE, SMALL_AMOUNT_AED }
-      from './payment-notify.js';
+    import { ref as sRef, uploadBytes, getDownloadURL }
+      from "https://www.gstatic.com/firebasejs/10.13.2/firebase-storage.js";
+    import {
+      sendPaymentNotifications, canApprovePayment, FINANCE, SMALL_AMOUNT_AED,
+      whatsappApprovalUrl, nextStatusAfterApproval, nextApprover
+    } from './payment-notify.js';
     import { buildPaymentPdfBase64, downloadPaymentPdf } from './payment-pdf.js';
+
+    function escHtml(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
 
     function fmtAmount(v) {
       const n = Number(v || 0);
@@ -321,95 +387,261 @@
     let me = null, myProfile = null, myRole = null;
     let payment = null, paymentId = null;
 
+    /* Map status to a status label + the "what happens next" line. */
+    function statusLabel(status) {
+      if (status === 'submitted')       return 'Pending — Mouad review';
+      if (status === 'mouad-approved')  return 'Pending — CEO co-sign';
+      if (status === 'approved')        return 'Approved';
+      if (status === 'declined')        return 'Declined';
+      if (status === 'cancelled')       return 'Cancelled';
+      return status || 'submitted';
+    }
+    function nextLine(p) {
+      const amt = p.amount || 0;
+      if (amt > SMALL_AMOUNT_AED) {
+        return 'Tier: <strong>> 1,000 AED</strong> · approvers: <strong>Mouad → Teruo</strong> (CEO co-sign).';
+      }
+      return 'Tier: <strong>≤ 1,000 AED</strong> · approver: <strong>Mouad</strong> (final). Hira on cc.';
+    }
+
+    /* Render an invoice/receipt link list. */
+    function invoiceListHtml(p) {
+      const items = (p.invoiceUrls && Array.isArray(p.invoiceUrls)) ? p.invoiceUrls : [];
+      if (!items.length) return '';
+      const rows = items.map(a => {
+        const ext = (a.name || '').split('.').pop().toUpperCase();
+        return `<a class="attach-link" href="${escHtml(a.url)}" target="_blank" rel="noopener">
+          <span class="ico">📄</span>
+          <span class="name">${escHtml(a.name || 'file')}</span>
+          <span class="ext">${escHtml(ext)}</span>
+        </a>`;
+      }).join('');
+      return `<div style="margin-top:18px;">
+        <div class="meta-row" style="border-bottom:0;"><div class="k">Invoice / Receipt</div>
+        <div class="v"><div class="attach-list">${rows}</div></div></div>
+      </div>`;
+    }
+
+    function bankBlockHtml(p) {
+      const b = p.bankAccount;
+      if (!b || (!b.bankName && !b.accountHolderName)) return '';
+      const lines = [
+        b.label ? `<strong>${escHtml(b.label)}</strong>` : '',
+        `${escHtml(b.bankName || '')}${b.accountHolderName ? ' — ' + escHtml(b.accountHolderName) : ''}`,
+        b.accountNumber ? `Account: ${escHtml(b.accountNumber)}` : '',
+        b.iban ? `IBAN: ${escHtml(b.iban)}` : '',
+        b.swift ? `SWIFT: ${escHtml(b.swift)}` : ''
+      ].filter(Boolean).join('<br>');
+      return `<div class="meta-row"><div class="k">Receiving bank</div><div class="v">${lines}</div></div>`;
+    }
+
+    /* Signature block — download unsigned / Mouad-signed, upload signed PDF,
+       then click Approve. Shown only while user is the active approver. */
+    function sigBlockHtml(p, whoIsActing) {
+      const isCeoStep = whoIsActing === 'teruo';
+      const stepMouad = p.signedPdfUrl
+        ? '<div class="step done"><strong>1.</strong> Mouad signed ✓</div>'
+        : '<div class="step"><strong>1.</strong> Mouad downloads, signs, uploads.</div>';
+      const stepCeo = isCeoStep
+        ? '<div class="step"><strong>2.</strong> CEO downloads Mouad-signed PDF, co-signs, uploads.</div>'
+        : ((p.amount || 0) > SMALL_AMOUNT_AED
+            ? '<div class="step"><strong>2.</strong> Then Teruo co-signs (> 1,000 AED).</div>'
+            : '');
+      const uploadedHtml = p.pendingSignedName
+        ? `<div class="uploaded"><span class="ico">📄</span><span class="name">${escHtml(p.pendingSignedName)}</span><span style="color:var(--green);font-weight:700;">Ready to approve</span></div>`
+        : '';
+      return `<div class="sig-block">
+        <div class="sig-h">Sign &amp; approve</div>
+        <div class="sig-sub">Download the PDF, sign it with whatever tool you prefer (Preview / Apple Markup / Adobe / iLovePDF / etc.), then upload the signed version. Optional — you can also approve without uploading and the request will still go through unsigned.</div>
+        <div class="step-row">${stepMouad}${stepCeo}</div>
+        <button class="btn-pdf" id="btnDownloadForSign" style="width:100%;margin-top:14px;">⬇ Download ${p.signedPdfUrl ? 'Mouad-signed' : 'unsigned'} PDF to sign</button>
+        <label class="upload-row" for="signedPdfInput">
+          <span style="color:var(--gold);font-size:18px;">📤</span>
+          <span style="color:var(--cream);font-size:13px;font-weight:600;">Upload signed PDF</span>
+          <span style="color:var(--muted);font-size:11px;">PDF · up to 20 MB</span>
+          <input type="file" id="signedPdfInput" accept="application/pdf">
+        </label>
+        ${uploadedHtml}
+      </div>`;
+    }
+
     function render() {
       const status = payment.status || 'submitted';
-      const isPending = status === 'submitted';
-      const myEmail = (me.email || '').toLowerCase();
-      const allowedToAct = isPending && canApprovePayment(payment, myRole, myEmail);
+      const isActiveApprover = (status === 'submitted' || status === 'mouad-approved')
+                               && canApprovePayment(payment, myRole, (me.email || '').toLowerCase());
+      const whoIsActing = nextApprover(payment);
 
-      const tierLine = (payment.amount || 0) > SMALL_AMOUNT_AED
-        ? `Approver: <strong>CEO only</strong> (> 1,000 AED tier)`
-        : `Approvers: <strong>Mouad / Hira</strong> · CEO cc · ≤ 1,000 AED tier`;
+      const dec = [];
+      if (payment.mouadDecisionBy) dec.push(`Mouad: <strong>${escHtml(payment.mouadDecisionBy)}</strong>${payment.mouadDecisionAt ? ' on ' + new Date(payment.mouadDecisionAt).toLocaleString('en-GB') : ''}`);
+      if (payment.ceoDecisionBy)   dec.push(`CEO: <strong>${escHtml(payment.ceoDecisionBy)}</strong>${payment.ceoDecisionAt ? ' on ' + new Date(payment.ceoDecisionAt).toLocaleString('en-GB') : ''}`);
+      const decisionLine = (dec.length
+        ? `<div class="approver-line">${dec.join(' &nbsp;·&nbsp; ')}</div>`
+        : `<div class="approver-line">${nextLine(payment)}</div>`);
 
-      const decisionLine = (status === 'approved' || status === 'declined') && payment.decisionBy
-        ? `<div class="approver-line">Decided by <strong>${payment.decisionBy}</strong>${payment.decisionAt ? ' on ' + new Date(payment.decisionAt).toLocaleString('en-GB') : ''}.</div>`
-        : `<div class="approver-line">${tierLine}</div>`;
-
-      let buttons = '';
-      if (allowedToAct) {
-        buttons = `
-          <div class="actions">
-            <button class="btn-approve" id="btnApprove">✓ Approve</button>
-            <button class="btn-decline" id="btnDecline">✕ Decline</button>
-            <button class="btn-pdf" id="btnPdf">📄 PDF</button>
-          </div>
-          <div class="gate-msg">You can act on this request. Approval will email the requester, Mouad, Hira and the CEO.</div>`;
-      } else if (isPending) {
-        buttons = `
-          <div class="actions">
-            <button class="btn-pdf" id="btnPdf">📄 Download PDF</button>
-          </div>
-          <div class="gate-msg deny">You don't have approval rights for this tier. ${tierLine}</div>`;
+      let actionBlock = '';
+      if (isActiveApprover) {
+        actionBlock = sigBlockHtml(payment, whoIsActing)
+          + `<div class="actions">
+              <button class="btn-approve" id="btnApprove">✓ Approve</button>
+              <button class="btn-decline" id="btnDecline">✕ Decline</button>
+            </div>
+            <div class="gate-msg">You are the active approver. ${nextLine(payment)}</div>`;
+      } else if (status === 'mouad-approved' && (me.email || '').toLowerCase() === FINANCE.mouad) {
+        // Mouad already signed off — show "Send to Teruo on WhatsApp"
+        actionBlock = `<div class="gate-msg">Awaiting CEO co-sign. Send the link to Teruo on WhatsApp:</div>
+          <a class="wa-cta" id="btnSendTeruo" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.1-.2.3-.8.9-1 1.1-.2.2-.4.2-.6.1-.7-.4-1.5-.7-2.4-1.6-.7-.6-1.1-1.4-1.3-1.6-.1-.2 0-.3.1-.4.1-.1.2-.3.4-.4.1-.1.2-.2.2-.4.1-.2 0-.3 0-.4 0-.1-.6-1.5-.9-2-.2-.5-.5-.4-.7-.4h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4 0 1.4 1 2.8 1.2 3 .1.2 2 3.1 4.9 4.4.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.6-.1 1.7-.7 1.9-1.3.2-.7.2-1.2.2-1.3-.1-.1-.3-.2-.6-.3M12 2C6.5 2 2 6.5 2 12c0 1.9.5 3.7 1.5 5.3L2 22l4.8-1.3c1.5.8 3.3 1.3 5.2 1.3 5.5 0 10-4.5 10-10S17.5 2 12 2z"/></svg>
+            Send to Teruo on WhatsApp
+          </a>
+          <div class="actions" style="margin-top:14px;">
+            <button class="btn-pdf" id="btnPdf">📄 Download current PDF</button>
+          </div>`;
       } else {
-        buttons = `
-          <div class="actions">
+        actionBlock = `<div class="actions">
             <button class="btn-pdf" id="btnPdf">📄 Download PDF</button>
           </div>`;
+        if (status === 'submitted' || status === 'mouad-approved') {
+          actionBlock += `<div class="gate-msg deny">You're not the active approver right now.</div>`;
+        }
       }
 
-      document.getElementById('paneContent').innerHTML = `
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-          <span class="pill ${status}">${status}</span>
-          <span style="color:var(--muted);font-size:12px;">Ref: ${paymentId.slice(0, 8)}…</span>
+      const headerHtml = `<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+          <span class="pill ${escHtml(status)}">${escHtml(statusLabel(status))}</span>
+          <span style="color:var(--muted);font-size:12px;">Ref: ${escHtml(paymentId.slice(0, 8))}…</span>
         </div>
         <h1>Payment Request</h1>
-        <div class="req-info">${payment.purpose || ''}${payment.recipient ? ' · ' + payment.recipient : ''}</div>
-        <div class="amount">${fmtAmount(payment.amount)}</div>
+        <div class="req-info">${escHtml(payment.purpose || '')}${payment.recipient ? ' · ' + escHtml(payment.recipient) : ''}</div>
+        <div class="amount">${escHtml(fmtAmount(payment.amount))}</div>
         ${decisionLine}
 
         <div style="margin-top:18px;">
-          <div class="meta-row"><div class="k">Requester</div><div class="v">${payment.requesterName || '—'}<br><span style="color:var(--muted);font-size:12px;">${payment.requesterEmail || ''}</span></div></div>
-          <div class="meta-row"><div class="k">Pay to</div><div class="v">${payment.recipient || '—'}</div></div>
-          <div class="meta-row"><div class="k">Category</div><div class="v">${payment.category || '—'}</div></div>
-          <div class="meta-row"><div class="k">Due date</div><div class="v">${fmtDate(payment.dueDate)}</div></div>
-          <div class="meta-row"><div class="k">Notes</div><div class="v">${(payment.notes || '—').replace(/</g,'&lt;')}</div></div>
+          <div class="meta-row"><div class="k">Requester</div><div class="v">${escHtml(payment.requesterName || '—')}<br><span style="color:var(--muted);font-size:12px;">${escHtml(payment.requesterEmail || '')}</span></div></div>
+          <div class="meta-row"><div class="k">Pay to</div><div class="v">${escHtml(payment.recipient || '—')}</div></div>
+          ${bankBlockHtml(payment)}
+          <div class="meta-row"><div class="k">Category</div><div class="v">${escHtml(payment.category || '—')}</div></div>
+          <div class="meta-row"><div class="k">Due date</div><div class="v">${escHtml(fmtDate(payment.dueDate))}</div></div>
+          <div class="meta-row"><div class="k">Notes</div><div class="v">${escHtml(payment.notes || '—')}</div></div>
         </div>
 
-        ${buttons}
-      `;
+        ${invoiceListHtml(payment)}
+        ${actionBlock}`;
+
+      const pane = document.getElementById('paneContent');
+      pane.replaceChildren();
+      pane.insertAdjacentHTML('beforeend', headerHtml);
 
       const pdfBtn = document.getElementById('btnPdf');
       if (pdfBtn) pdfBtn.addEventListener('click', () => downloadPdf(payment, paymentId));
+
+      const dlSign = document.getElementById('btnDownloadForSign');
+      if (dlSign) dlSign.addEventListener('click', () => downloadForSigning());
+
+      const sigInput = document.getElementById('signedPdfInput');
+      if (sigInput) sigInput.addEventListener('change', handleSignedUpload);
 
       const approveBtn = document.getElementById('btnApprove');
       if (approveBtn) approveBtn.addEventListener('click', () => decide('approved'));
       const declineBtn = document.getElementById('btnDecline');
       if (declineBtn) declineBtn.addEventListener('click', () => decide('declined'));
+
+      const teruoBtn = document.getElementById('btnSendTeruo');
+      if (teruoBtn) teruoBtn.href = whatsappApprovalUrl('teruo', payment, paymentId);
     }
 
-    async function decide(newStatus) {
-      const verb = newStatus === 'approved' ? 'approve' : 'decline';
+    /* Download the current PDF — Mouad-signed version if available, else fresh. */
+    async function downloadForSigning() {
+      if (payment.signedPdfUrl) {
+        // Open the latest signed version in a new tab so the approver can save+sign it.
+        window.open(payment.signedPdfUrl, '_blank');
+      } else {
+        await downloadPdf(payment, paymentId);
+      }
+    }
+
+    /* Buffer for the signed PDF the approver uploads before clicking Approve. */
+    let pendingSignedFile = null;
+    async function handleSignedUpload(e) {
+      const f = e.target.files[0];
+      if (!f) return;
+      if (f.type !== 'application/pdf') {
+        showToast('PDF only.', true); return;
+      }
+      if (f.size > 20 * 1024 * 1024) {
+        showToast('PDF too large (>20MB).', true); return;
+      }
+      pendingSignedFile = f;
+      payment.pendingSignedName = f.name; // for the rendered "ready to approve" badge
+      render();
+    }
+
+    async function decide(action) {
+      const verb = action === 'approved' ? 'approve' : 'decline';
       if (!confirm(`Confirm ${verb} this payment request?`)) return;
       const actorName = (myProfile && (myProfile.firstName || myProfile.lastName))
         ? `${myProfile.firstName || ''} ${myProfile.lastName || ''}`.trim()
         : (me.displayName || me.email);
+      const myEmail = (me.email || '').toLowerCase();
       try {
-        await updateDoc(doc(db, 'payments', paymentId), {
-          status: newStatus,
-          decisionAt: new Date().toISOString(),
-          decisionBy: actorName,
-          decisionUid: me.uid
-        });
-        // Re-fetch fresh state
+        // 1. If a signed PDF is queued, upload it first so the next viewer
+        //    sees the signed version on the same paymentId.
+        let signedUrl = payment.signedPdfUrl || null;
+        if (pendingSignedFile) {
+          const tag = myEmail === FINANCE.ceo ? 'ceo' : 'mouad';
+          const path = `payments/${paymentId}/signed-${tag}-${Date.now()}.pdf`;
+          const r = sRef(storage, path);
+          await uploadBytes(r, pendingSignedFile, {
+            contentType: 'application/pdf',
+            customMetadata: { signedBy: me.uid, signerEmail: myEmail }
+          });
+          signedUrl = await getDownloadURL(r);
+        }
+
+        // 2. Compute the next status using the sequential rules.
+        const newStatus = action === 'declined'
+          ? 'declined'
+          : nextStatusAfterApproval(payment, myEmail);
+
+        // 3. Build the doc patch — track each signer separately so the
+        //    PDF can show both signature lines on > 1,000 AED requests.
+        const nowIso = new Date().toISOString();
+        const patch = { status: newStatus };
+        if (signedUrl) patch.signedPdfUrl = signedUrl;
+        if (action === 'approved' && myEmail === FINANCE.mouad) {
+          patch.mouadDecisionAt = nowIso;
+          patch.mouadDecisionBy = actorName;
+          patch.mouadDecisionUid = me.uid;
+        }
+        if (action === 'approved' && myEmail === FINANCE.ceo) {
+          patch.ceoDecisionAt = nowIso;
+          patch.ceoDecisionBy = actorName;
+          patch.ceoDecisionUid = me.uid;
+        }
+        // Final-decision mirror (kept for backward compat with old reports).
+        if (newStatus === 'approved' || newStatus === 'declined') {
+          patch.decisionAt = nowIso;
+          patch.decisionBy = actorName;
+          patch.decisionUid = me.uid;
+        }
+
+        await updateDoc(doc(db, 'payments', paymentId), patch);
+
+        // 4. Re-fetch fresh state for notifications + re-render.
         const fresh = await getDoc(doc(db, 'payments', paymentId));
         payment = fresh.data();
+        pendingSignedFile = null;
+        delete payment.pendingSignedName;
+
         const pdfBase64 = await buildPaymentPdfBase64(payment, paymentId);
         await sendPaymentNotifications(db, {
           payment, paymentId, status: newStatus,
           actorName, actorUid: me.uid,
           pdfBase64, pdfFilename: `Payment-Request-${paymentId}.pdf`
         });
-        showToast(newStatus === 'approved' ? 'Approved.' : 'Declined.');
+
+        const msg = newStatus === 'approved' ? 'Approved.'
+                  : newStatus === 'mouad-approved' ? 'Signed. Forward to Teruo to complete.'
+                  : 'Declined.';
+        showToast(msg);
         render();
       } catch (err) {
         console.error(err);

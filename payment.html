@@ -150,6 +150,82 @@
     }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(-6px); }
     .toast.error { border-color: var(--red); color: var(--red); }
+
+    /* ----- File attach widget ----- */
+    .attach-field {
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      padding: 12px 14px; background: rgba(255,255,255,0.04);
+      border: 1px dashed var(--line-strong); border-radius: 10px;
+      cursor: pointer; transition: border-color .15s, background .15s;
+    }
+    .attach-field:hover { border-color: var(--gold); background: rgba(212,184,122,0.05); }
+    .attach-field input[type="file"] { display: none; }
+    .attach-field .ico { color: var(--gold); font-size: 18px; }
+    .attach-field .label { color: var(--cream); font-size: 13px; font-weight: 600; }
+    .attach-field .hint { color: var(--muted); font-size: 11px; }
+    .attach-list { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+    .attach-item {
+      display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+      background: rgba(255,255,255,0.03); border: 1px solid var(--line);
+      border-radius: 8px; font-size: 12.5px; color: var(--cream);
+    }
+    .attach-item .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .attach-item .size { color: var(--muted); font-size: 11px; }
+    .attach-item .remove {
+      background: transparent; border: 0; color: var(--muted); cursor: pointer;
+      font-size: 16px; padding: 2px 6px; line-height: 1;
+    }
+    .attach-item .remove:hover { color: var(--red); }
+
+    /* ----- Saved bank accounts ----- */
+    .bank-list { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+    .bank-row {
+      display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start;
+      padding: 14px 16px; background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line); border-radius: 10px;
+    }
+    .bank-row .label { color: var(--gold); font-size: 11px; letter-spacing: 1.4px; text-transform: uppercase; margin: 0 0 4px; }
+    .bank-row .bname { color: var(--cream); font-weight: 600; font-size: 14.5px; }
+    .bank-row .bdetails { color: var(--muted); font-size: 12.5px; line-height: 1.6; margin-top: 4px; font-family: 'JetBrains Mono', monospace; }
+    .bank-row .remove-bank {
+      background: transparent; border: 1px solid var(--line-strong); color: var(--muted);
+      padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-family: inherit;
+    }
+    .bank-row .remove-bank:hover { color: var(--red); border-color: rgba(255,107,107,0.5); }
+
+    .bank-form {
+      padding: 16px; background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line); border-radius: 10px;
+      margin-top: 12px; display: none;
+    }
+    .bank-form.show { display: block; }
+    .bank-form label { margin-top: 10px; }
+    .bank-form .btn-row { margin-top: 16px; grid-template-columns: 1fr 1fr; }
+    .bank-empty { color: var(--muted); font-size: 13px; padding: 16px; text-align: center; border: 1px dashed var(--line-strong); border-radius: 10px; }
+
+    /* ----- Send modal (WA flow, mirrors book-car.html) ----- */
+    .send-modal-bd { position: fixed; inset: 0; background: rgba(5,12,24,0.75); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+    .send-modal-bd.show { display: flex; }
+    .send-modal {
+      background: linear-gradient(180deg, var(--navy-2), var(--navy-1));
+      border: 1px solid var(--line-strong); border-radius: 14px;
+      width: min(540px, 100%); max-height: 90vh; overflow-y: auto; padding: 28px;
+    }
+    .send-modal h3 { font-family: 'Playfair Display','Noto Serif JP',serif; font-size: 22px; font-weight: 600; margin: 0 0 8px; color: var(--cream); }
+    .send-modal .preview {
+      background: rgba(0,0,0,0.3); border: 1px solid var(--line); border-radius: 10px;
+      padding: 12px 14px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: var(--cream);
+      white-space: pre-wrap; line-height: 1.6; margin: 14px 0 18px;
+    }
+    .btn-wa {
+      background: #25d366; color: #fff; border: 0;
+      padding: 13px 22px; border-radius: 10px; font-weight: 700;
+      font-size: 12px; letter-spacing: 1px; cursor: pointer; font-family: inherit;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      text-decoration: none; width: 100%;
+    }
+    .btn-wa:hover { background: #1ec159; }
+    .btn-wa svg { width: 14px; height: 14px; }
     /* ============================================================
        v2 — Wise-style sidebar shell (matches agent.html)
        ============================================================ */
@@ -327,7 +403,15 @@
         </div>
 
         <label data-i18n="recipientL">送金先 / 受取人 *</label>
-        <input type="text" id="recipient" required placeholder="Vendor name / IBAN / employee">
+        <input type="text" id="recipient" required placeholder="Vendor name / employee / etc.">
+
+        <label data-i18n="bankPickL">受取銀行口座（保存済みから選択 — 任意）</label>
+        <select id="bankPick">
+          <option value="">— No bank account (free text only) —</option>
+        </select>
+        <p class="help-line" style="margin-top:6px;margin-bottom:0;" data-i18n="bankPickHelp">
+          下の「銀行口座を管理」で口座情報を登録できます。選択すると申請書に自動で添付されます。
+        </p>
 
         <div class="row">
           <div>
@@ -351,6 +435,15 @@
         <label data-i18n="notesL">備考</label>
         <textarea id="notes" placeholder="Invoice number, lead source, payment method, etc."></textarea>
 
+        <label data-i18n="attachL">請求書・領収書を添付（PDF / 画像）</label>
+        <label class="attach-field" for="attachInput">
+          <span class="ico">📎</span>
+          <span class="label" data-i18n="attachBtn">ファイルを選択</span>
+          <span class="hint" data-i18n="attachHint">複数選択可 · PDF / JPG / PNG · 各 20MB まで</span>
+          <input type="file" id="attachInput" multiple accept="application/pdf,image/*">
+        </label>
+        <div class="attach-list" id="attachList"></div>
+
         <div class="btn-row">
           <button type="button" class="ghost-btn" id="previewBtn">
             <span data-i18n="preview">📄 PDFをプレビュー</span>
@@ -365,6 +458,50 @@
       </form>
     </div>
 
+    <!-- Saved bank accounts manager -->
+    <div class="card">
+      <h2 data-i18n="banksTitle">🏦 銀行口座（保存済み）</h2>
+      <p class="help-line" data-i18n="banksHelp">
+        立替金や歩合の受取先として、自分の銀行口座を事前に登録できます。申請時にプルダウンから選択するだけで申請書に自動で添付されます。
+      </p>
+      <div class="bank-list" id="bankList">
+        <div class="bank-empty" data-i18n="banksEmpty">登録された口座はまだありません。</div>
+      </div>
+      <div style="margin-top:14px;">
+        <button type="button" class="ghost-btn" id="addBankBtn" data-i18n="addBank">+ 口座を追加</button>
+      </div>
+
+      <div class="bank-form" id="bankForm">
+        <label data-i18n="bankLabelL">ラベル（自分用 · 例: 給与口座）</label>
+        <input type="text" id="bankLabel" placeholder="Salary account">
+
+        <label data-i18n="bankNameL">銀行名 *</label>
+        <input type="text" id="bankName" required placeholder="Emirates NBD / Mashreq / FAB / ADCB / Dubai Islamic Bank …">
+
+        <label data-i18n="bankHolderL">口座名義 *</label>
+        <input type="text" id="bankHolder" required placeholder="As printed on the bank statement">
+
+        <div class="row">
+          <div>
+            <label data-i18n="bankAcctL">口座番号</label>
+            <input type="text" id="bankAcct" placeholder="0123456789">
+          </div>
+          <div>
+            <label data-i18n="bankIbanL">IBAN</label>
+            <input type="text" id="bankIban" placeholder="AE07 0331 2345 6789 0123 456">
+          </div>
+        </div>
+
+        <label data-i18n="bankSwiftL">SWIFT / BIC（任意）</label>
+        <input type="text" id="bankSwift" placeholder="EBILAEAD">
+
+        <div class="btn-row">
+          <button type="button" class="ghost-btn" id="cancelBankBtn" data-i18n="cancel">キャンセル</button>
+          <button type="button" class="submit-btn" id="saveBankBtn" data-i18n="saveBank">この口座を保存</button>
+        </div>
+      </div>
+    </div>
+
     <div class="card">
       <h2 data-i18n="myReqs">自分の申請</h2>
       <div class="req-list" id="reqList">
@@ -373,18 +510,39 @@
     </div>
   </main>
 
+  <!-- Post-submit modal: Send to Mouad on WhatsApp -->
+  <div class="send-modal-bd" id="sendModalBd" onclick="if(event.target===this)closeSendModal()">
+    <div class="send-modal">
+      <h3 data-i18n="modalTitle">📩 Mouad に WhatsApp で送信</h3>
+      <p style="color:var(--muted);font-size:13px;margin:0 0 8px;line-height:1.55;" data-i18n="modalLede">
+        申請書のリンクをこの場で Mouad に送信します。タップして送信してください。
+      </p>
+      <div class="preview" id="modalPreview">—</div>
+      <a class="btn-wa" id="sendMouadBtn" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.1-.2.3-.8.9-1 1.1-.2.2-.4.2-.6.1-.7-.4-1.5-.7-2.4-1.6-.7-.6-1.1-1.4-1.3-1.6-.1-.2 0-.3.1-.4.1-.1.2-.3.4-.4.1-.1.2-.2.2-.4.1-.2 0-.3 0-.4 0-.1-.6-1.5-.9-2-.2-.5-.5-.4-.7-.4h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4 0 1.4 1 2.8 1.2 3 .1.2 2 3.1 4.9 4.4.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.6-.1 1.7-.7 1.9-1.3.2-.7.2-1.2.2-1.3-.1-.1-.3-.2-.6-.3M12 2C6.5 2 2 6.5 2 12c0 1.9.5 3.7 1.5 5.3L2 22l4.8-1.3c1.5.8 3.3 1.3 5.2 1.3 5.5 0 10-4.5 10-10S17.5 2 12 2z"/></svg>
+        <span data-i18n="sendMouad">Mouad に送信</span>
+      </a>
+      <div style="margin-top:12px;text-align:center;">
+        <button type="button" class="row-action" onclick="closeSendModal()" data-i18n="modalClose">閉じる</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
     </div><!-- /v2-main -->
   </div><!-- /v2-shell -->
 
   <script type="module">
-    import { auth, db, isAdmin } from './firebase-init.js';
+    import { auth, db, storage, isAdmin } from './firebase-init.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
     import {
       doc, getDoc, addDoc, updateDoc, collection, query, where,
-      orderBy, getDocs, serverTimestamp
+      orderBy, getDocs, serverTimestamp, arrayUnion, arrayRemove
     } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
-    import { sendPaymentNotifications, SMALL_AMOUNT_AED } from './payment-notify.js';
+    import { ref as sRef, uploadBytes, getDownloadURL }
+      from "https://www.gstatic.com/firebasejs/10.13.2/firebase-storage.js";
+    import { sendPaymentNotifications, SMALL_AMOUNT_AED, whatsappApprovalUrl }
+      from './payment-notify.js';
     import { buildPaymentPdfBase64, downloadPaymentPdf } from './payment-pdf.js';
 
     /* ----- i18n ----- */
@@ -410,12 +568,37 @@
         myReqs: '自分の申請',
         loading: '読み込み中…',
         none: '申請はまだありません。',
-        tierLow: '≤ 1,000 AED · 承認: <strong>Mouad / Hira</strong> (CEO は CC)',
-        tierHigh: '> 1,000 AED · 承認: <strong>CEO のみ</strong>',
+        tierLow: '≤ 1,000 AED · 承認: <strong>Mouad</strong>（最終承認）· Hira CC',
+        tierHigh: '> 1,000 AED · 承認: <strong>Mouad → Teruo</strong>（CEO 共同署名）',
         toastOk: '申請を送信しました。',
         toastErr: '送信に失敗しました。',
         withdraw: '取消',
-        cancel: 'キャンセル'
+        cancel: 'キャンセル',
+        bankPickL: '受取銀行口座（保存済みから選択 — 任意）',
+        bankPickHelp: '下の「銀行口座を管理」で口座情報を登録できます。選択すると申請書に自動で添付されます。',
+        attachL: '請求書・領収書を添付（PDF / 画像）',
+        attachBtn: 'ファイルを選択',
+        attachHint: '複数選択可 · PDF / JPG / PNG · 各 20MB まで',
+        banksTitle: '🏦 銀行口座（保存済み）',
+        banksHelp: '立替金や歩合の受取先として、自分の銀行口座を事前に登録できます。申請時にプルダウンから選択するだけで申請書に自動で添付されます。',
+        banksEmpty: '登録された口座はまだありません。',
+        addBank: '+ 口座を追加',
+        saveBank: 'この口座を保存',
+        bankLabelL: 'ラベル（自分用 · 例: 給与口座）',
+        bankNameL: '銀行名 *',
+        bankHolderL: '口座名義 *',
+        bankAcctL: '口座番号',
+        bankIbanL: 'IBAN',
+        bankSwiftL: 'SWIFT / BIC（任意）',
+        bankSaved: '銀行口座を保存しました。',
+        bankRemoved: '口座を削除しました。',
+        bankRemoveOK: 'この銀行口座を削除しますか？',
+        bankMissing: '銀行名と口座名義は必須です。',
+        modalTitle: '📩 Mouad に WhatsApp で送信',
+        modalLede: '申請書のリンクをこの場で Mouad に送信します。タップして送信してください。',
+        sendMouad: 'Mouad に送信',
+        modalClose: '閉じる',
+        uploading: '添付ファイルをアップロード中…'
       },
       en: {
         eyebrow: 'PAYMENT APPROVAL',
@@ -438,12 +621,37 @@
         myReqs: 'My requests',
         loading: 'Loading…',
         none: 'No payment requests yet.',
-        tierLow: '≤ 1,000 AED · approver: <strong>Mouad / Hira</strong> (CEO cc)',
-        tierHigh: '> 1,000 AED · approver: <strong>CEO only</strong>',
+        tierLow: '≤ 1,000 AED · approver: <strong>Mouad</strong> (final) · Hira cc',
+        tierHigh: '> 1,000 AED · approver: <strong>Mouad → Teruo</strong> (CEO co-sign)',
         toastOk: 'Request submitted.',
         toastErr: 'Could not submit.',
         withdraw: 'Withdraw',
-        cancel: 'Cancel'
+        cancel: 'Cancel',
+        bankPickL: 'Receiving bank account (pick a saved one — optional)',
+        bankPickHelp: 'Manage your saved bank accounts in the "Saved bank accounts" card below. Picking one auto-attaches it to the request.',
+        attachL: 'Attach invoice / receipt / bill (PDF or image)',
+        attachBtn: 'Choose files',
+        attachHint: 'Multiple files OK · PDF / JPG / PNG · 20 MB each',
+        banksTitle: '🏦 Saved bank accounts',
+        banksHelp: 'Save your own bank details once. Pick the right one when you request a reimbursement or commission — it auto-attaches to the request.',
+        banksEmpty: 'No saved bank accounts yet.',
+        addBank: '+ Add a bank account',
+        saveBank: 'Save this account',
+        bankLabelL: 'Label (your own reference — e.g. Salary account)',
+        bankNameL: 'Bank name *',
+        bankHolderL: 'Account holder name *',
+        bankAcctL: 'Account number',
+        bankIbanL: 'IBAN',
+        bankSwiftL: 'SWIFT / BIC (optional)',
+        bankSaved: 'Bank account saved.',
+        bankRemoved: 'Removed.',
+        bankRemoveOK: 'Remove this saved bank account?',
+        bankMissing: 'Bank name and account holder are required.',
+        modalTitle: '📩 Send to Mouad on WhatsApp',
+        modalLede: 'Send the request link to Mouad on WhatsApp right now. Tap the button below.',
+        sendMouad: 'Send to Mouad',
+        modalClose: 'Close',
+        uploading: 'Uploading attachments…'
       }
     };
     let currentLang = 'ja';
@@ -484,14 +692,191 @@
     window.updateTier = function() {
       const v = parseFloat(document.getElementById('amount').value || 0);
       const tier = document.getElementById('amountTier');
-      if (v > SMALL_AMOUNT_AED) {
-        tier.classList.add('high');
-        tier.innerHTML = I18N[currentLang].tierHigh;
-      } else {
-        tier.classList.remove('high');
-        tier.innerHTML = I18N[currentLang].tierLow;
-      }
+      tier.classList.toggle('high', v > SMALL_AMOUNT_AED);
+      tier.replaceChildren();
+      tier.insertAdjacentHTML('beforeend',
+        v > SMALL_AMOUNT_AED ? I18N[currentLang].tierHigh : I18N[currentLang].tierLow);
     };
+
+    function escHtml(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+    function escAttr(s) { return escHtml(s); }
+
+    /* =========================
+       Saved bank accounts
+       ========================= */
+    function _bankId() {
+      return 'b_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    }
+    function getSavedBanks() {
+      return (myProfile && Array.isArray(myProfile.savedBanks)) ? myProfile.savedBanks : [];
+    }
+    function renderBanks() {
+      const list = document.getElementById('bankList');
+      const banks = getSavedBanks();
+      const dict = I18N[currentLang];
+      list.replaceChildren();
+      if (!banks.length) {
+        list.insertAdjacentHTML('beforeend',
+          `<div class="bank-empty">${escHtml(dict.banksEmpty)}</div>`);
+      } else {
+        const rows = banks.map(b => {
+          const acct = b.accountNumber ? `Account ${b.accountNumber}` : '';
+          const iban = b.iban ? `IBAN ${b.iban}` : '';
+          const swift = b.swift ? `SWIFT ${b.swift}` : '';
+          const details = [acct, iban, swift].filter(Boolean).join(' · ');
+          return `<div class="bank-row" data-id="${escAttr(b.id)}">
+            <div>
+              ${b.label ? `<div class="label">${escHtml(b.label)}</div>` : ''}
+              <div class="bname">${escHtml(b.bankName)} — ${escHtml(b.accountHolderName)}</div>
+              ${details ? `<div class="bdetails">${escHtml(details)}</div>` : ''}
+            </div>
+            <button class="remove-bank" type="button" data-id="${escAttr(b.id)}">Remove</button>
+          </div>`;
+        }).join('');
+        list.insertAdjacentHTML('beforeend', rows);
+        list.querySelectorAll('.remove-bank').forEach(btn => {
+          btn.addEventListener('click', () => removeBank(btn.dataset.id));
+        });
+      }
+      // Re-populate the in-form picker
+      const pick = document.getElementById('bankPick');
+      const prev = pick.value;
+      pick.replaceChildren();
+      const optHtml = `<option value="">— No bank account (free text only) —</option>`
+        + banks.map(b => `<option value="${escAttr(b.id)}">💳 ${escHtml(b.bankName)} — ${escHtml(b.accountHolderName)}${b.label ? ' · ' + escHtml(b.label) : ''}</option>`).join('');
+      pick.insertAdjacentHTML('beforeend', optHtml);
+      if (prev && banks.some(b => b.id === prev)) pick.value = prev;
+    }
+    document.getElementById('addBankBtn').addEventListener('click', () => {
+      document.getElementById('bankForm').classList.add('show');
+      document.getElementById('addBankBtn').style.display = 'none';
+    });
+    document.getElementById('cancelBankBtn').addEventListener('click', () => {
+      document.getElementById('bankForm').classList.remove('show');
+      document.getElementById('addBankBtn').style.display = '';
+      clearBankForm();
+    });
+    function clearBankForm() {
+      ['bankLabel','bankName','bankHolder','bankAcct','bankIban','bankSwift'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+    }
+    document.getElementById('saveBankBtn').addEventListener('click', async () => {
+      const dict = I18N[currentLang];
+      const bank = {
+        id: _bankId(),
+        label: document.getElementById('bankLabel').value.trim(),
+        bankName: document.getElementById('bankName').value.trim(),
+        accountHolderName: document.getElementById('bankHolder').value.trim(),
+        accountNumber: document.getElementById('bankAcct').value.trim(),
+        iban: document.getElementById('bankIban').value.trim(),
+        swift: document.getElementById('bankSwift').value.trim(),
+        addedAt: Date.now()
+      };
+      if (!bank.bankName || !bank.accountHolderName) {
+        showToast(dict.bankMissing, true);
+        return;
+      }
+      try {
+        await updateDoc(doc(db, 'agents', me.uid), { savedBanks: arrayUnion(bank) });
+        myProfile.savedBanks = [...getSavedBanks(), bank];
+        renderBanks();
+        clearBankForm();
+        document.getElementById('bankForm').classList.remove('show');
+        document.getElementById('addBankBtn').style.display = '';
+        showToast(dict.bankSaved);
+      } catch (err) {
+        console.error(err);
+        showToast(dict.toastErr + ' ' + (err.message || ''), true);
+      }
+    });
+    async function removeBank(id) {
+      const dict = I18N[currentLang];
+      if (!confirm(dict.bankRemoveOK)) return;
+      const target = getSavedBanks().find(b => b.id === id);
+      if (!target) return;
+      try {
+        await updateDoc(doc(db, 'agents', me.uid), { savedBanks: arrayRemove(target) });
+        myProfile.savedBanks = getSavedBanks().filter(b => b.id !== id);
+        renderBanks();
+        showToast(dict.bankRemoved);
+      } catch (err) {
+        console.error(err);
+        showToast(dict.toastErr + ' ' + (err.message || ''), true);
+      }
+    }
+
+    /* =========================
+       File attachments (queued — uploaded on submit)
+       ========================= */
+    let pendingAttachments = []; // [{ file, name, size }]
+    function renderAttachList() {
+      const list = document.getElementById('attachList');
+      list.replaceChildren();
+      if (!pendingAttachments.length) return;
+      const html = pendingAttachments.map((a, i) =>
+        `<div class="attach-item">
+          <span class="ico">📄</span>
+          <span class="name">${escHtml(a.name)}</span>
+          <span class="size">${(a.size / 1024).toFixed(0)} KB</span>
+          <button type="button" class="remove" data-i="${i}" aria-label="Remove">×</button>
+        </div>`
+      ).join('');
+      list.insertAdjacentHTML('beforeend', html);
+      list.querySelectorAll('.remove').forEach(btn => {
+        btn.addEventListener('click', () => {
+          pendingAttachments.splice(Number(btn.dataset.i), 1);
+          renderAttachList();
+        });
+      });
+    }
+    document.getElementById('attachInput').addEventListener('change', (e) => {
+      for (const f of e.target.files) {
+        if (f.size > 20 * 1024 * 1024) {
+          showToast(`${f.name}: > 20 MB skipped`, true);
+          continue;
+        }
+        pendingAttachments.push({ file: f, name: f.name, size: f.size });
+      }
+      e.target.value = '';
+      renderAttachList();
+    });
+
+    async function uploadAttachments(paymentId) {
+      if (!pendingAttachments.length) return [];
+      const uploaded = [];
+      for (const a of pendingAttachments) {
+        const safeName = a.name.replace(/[^\w.\-]+/g, '_');
+        const path = `payments/${paymentId}/invoices/${Date.now()}-${safeName}`;
+        const r = sRef(storage, path);
+        await uploadBytes(r, a.file, {
+          contentType: a.file.type || 'application/octet-stream',
+          customMetadata: { uploadedBy: me.uid }
+        });
+        const url = await getDownloadURL(r);
+        uploaded.push({ name: a.name, size: a.size, type: a.file.type || '', url, path });
+      }
+      return uploaded;
+    }
+
+    /* =========================
+       Post-submit WA modal
+       ========================= */
+    window.closeSendModal = function() {
+      document.getElementById('sendModalBd').classList.remove('show');
+    };
+    function showSendModal(payload, paymentId) {
+      const dict = I18N[currentLang];
+      const detailUrl = `${location.origin}${location.pathname.replace('payment.html','payment-approve.html')}?id=${paymentId}`;
+      document.getElementById('modalPreview').textContent =
+        `${payload.purpose || ''} · ${payload.recipient || ''}\n${fmtAmount(payload.amount)} · ${payload.dueDate || ''}\n\n${detailUrl}`;
+      document.getElementById('sendMouadBtn').href = whatsappApprovalUrl('mouad', payload, paymentId);
+      document.getElementById('sendModalBd').classList.add('show');
+    }
 
     /* ----- Form → payload helpers ----- */
     function readFormPayload() {
@@ -556,11 +941,24 @@
         const category = document.getElementById('category').value;
         const purpose = document.getElementById('purpose').value.trim();
         const notes = document.getElementById('notes').value.trim();
+        const pickedBankId = document.getElementById('bankPick').value;
         if (!amount || amount <= 0) throw new Error('Amount required');
 
         const requesterName = ((myProfile && (myProfile.firstName || myProfile.lastName))
           ? `${myProfile.firstName || ''} ${myProfile.lastName || ''}`.trim()
           : (me.displayName || me.email));
+
+        // Snapshot the picked bank so future edits to the saved bank don't
+        // mutate historic payment records.
+        let bankAccount = null;
+        if (pickedBankId) {
+          const found = getSavedBanks().find(b => b.id === pickedBankId);
+          if (found) {
+            // strip the saved-bank id; the embedded copy is independent now
+            const { id: _ignored, addedAt: _ignored2, ...snap } = found;
+            bankAccount = snap;
+          }
+        }
 
         const payload = {
           amount, dueDate, recipient, category, purpose, notes,
@@ -569,9 +967,20 @@
           requesterName,
           status: 'submitted',
           tier: amount > SMALL_AMOUNT_AED ? 'high' : 'low',
+          bankAccount,
+          invoiceUrls: [], // filled in after upload
           createdAt: serverTimestamp()
         };
         const ref = await addDoc(collection(db, 'payments'), payload);
+
+        // Upload any queued invoice/receipt attachments to Storage under
+        // payments/<id>/invoices/ — then write the URLs back to the doc.
+        if (pendingAttachments.length) {
+          btn.querySelector('span').textContent = dict.uploading;
+          const uploaded = await uploadAttachments(ref.id);
+          await updateDoc(doc(db, 'payments', ref.id), { invoiceUrls: uploaded });
+          payload.invoiceUrls = uploaded;
+        }
 
         const pdfBase64 = await buildPaymentPdfBase64(
           { ...payload, createdAtMs: Date.now() }, ref.id);
@@ -587,9 +996,12 @@
 
         // Reset form
         document.getElementById('payForm').reset();
+        pendingAttachments = [];
+        renderAttachList();
         updateTier();
         showToast(dict.toastOk);
         loadList();
+        showSendModal(payload, ref.id);
       } catch (err) {
         console.error(err);
         showToast(dict.toastErr + ' ' + (err.message || ''), true);
@@ -660,6 +1072,7 @@
         if (snap.exists()) myProfile = snap.data();
       } catch (_) {}
       setLang('ja');
+      renderBanks();
       loadList();
     });
   </script>

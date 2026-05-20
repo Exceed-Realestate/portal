@@ -1,15 +1,19 @@
 /* ========================================================================
    payment-notify.js — Shared notification + email dispatcher for payment
    approval requests. Mirrors car-notify.js shape so both flows behave the
-   same way (mail rows + in-portal bell).
+   same way (mail rows + in-portal bell + WhatsApp deep links).
 
-   Routing rules (Phase 1, no signature pad):
-     amount ≤ 1000 AED  → approver pool: Mouad, Hira, CEO, admin
-                          recipients on decision: requester + Mouad + Hira + CEO (cc)
-     amount  > 1000 AED → approver pool: CEO, admin
-                          recipients on decision: requester + Mouad + Hira + CEO
+   Sequential routing — Mouad always acts first, regardless of amount.
 
-     Withdrawn / cancelled by requester → silent (no email).
+     status 'submitted'      → Mouad reviews + signs.
+     If amount ≤ 1,000 AED   → Mouad approves → status 'approved' (done).
+     If amount  > 1,000 AED  → Mouad approves → status 'mouad-approved' →
+                               Teruo (CEO) reviews + signs → 'approved' (done).
+     Decline at any step     → status 'declined' (final).
+     Withdrawn by requester  → status 'cancelled' (silent).
+
+   Final-decision recipients (approved / declined): requester + Mouad + Hira
+   (+ Teruo on > 1,000 AED tier since he is the second approver).
    ======================================================================== */
 
 import { addDoc, collection, serverTimestamp } from
@@ -21,6 +25,13 @@ export const FINANCE = {
   ceo:   'teruo@exceed-re.ae'
 };
 
+/* WhatsApp numbers for the two approvers — used by the "Send to Mouad" /
+   "Send to Teruo" buttons. Format: +<digits>, no spaces. */
+export const APPROVER_WA = {
+  mouad: '+971585438317',
+  teruo: '+971507438754'
+};
+
 export const SMALL_AMOUNT_AED = 1000;
 
 /* Payment-email kill-switch — Balraj wants payment emails to come from a
@@ -30,24 +41,51 @@ export const SMALL_AMOUNT_AED = 1000;
    re-enable email dispatch. */
 const SKIP_EMAIL = true;
 
-/* Who is allowed to approve a given payment request. */
+/* Who is allowed to act on a payment request RIGHT NOW.
+   Sequential gate: status determines which approver is active. */
 export function canApprovePayment(p, role, email) {
   const e = (email || '').toLowerCase();
   if (role === 'admin') return true;
-  if (e === FINANCE.mouad || e === FINANCE.hira || e === FINANCE.ceo) {
-    if ((p.amount || 0) > SMALL_AMOUNT_AED) {
-      return e === FINANCE.ceo;
-    }
-    return true;
+  const status = p.status || 'submitted';
+  if (status === 'submitted') {
+    // Initial review always belongs to Mouad (regardless of amount).
+    return e === FINANCE.mouad;
   }
-  if (role === 'ceo') return true;
+  if (status === 'mouad-approved') {
+    // Awaiting CEO co-sign for >1,000 AED requests.
+    return e === FINANCE.ceo;
+  }
   return false;
 }
 
-/* Recipients for a decision email.
-   NOTE: Teruo (CEO) temporarily dropped from the small-amount CC list
-   (Balraj 2026-05-07 — verifying Hira's inbox first). Re-add by un-commenting
-   the marked line below. CEO stays on > 1,000 AED because he's the approver. */
+/* Which approver is up next for this payment.
+   Returns 'mouad', 'teruo', or null (no further approver needed). */
+export function nextApprover(p) {
+  const status = p.status || 'submitted';
+  if (status === 'submitted') return 'mouad';
+  if (status === 'mouad-approved') return 'teruo';
+  return null;
+}
+
+/* Compute the next status after the current approver clicks Approve.
+   Mouad on ≤1k → 'approved'.  Mouad on >1k → 'mouad-approved'.
+   Teruo on  >1k → 'approved'. */
+export function nextStatusAfterApproval(p, approverEmail) {
+  const e = (approverEmail || '').toLowerCase();
+  const status = p.status || 'submitted';
+  if (status === 'submitted' && e === FINANCE.mouad) {
+    return (p.amount || 0) > SMALL_AMOUNT_AED ? 'mouad-approved' : 'approved';
+  }
+  if (status === 'mouad-approved' && e === FINANCE.ceo) {
+    return 'approved';
+  }
+  // Admin override approves outright.
+  return 'approved';
+}
+
+/* Recipients for the FINAL decision email (approved / declined).
+   Mouad + Hira always get the final paperwork; Teruo also when he was the
+   second approver. */
 function recipientsFor(p, status) {
   const out = new Set();
   if (p.requesterEmail) out.add(p.requesterEmail.toLowerCase());
@@ -55,20 +93,54 @@ function recipientsFor(p, status) {
     out.add(FINANCE.mouad);
     out.add(FINANCE.hira);
     if ((p.amount || 0) > SMALL_AMOUNT_AED) out.add(FINANCE.ceo);
-    // out.add(FINANCE.ceo);  // ← re-enable once Hira's inbox is confirmed
   }
   return [...out];
 }
 
-/* Recipients for the *initial submission* — who needs to act on it.
-   Same temporary CEO-CC removal as above. */
+/* Recipients for the initial-submission notification (who acts next).
+   Sequential model: ONLY Mouad on a fresh submission. */
 export function submitRecipients(p) {
-  const out = new Set();
-  out.add(FINANCE.mouad);
-  out.add(FINANCE.hira);
-  if ((p.amount || 0) > SMALL_AMOUNT_AED) out.add(FINANCE.ceo);
-  // else out.add(FINANCE.ceo);  // ← re-enable once Hira's inbox is confirmed
-  return [...out];
+  return [FINANCE.mouad];
+}
+
+/* Recipients for the Mouad→CEO hand-off (status = 'mouad-approved').
+   Only Teruo needs to act; cc Hira for visibility. */
+export function mouadApprovedRecipients() {
+  return [FINANCE.ceo, FINANCE.hira];
+}
+
+/* WhatsApp deep-link to the named approver with a pre-filled message.
+   `target` is 'mouad' | 'teruo'. */
+export function whatsappApprovalUrl(target, p, paymentId) {
+  const phone = (APPROVER_WA[target] || '').replace(/[^\d+]/g, '').replace(/^\+/, '');
+  if (!phone) return '';
+  const url = `${portalOrigin()}payment-approve.html?id=${paymentId}`;
+  const requester = p.requesterName || p.requesterEmail || 'A team member';
+  const isCeo = target === 'teruo';
+  const lines = isCeo
+    ? [
+        '💰 *Payment Approval — CEO co-sign needed*', '',
+        `*Amount:* ${fmtAmount(p)}`,
+        `*Purpose:* ${p.purpose || '—'}`,
+        `*Pay to:* ${p.recipient || '—'}`,
+        `*Requester:* ${requester}`,
+        `*Due:* ${fmtDate(p.dueDate) || '—'}`,
+        '',
+        `Mouad has already approved and signed. Please review, sign, and approve:`,
+        url
+      ]
+    : [
+        '💰 *Payment Approval Request*', '',
+        `*Amount:* ${fmtAmount(p)}`,
+        `*Purpose:* ${p.purpose || '—'}`,
+        `*Pay to:* ${p.recipient || '—'}`,
+        `*Requester:* ${requester}`,
+        `*Due:* ${fmtDate(p.dueDate) || '—'}`,
+        '',
+        '👉 Review, sign, and approve:',
+        url
+      ];
+  return `https://wa.me/${phone}?text=${encodeURIComponent(lines.join('\n'))}`;
 }
 
 function fmtAmount(p) {
@@ -87,10 +159,11 @@ function portalOrigin() {
 }
 
 function statusMeta(status) {
-  if (status === 'approved')  return { label: 'Approved',  accent: '#5cc98f' };
-  if (status === 'declined')  return { label: 'Declined',  accent: '#ff6b6b' };
-  if (status === 'cancelled') return { label: 'Cancelled', accent: '#ff6b6b' };
-  if (status === 'submitted') return { label: 'Pending Approval', accent: '#d4b87a' };
+  if (status === 'approved')        return { label: 'Approved',  accent: '#5cc98f' };
+  if (status === 'declined')        return { label: 'Declined',  accent: '#ff6b6b' };
+  if (status === 'cancelled')       return { label: 'Cancelled', accent: '#ff6b6b' };
+  if (status === 'submitted')       return { label: 'Pending — Mouad review', accent: '#d4b87a' };
+  if (status === 'mouad-approved')  return { label: 'Pending — CEO co-sign', accent: '#d4b87a' };
   return { label: status, accent: '#d4b87a' };
 }
 
@@ -104,18 +177,22 @@ function buildEmailHtml(p, paymentId, status, actorName) {
   const meta = statusMeta(status);
   const isPending = status === 'submitted';
   const detailUrl = `${portalOrigin()}payment-approve.html?id=${paymentId}`;
-  const headline = isPending  ? 'Payment Request — Action Required'
+  const isMouadApproved = status === 'mouad-approved';
+  const headline = isPending          ? 'Payment Request — Mouad review'
+                  : isMouadApproved   ? 'Payment Request — CEO co-sign needed'
                   : status === 'approved'  ? 'Payment Request Approved'
                   : status === 'declined'  ? 'Payment Request Declined'
                   : 'Payment Request Cancelled';
 
   const lede = isPending
-    ? `A new payment request has been submitted by <strong style="color:#f1ead8;">${p.requesterName || 'a team member'}</strong>. Please review and approve or decline.`
-    : status === 'approved'
-      ? `Your request was approved by <strong style="color:#f1ead8;">${actorName}</strong>.`
-      : status === 'declined'
-        ? `Your request was declined by <strong style="color:#f1ead8;">${actorName}</strong>.`
-        : `This request was cancelled by <strong style="color:#f1ead8;">${actorName}</strong>.`;
+    ? `A new payment request has been submitted by <strong style="color:#f1ead8;">${p.requesterName || 'a team member'}</strong>. Please review, sign and approve.`
+    : isMouadApproved
+      ? `Mouad has reviewed and signed. <strong style="color:#f1ead8;">${actorName}</strong> approved as first signatory. CEO co-sign is the last step.`
+      : status === 'approved'
+        ? `Your request was approved and fully signed off by <strong style="color:#f1ead8;">${actorName}</strong>.`
+        : status === 'declined'
+          ? `Your request was declined by <strong style="color:#f1ead8;">${actorName}</strong>.`
+          : `This request was cancelled by <strong style="color:#f1ead8;">${actorName}</strong>.`;
 
   const ctaPrimary = isPending
     ? `<a href="${detailUrl}" style="display:inline-block;margin:4px 6px;padding:12px 22px;background:linear-gradient(135deg,#f1ead8,#d4b87a);color:#0a1f3d;text-decoration:none;border-radius:8px;font-weight:700;font-size:12px;letter-spacing:1.2px;text-transform:uppercase;">Review Request</a>`
@@ -185,11 +262,16 @@ export async function sendPaymentNotifications(db,
   const text = buildEmailText(payment, paymentId, status, actorName);
   const subject = status === 'submitted'
     ? `[Exceed Finance] Payment request — ${fmtAmount(payment)} (${payment.requesterName || ''})`
-    : `[Exceed Finance] Payment ${status} — ${fmtAmount(payment)}`;
+    : status === 'mouad-approved'
+      ? `[Exceed Finance] CEO co-sign needed — ${fmtAmount(payment)}`
+      : `[Exceed Finance] Payment ${status} — ${fmtAmount(payment)}`;
 
   let recipients;
   if (status === 'submitted') {
     recipients = submitRecipients(payment);
+  } else if (status === 'mouad-approved') {
+    // Hand-off: Teruo acts next, Hira gets visibility.
+    recipients = mouadApprovedRecipients();
   } else if (status === 'cancelled') {
     // requester withdrew → silent (per Balraj's pattern with car bookings)
     recipients = [];
@@ -232,14 +314,19 @@ export async function sendPaymentNotifications(db,
 
   // In-portal bell: requester-only on approval decisions (mirrors car-notify).
   // Approvers get notified by email + see pending in payment.html dashboard list.
-  if (payment.requesterUid && (status === 'approved' || status === 'declined')) {
+  // Now also fires on 'mouad-approved' so the requester sees their request has
+  // cleared the first gate and is awaiting CEO co-sign.
+  if (payment.requesterUid
+      && (status === 'approved' || status === 'declined' || status === 'mouad-approved')) {
     const titles = {
-      approved: 'Payment request approved',
-      declined: 'Payment request declined'
+      approved:        'Payment request approved',
+      declined:        'Payment request declined',
+      'mouad-approved': 'Mouad approved — awaiting CEO co-sign'
     };
     const bodies = {
-      approved: `Your ${fmtAmount(payment)} request was approved by ${actorName}.`,
-      declined: `Your ${fmtAmount(payment)} request was declined by ${actorName}.`
+      approved:         `Your ${fmtAmount(payment)} request was fully approved by ${actorName}.`,
+      declined:         `Your ${fmtAmount(payment)} request was declined by ${actorName}.`,
+      'mouad-approved': `${actorName} signed off — Teruo's CEO co-sign is the last step.`
     };
     writes.push(addDoc(collection(db, 'notifications'), {
       forUid: payment.requesterUid,
