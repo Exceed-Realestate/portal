@@ -7,7 +7,7 @@
   <link rel="icon" type="image/jpeg" href="logo.jpg">
   <!-- PWA: manifest, theme color, iOS install support. -->
   <link rel="manifest" href="manifest.webmanifest">
-  <meta name="theme-color" content="#0a1f3d">
+  <meta name="theme-color" content="#15171c">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Exceed">
@@ -541,10 +541,10 @@
       </div>
     </section>
 
-    <!-- Upcoming bookings -->
+    <!-- All bookings (most recent first — past slots stay visible for reference) -->
     <section class="panel">
-      <h2>Upcoming bookings</h2>
-      <p class="sub">All approved or pending reservations across both cars. Click a slot to see who booked it.</p>
+      <h2>All bookings</h2>
+      <p class="sub">All reservations across both cars, newest first. Active slots show pending or approved; past slots stay visible for reference.</p>
       <div class="booking-list" id="bookingList"><div class="booking-empty">Loading…</div></div>
     </section>
   </main>
@@ -794,6 +794,12 @@
       t._tm = setTimeout(() => t.classList.remove('show'), 3000);
     }
 
+    function escHtml(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
     window.selectCar = function(car) {
       selectedCar = car;
       document.querySelectorAll('.car-card').forEach(el => el.classList.toggle('selected', el.dataset.car === car));
@@ -845,13 +851,22 @@
       const endA = new Date(fmtDateTime(f.date, f.end));
       const conflicts = bookings.filter(b => {
         if (b.car !== f.car) return false;
-        if (b.status === 'declined') return false;
+        // Only confirmed or pending bookings hold a slot. Declined / cancelled /
+        // withdrawn requests freed it.
+        if (b.status !== 'pending' && b.status !== 'approved') return false;
         const startB = new Date(b.startISO);
         const endB = new Date(b.endISO);
         return startA < endB && startB < endA;
       });
       if (conflicts.length) {
-        warn.innerHTML = `⛔ This slot conflicts with an existing <strong>${conflicts[0].status}</strong> booking by <strong>${conflicts[0].requesterName || 'someone'}</strong> (${new Date(conflicts[0].startISO).toLocaleString()} – ${new Date(conflicts[0].endISO).toLocaleString()}). Pick a different time.`;
+        const c = conflicts[0];
+        const range = `${new Date(c.startISO).toLocaleString()} – ${new Date(c.endISO).toLocaleString()}`;
+        warn.replaceChildren();
+        warn.appendChild(document.createTextNode('⛔ This slot conflicts with an existing '));
+        const s1 = document.createElement('strong'); s1.textContent = c.status; warn.appendChild(s1);
+        warn.appendChild(document.createTextNode(' booking by '));
+        const s2 = document.createElement('strong'); s2.textContent = c.requesterName || 'someone'; warn.appendChild(s2);
+        warn.appendChild(document.createTextNode(` (${range}). Pick a different time.`));
         warn.classList.add('show');
       } else {
         warn.classList.remove('show');
@@ -862,7 +877,7 @@
     });
 
     function buildMessage(f, bookingId) {
-      const url = `${location.origin}${location.pathname.replace('book-car.html','car-approve.html')}?id=${bookingId}`;
+      const baseUrl = `${location.origin}${location.pathname.replace('book-car.html','car-approve.html')}?id=${bookingId}`;
       const carName = f.car === 'phantom' ? 'Rolls-Royce Phantom' : 'Cadillac Escalade';
       const requester = currentUser?.displayName || currentUser?.email?.split('@')[0] || 'Team member';
       const budgetTxt = f.budget ? `\n*Client budget:* ${f.budget.toLocaleString()} AED` : '';
@@ -880,8 +895,9 @@
 *Client:* ${f.client || '—'}${budgetTxt}
 *Notes:* ${f.notes || '—'}
 
-👉 Approve or Decline:
-${url}`;
+✅ Approve: ${baseUrl}&action=approve
+❌ Decline: ${baseUrl}&action=decline
+🔍 View only: ${baseUrl}`;
     }
 
     async function copyToClipboard(text) {
@@ -914,7 +930,12 @@ ${url}`;
         if (!f.client) { showToast('Phantom requires a client name.'); return; }
         if (f.budget < 10_000_000) { showToast('Phantom requires a 10M AED+ budget.'); return; }
       }
-      const conflicts = bookings.filter(b => b.car === f.car && b.status !== 'declined' && new Date(startISO) < new Date(b.endISO) && new Date(b.startISO) < new Date(endISO));
+      const conflicts = bookings.filter(b =>
+        b.car === f.car
+        && (b.status === 'pending' || b.status === 'approved')
+        && new Date(startISO) < new Date(b.endISO)
+        && new Date(b.startISO) < new Date(endISO)
+      );
       if (conflicts.length) { showToast('Conflict with existing booking — pick another slot.'); return; }
 
       const btn = document.getElementById('submitBtn');
@@ -1040,10 +1061,10 @@ ${url}`;
             ? `<div class="row-actions">${actions.join('')}</div>`
             : '<div></div>';
 
-          return `<div class="booking-item ${b.status}">
-            <div class="when">${when}</div>
-            <div class="who">${b.requesterName || 'Team'} → ${b.client || 'no client'}<span class="car-tag">${carName}</span></div>
-            <span class="status ${b.status}">${b.status}</span>
+          return `<div class="booking-item ${escHtml(b.status)}">
+            <div class="when">${escHtml(when)}</div>
+            <div class="who">${escHtml(b.requesterName || 'Team')} → ${escHtml(b.client || 'no client')}<span class="car-tag">${escHtml(carName)}</span></div>
+            <span class="status ${escHtml(b.status)}">${escHtml(b.status)}</span>
             ${actionsHtml}
           </div>`;
         }).join('');
@@ -1115,8 +1136,15 @@ ${url}`;
       }
     };
 
-    // Default date to today
-    document.getElementById('bDate').valueAsDate = new Date();
+    // Default date to today (in the user's local timezone — valueAsDate
+    // uses UTC and would show yesterday for early-morning Dubai visitors)
+    (function () {
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      document.getElementById('bDate').value = `${y}-${m}-${day}`;
+    })();
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) { window.location.href = 'index.html'; return; }

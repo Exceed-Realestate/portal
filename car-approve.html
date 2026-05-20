@@ -7,7 +7,7 @@
   <link rel="icon" type="image/jpeg" href="logo.jpg">
   <!-- PWA: manifest, theme color, iOS install support. -->
   <link rel="manifest" href="manifest.webmanifest">
-  <meta name="theme-color" content="#0a1f3d">
+  <meta name="theme-color" content="#15171c">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Exceed">
@@ -154,6 +154,7 @@
     .status-pill.approved { background: rgba(92,201,143,0.14); color: var(--green); border: 1px solid rgba(92,201,143,0.4); }
     .status-pill.declined { background: rgba(255,107,107,0.14); color: #ff8a78; border: 1px solid rgba(255,107,107,0.4); }
     .status-pill.cancelled { background: rgba(154,168,194,0.16); color: #c1c9da; border: 1px solid rgba(154,168,194,0.4); }
+    .status-pill.withdrawn { background: rgba(154,168,194,0.16); color: #c1c9da; border: 1px solid rgba(154,168,194,0.4); }
 
     .actions { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
     .btn {
@@ -389,7 +390,7 @@
   <script type="module">
     import { auth, db, isAdmin, can } from './firebase-init.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-    import { doc, getDoc, updateDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    import { doc, getDoc, updateDoc, addDoc, collection, serverTimestamp, runTransaction } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
     import { sendCarBookingNotifications } from './car-notify.js';
 
     function fmtRangeStatic(b, lang) {
@@ -421,11 +422,12 @@
         property: '物件', area: 'エリア', leadSource: 'リード元',
         client: 'クライアント', budget: '予算 (AED)', notes: 'メモ',
         urgentBanner: '<strong>⚠ 3日前ルール外の緊急申請です。</strong>例外として承認をご検討ください。',
-        statusPending: '承認待ち', statusApproved: '承認済', statusDeclined: '却下', statusCancelled: 'キャンセル',
+        statusPending: '承認待ち', statusApproved: '承認済', statusDeclined: '却下', statusCancelled: 'キャンセル', statusWithdrawn: '取り下げ',
         approve: '承認する', decline: '却下する',
         approving: '承認中…', declining: '却下中…',
         approvedToast: '✓ 承認しました',
         declinedToast: '✗ 却下しました',
+        alreadyDecidedToast: 'この予約は既に他の承認者によって決定されています',
         actionFailed: '更新に失敗しました: ',
         decisionByApprovedJa: 'この予約は <strong>{name}</strong> によって <strong>{when}</strong> に承認されました。',
         decisionByDeclinedJa: 'この予約は <strong>{name}</strong> によって <strong>{when}</strong> に却下されました。',
@@ -451,11 +453,12 @@
         property: 'Property', area: 'Area', leadSource: 'Lead source',
         client: 'Client', budget: 'Budget (AED)', notes: 'Notes',
         urgentBanner: '<strong>⚠ Urgent — outside the 3-day notice rule.</strong> Please consider as an exception.',
-        statusPending: 'Pending', statusApproved: 'Approved', statusDeclined: 'Declined', statusCancelled: 'Cancelled',
+        statusPending: 'Pending', statusApproved: 'Approved', statusDeclined: 'Declined', statusCancelled: 'Cancelled', statusWithdrawn: 'Withdrawn',
         approve: 'Approve', decline: 'Decline',
         approving: 'Approving…', declining: 'Declining…',
         approvedToast: '✓ Approved',
         declinedToast: '✗ Declined',
+        alreadyDecidedToast: 'This booking was already decided by another approver',
         actionFailed: 'Update failed: ',
         decisionByApprovedJa: 'Approved by <strong>{name}</strong> on <strong>{when}</strong>.',
         decisionByDeclinedJa: 'Declined by <strong>{name}</strong> on <strong>{when}</strong>.',
@@ -565,9 +568,10 @@
       const dict = I18N[currentLang];
       const b = state.booking;
       const carName = b.car === 'phantom' ? 'Rolls-Royce Phantom' : 'Cadillac Escalade';
-      const statusKey = b.status === 'approved' ? 'statusApproved'
-                       : b.status === 'declined' ? 'statusDeclined'
+      const statusKey = b.status === 'approved'  ? 'statusApproved'
+                       : b.status === 'declined'  ? 'statusDeclined'
                        : b.status === 'cancelled' ? 'statusCancelled'
+                       : b.status === 'withdrawn' ? 'statusWithdrawn'
                        : 'statusPending';
 
       // Decision info card if already actioned
@@ -607,12 +611,11 @@
         `<div class="field-row"><div class="field-key">${dict[k] || k}</div><div class="field-val${v === '—' ? ' muted' : ''}">${escHtml(v)}</div></div>`
       ).join('');
 
-      // Car hero — try multiple paths so the page works whether photos
-      // live in cars/ or at the repo root
-      const carImgPaths = [`cars/${b.car}.png`, `${b.car}.png`, `cars/${b.car}.jpg`, `${b.car}.jpg`];
-      const carImgFallback = carImgPaths.slice(1).reverse()
-        .reduce((acc, p) => `this.onerror=null;this.src='${p}';`, '');
-      const carImgHtml = `<img src="${carImgPaths[0]}" alt="${carName}" onerror="${carImgFallback}this.style.display='none'">`;
+      // Car hero — primary PNG; if missing, fall back to JPG; if that also
+      // fails, hide the broken-image icon entirely.
+      const carImgPrimary = `cars/${b.car}.png`;
+      const carImgFallback = `cars/${b.car}.jpg`;
+      const carImgHtml = `<img src="${carImgPrimary}" alt="${escHtml(carName)}" onerror="if(!this._fb){this._fb=1;this.src='${carImgFallback}';}else{this.onerror=null;this.style.display='none';}">`;
 
       // Requester strip — use linked agent's photo if available, else initial
       const agent = state.requesterAgent || {};
@@ -660,12 +663,25 @@
       try {
         const u = state.user;
         const decidedByName = u.displayName || (u.email ? u.email.split('@')[0] : '—');
-        await updateDoc(doc(db, 'carBookings', state.id), {
-          status: newStatus,
-          decidedAt: serverTimestamp(),
-          decidedByUid: u.uid,
-          decidedByEmail: u.email,
-          decidedByName
+        const ref = doc(db, 'carBookings', state.id);
+
+        // Transaction guards against the two-approvers-tap-at-once race:
+        // re-read the doc under the txn; bail if someone already decided.
+        await runTransaction(db, async (tx) => {
+          const fresh = await tx.get(ref);
+          if (!fresh.exists()) throw new Error('not-found');
+          if (fresh.data().status !== 'pending') {
+            const e = new Error('already-decided');
+            e.code = 'already-decided';
+            throw e;
+          }
+          tx.update(ref, {
+            status: newStatus,
+            decidedAt: serverTimestamp(),
+            decidedByUid: u.uid,
+            decidedByEmail: u.email,
+            decidedByName
+          });
         });
         showToast(newStatus === 'approved' ? dict.approvedToast : dict.declinedToast);
 
@@ -675,15 +691,27 @@
         }).catch(err => console.warn('decision notifications failed', err));
 
         // Reload the doc to show the decision info — keep the cached requesterAgent
-        const snap = await getDoc(doc(db, 'carBookings', state.id));
+        const snap = await getDoc(ref);
         state.booking = { ...snap.data() };
         renderBooking(state);  // requesterAgent is already on state from loadBooking
       } catch (err) {
         console.error(err);
-        showToast(dict.actionFailed + (err.message || err.code || 'unknown'), true);
-        [aBtn, dBtn].forEach(b => { if (b) b.disabled = false; });
-        if (aBtn) aBtn.textContent = dict.approve;
-        if (dBtn) dBtn.textContent = dict.decline;
+        if (err.code === 'already-decided') {
+          showToast(dict.alreadyDecidedToast, true);
+          // Re-fetch to show the actual current state to the second clicker.
+          try {
+            const snap = await getDoc(doc(db, 'carBookings', state.id));
+            if (snap.exists()) {
+              state.booking = { ...snap.data() };
+              renderBooking(state);
+            }
+          } catch (_) { /* leave the existing render */ }
+        } else {
+          showToast(dict.actionFailed + (err.message || err.code || 'unknown'), true);
+          [aBtn, dBtn].forEach(b => { if (b) b.disabled = false; });
+          if (aBtn) aBtn.textContent = dict.approve;
+          if (dBtn) dBtn.textContent = dict.decline;
+        }
       }
     };
 

@@ -59,9 +59,15 @@ service cloud.firestore {
     // ------- Car bookings -------
     match /carBookings/{id} {
       allow read: if isSignedIn();
+      // Phantom is gated to clients with a 10M AED+ confirmed budget — the
+      // client UI enforces this too, but we mirror it server-side so a
+      // forged write can't sneak through.
       allow create: if isSignedIn()
         && request.resource.data.requesterUid == request.auth.uid
-        && request.resource.data.status == 'pending';
+        && request.resource.data.status == 'pending'
+        && (request.resource.data.car != 'phantom'
+            || (request.resource.data.budget is number
+                && request.resource.data.budget >= 10000000));
       // Anyone signed in can update for now (approval flow still being wired);
       // tighten to specific approver emails when registration lands.
       allow update: if isSignedIn();
