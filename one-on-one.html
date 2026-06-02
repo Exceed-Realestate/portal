@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Exceed Real Estate — Agent 1:1 Guide for Teruo</title>
+<style>
+  :root{
+    --bg:#fbf9f4;
+    --ink:#1c1c1c;
+    --ink-2:#3d3d3d;
+    --muted:#7a7a7a;
+    --rule:#e8e3d8;
+    --card:#ffffff;
+    --accent:#f5c518;
+    --accent-soft:#fff6d0;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+    font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:980px;margin:0 auto;padding:48px 32px 96px}
+  header{border-bottom:1px solid var(--rule);padding-bottom:24px;margin-bottom:32px}
+  .eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+  h1{font-size:32px;font-weight:600;letter-spacing:-.01em;margin:0 0 6px}
+  h1 .jp{font-size:18px;font-weight:400;color:var(--ink-2);margin-left:10px}
+  .sub{color:var(--ink-2);max-width:680px}
+  .meta{display:flex;gap:24px;margin-top:18px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+  .meta b{color:var(--ink);font-weight:600}
+
+  .pillbar{display:flex;gap:8px;flex-wrap:wrap;margin:28px 0 36px}
+  .pill{font-size:12px;padding:6px 12px;border:1px solid var(--rule);border-radius:999px;background:#fff;color:var(--ink-2)}
+  .pill.accent{background:var(--accent);border-color:var(--accent);color:#1c1c1c;font-weight:600}
+
+  h2{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:48px 0 14px;font-weight:600}
+  h2 span.num{display:inline-block;width:22px;height:22px;background:var(--ink);color:var(--bg);border-radius:50%;text-align:center;line-height:22px;font-size:11px;margin-right:10px;letter-spacing:0}
+
+  .q{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:22px 24px;margin-bottom:14px}
+  .q-head{display:flex;gap:14px;align-items:baseline;margin-bottom:6px}
+  .q-num{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:26px}
+  .q-en{font-size:17px;font-weight:600;color:var(--ink);line-height:1.4}
+  .q-jp{font-size:15px;color:var(--ink-2);margin:6px 0 0 40px;line-height:1.55}
+  .hint{margin:14px 0 0 40px;padding:12px 14px;background:var(--accent-soft);border-left:3px solid var(--accent);border-radius:4px;font-size:13.5px;color:#4a3a00}
+  .hint b{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#7a5b00;margin-bottom:4px;font-weight:700}
+
+  .frame{background:#fff;border:1px solid var(--rule);border-radius:14px;padding:24px 28px;margin-bottom:32px}
+  .frame h3{margin:0 0 14px;font-size:16px;font-weight:600}
+  .frame ul{margin:0;padding-left:18px;color:var(--ink-2)}
+  .frame li{margin-bottom:6px}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media (max-width:720px){.two{grid-template-columns:1fr}}
+  .two .frame{margin:0}
+
+  .dont li{color:#7a2a2a}
+  .do li{color:#1f5a32}
+
+  .recap{background:#1c1c1c;color:#f3eedf;border-radius:14px;padding:28px;margin-top:48px}
+  .recap h3{color:var(--accent);margin:0 0 12px;font-size:14px;letter-spacing:.14em;text-transform:uppercase}
+  .recap p{margin:0 0 10px;color:#cfc9b8;font-size:14px}
+  .recap .line{display:flex;gap:12px;align-items:flex-start;margin-bottom:10px}
+  .recap .line .k{color:var(--accent);font-size:11px;letter-spacing:.14em;text-transform:uppercase;min-width:120px;padding-top:3px;font-weight:600}
+  .recap .line .v{color:#f3eedf}
+
+  footer{margin-top:48px;padding-top:20px;border-top:1px solid var(--rule);font-size:12px;color:var(--muted);text-align:center}
+
+  @media print{
+    body{background:#fff}
+    .wrap{padding:24px}
+    .q,.frame,.recap{break-inside:avoid;page-break-inside:avoid}
+    .hint{background:#f5f5f0 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .recap{background:#1c1c1c !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .pillbar{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Exceed Real Estate · Teruo's Field Guide</div>
+  <h1>Agent 1:1 Conversation Map <span class="jp">エージェント1on1 会話マップ</span></h1>
+  <p class="sub">A 60–75 minute structured conversation with each agent. The goal is not evaluation. It's understanding — their work, their goals, their worries, and what they need from the company and from you personally.</p>
+  <div class="meta">
+    <div><b>Duration</b> 60–75 min</div>
+    <div><b>Cadence</b> Quarterly minimum</div>
+    <div><b>Setting</b> Private room, phones away, take notes by hand</div>
+    <div><b>Confidentiality</b> What's said stays between you (unless safety/legal)</div>
+  </div>
+</header>
+
+<div class="pillbar">
+  <span class="pill accent">Opening</span>
+  <span class="pill">Their Work</span>
+  <span class="pill">Wins &amp; Strengths</span>
+  <span class="pill">Challenges</span>
+  <span class="pill">Concerns about the Company</span>
+  <span class="pill">Goals</span>
+  <span class="pill">Support Needed</span>
+  <span class="pill">Feedback for Teruo</span>
+  <span class="pill">Close &amp; Commit</span>
+</div>
+
+<!-- BEFORE YOU START -->
+<div class="two">
+  <div class="frame do">
+    <h3>Do — お願いしたい姿勢</h3>
+    <ul>
+      <li>Listen 70% / talk 30%. Use silence — count to 10 before filling a pause.</li>
+      <li>Take notes by hand. It signals their words matter.</li>
+      <li>Ask "tell me more" instead of jumping to solutions.</li>
+      <li>End with written commitments — yours and theirs.</li>
+      <li>Send a recap email within 24 hours.</li>
+    </ul>
+  </div>
+  <div class="frame dont">
+    <h3>Don't — 避けたいこと</h3>
+    <ul>
+      <li>Don't defend the company or yourself. Just hear it.</li>
+      <li>Don't compare agents ("X is doing better than you").</li>
+      <li>Don't problem-solve on the spot for big issues — say "let me think and come back to you."</li>
+      <li>Don't break confidentiality, even casually.</li>
+      <li>Don't turn it into a sales review. Numbers come later.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- SECTION 1: OPENING -->
+<h2><span class="num">1</span>Opening — 入り口</h2>
+
+<div class="q">
+  <div class="q-head"><div class="q-num">Q1</div><div class="q-en">How are you doing — and I mean outside of work too. Family, health, life in Dubai.</div></div>
+  <div class="q-jp">最近どうですか？仕事以外も含めて — ご家族、健康、ドバイでの生活など。</div>
+  <div class="hint"><b>What to listen for</b>Energy level. Are they tired, stressed, lit up? Real-estate burnout is silent. If they say "fine" too fast, ask once more: "really?"</div>
+</div>
+
+<div class="q">
+  <div class="q-head"><div class="q-num">Q2</div><div class="q-en">Before we get into work — is there anything on your mind that we should address first so the rest of this conversation can be honest?</div></div>
+  <div class="q-jp">本題に入る前に、まず話しておきたいことはありますか？それを済ませてから残りの話を率直にしたいので。</div>
+  <div class="hint"><b>Why this question matters</b>Gives them permission to bring up the elephant before you've spent 40 minutes on safer topics. Often the most valuable answer of the whole meeting comes here.</div>
+</div>
+
+<!-- SECTION 2: THEIR WORK -->
+<h2><span class="num">2</span>Their Work — 今の仕事</h2>
+
+<div class="q">
+  <div class="q-head"><div class="q-num">Q3</div><div class="q-en">Walk me through what you're working on right now. Which deals feel most alive?</div></div>
+  <div class="q-jp">今取り組んでいる案件を教えてください。一番「動いている」と感じる案件はどれですか？</div>
+  <div class="hint"><b>What to listen for</b>Don't just hear the pipeline — hear which deals excite them vs. which they're forcing. Mismatch between effort and energy is the first sign of a stalled agent.</div>
+</div>
+
+<div class="q">
+  <div class="q-head"><div class="q-num">Q4</div><div class="q-en">What part of the job energizes you most? And what part drains you?</div></div>
+  <div class="q-jp">仕事の中で一番やりがいを感じる瞬間は？逆に、一番消耗するのはどんな時ですか？</div>
+  <div class="hint"><b>Why this matters</b>Energy patterns predict retention better than commission numbers. Drain areas tell you where to invest in tooling, admin support, or training. Match the agent's strength to the deal type going forward.</div>
+</div>
+
+<div class="q">
+  <div class="q-head"><div class="q-num">Q5</div><div class="q-en">In a normal week, how much of your time goes to selling vs. paperwork, follow-ups, and admin?</div></div>
+  <div class="q-jp">普通の1週間で、実際に「売る」時間と、書類・追客・事務にかける時間の比率はどれくらいですか？</div>
+  <div class="hint"><b>Real-estate specific</b>If admin is &gt;40% of their week, that's a process problem we can fix — not their fault. Note it for the Exceed Portal Tier 3 roadmap.</div>
+</div>
+
+<!-- SECTION 3: WINS & STRENGTHS -->
+<h2><span class="num">3</span>Wins &amp; Strengths — 成果と強み</h2>
+
+<div class="q">
+  <div class="q-head"><div class="q-num">Q6</div><div class="q-en">Tell me about a recent win — big or small — you're genuinely proud of.</div></div>
+  <div class="q-jp">最近の成果で、誇りに思っているものを教えてください。大小は問いません。</div>
+  <div class="hint"><b>Why this matters</b>Make them say it out loud. Builds confidence. Also gives you material to celebrate publicly in the next team meeting (with their permission).</div>
+</div>
+
+<div class="q">
+  <div class="q-head"><div class="q-num">Q7</div><div class="q-en">What do you think you're better at than anyone else on the team?</div></div>
+  <div class="q-jp">チームの中で「これは自分が一番得意」と思えることは何ですか？</div>
+  <div class="hint"><b>What to listen for</b>People almost never say this unprompted. Their answer tells you how to deploy them — who to pair them with, which leads to route to them, where to put them on the website.</div>
+</div>
+
+<!-- SECTION 4: CHALLENGES -->
+<h2><span class="num">4</span>Challenges — 課題</h2>
+
+<div class="q">
+  <div class="q-head"><div class="q-num">Q8</div><div class="q-en">What's the hardest part of selling in Dubai right now? Specifically this market, this quarter.</div></div>
+  <div class="q-jp">今のドバイの市場で、一番難しいと感じる部分はどこですか？特にこの四半期で。</div>
+  <div class="hint"><b>What to listen for</b>Market intel from the front line. Compare answers across agents — patterns reveal what's actually happening in Dubai vs. what reports say. Cross-reference with IRR Simulator area data.</div>
+</div>
+
+<div class="q">
+  <div class="q-head"><div class="q-num">Q9</div><div class="q-en">What's the single biggest thing blocking you from closing more deals?</div></div>
+  <div class="q-jp">もっと成約を増やすために、今一番のボトルネックは何ですか？</div>
+  <div class="hint"><b>What to listen for</b>Listen for one of these: lead quantity, lead quality, listing access, paperwork speed, marketing collateral, language support, your time. Resist the urge to defend any of these.</div>
+</div>
+
+<div class="q">
+  <div class="q-head"><div class="q-num">Q10</div><div class="q-en">When was the last time you felt stuck and didn't know who to ask? What happened?</div></div>
+  <div class="q-jp">「困ったけど、誰に聞けばいいかわからない」と感じた最近の経験は？その時どうしましたか？</div>
+  <div class="hint"><b>Why this matters</b>Reveals mentorship and process gaps. Don't justify ("you could've asked X") — just write it down. If two agents give the same answer, you have a systemic gap.</div>
+</div>
+
+<!-- SECTION 5: CONCERNS -->
+<h2><span class="num">5</span>Concerns about the Company — 会社への気がかり</h2>
+
+<div class="q">
+  <div class="q-head"><div class="q-num">Q11</div><div class="q-en">Is there anything happening in the company right now that worries you? Even a small uncomfortable feeling counts.</div></div>
+  <div class="q-jp">今、会社の中で「気になっている」「ちょっと違和感がある」ことはありますか？小さな引っかかりでも結構です。</div>
+  <div class="hint"><b>The most important question of the entire meeting</b>Stay silent for at least 10 seconds after they finish. Do not react defensively to anything they say. Take a note, say "thank you for telling me," then ask "tell me more."</div>
+</div>
+
+<div class="q">
+  <div class="q-head"><div class="q-num">Q12</div><div class="q-en">If you could change one thing about how we work as a team, what would it be?</div></div>
+  <div class="q-jp">もし、私たちの働き方を一つだけ変えられるとしたら、何を変えますか？</div>
+  <div class="hint"><b>Framing trick</b>Phrased as a gift, not a complaint. People will say things here they wouldn't say if you asked "what's wrong?" Often surfaces the real underlying issue.</div>
+</div>
+
+<div class="q">
+  <div class="q-head"><div class="q-num">Q13</div><div class="q-en">Is there anyone on the team you find it hard to work with — and you don't have to name them if you don't want to?</div></div>
+  <div class="q-jp">チームの中で「一緒に働くのが少し難しい」と感じる人はいますか？名前を出さなくても大丈夫です。</div>
+  <div class="hint"><b>Use carefully</b>Only ask if rapport is good. If they decline, move on instantly — don't push. If they share, never repeat names. Watch for repeated themes across multiple 1:1s — that's the real signal.</div>
+</div>
+
+<!-- SECTION 6: GOALS -->
+<h2><span class="num">6</span>Goals — 目標</h2>
+
+<div class="q">
+  <div class="q-head"><div class="q-num">Q14</div><div class="q-en">Where do you want to be 12 months from now? Deals closed, income, role, skills — be concrete.</div></div>
+  <div class="q-jp">12ヶ月後、自分がどうなっていたいですか？成約数、収入、役割、スキル — できるだけ具体的に。</div>
+  <div class="hint"><b>Get numbers</b>Push gently for a number. "Around" is fine. Write it down with them — both of you keep a copy. This becomes the anchor for the next 1:1.</div>
+</div>
+
+<div class="q">
+  <div class="q-head"><div class="q-num">Q15</div><div class="q-en">What's one stretch goal you've been a little afraid to say out loud?</div></div>
+  <div class="q-jp">「言うのが少し怖いけど、本当はやってみたい」目標はありますか？</div>
+  <div class="hint"><b>Why this matters</b>Permission to dream. Often reveals leadership aspirations, a specialization (off-plan, ultra-prime, a specific area), or a desire to move into management. Knowing this changes how you invest in them.</div>
+</div>
+
+<div class="q">
+  <div class="q-head"><div class="q-num">Q16</div><div class="q-en">3 years out — do you still see yourself at Exceed? What would have to be true for that to be a "yes"?</div></div>
+  <div class="q-jp">3年後も、Exceedで働いている自分を想像できますか？「はい」と言うためには、何が必要ですか？</div>
+  <div class="hint"><b>What to listen for</b>The "what would have to be true" part is the real answer. It's a soft way of asking "what would make you stay." Note conditions carefully — these are your retention levers.</div>
+</div>
+
+<!-- SECTION 7: SUPPORT -->
+<h2><span class="num">7</span>Support Needed — 必要なサポート</h2>
+
+<div class="q">
+  <div class="q-head"><div class="q-num">Q17</div><div class="q-en">What support do you need from the company that you don't have today?</div></div>
+  <div class="q-jp">今、会社からもっと欲しいサポートは何ですか？</div>
+  <div class="hint"><b>Common answers in Dubai real estate</b>Better CRM, more qualified leads, marketing materials in JP/EN/AR, admin support for paperwork, Bayut/PF/Dubizzle credits, video/photo for listings, mortgage broker intros, training on off-plan vs. secondary. Commit to fixing 1–2 things — don't promise everything.</div>
+</div>
+
+<div class="q">
+  <div class="q-head"><div class="q-num">Q18</div><div class="q-en">And what support do you need specifically from me — separate from the company?</div></div>
+  <div class="q-jp">会社全体の話とは別に、私（Teruo）個人にサポートしてほしいことは何ですか？</div>
+  <div class="hint"><b>Why split the question</b>Different answer set. Common: more 1:1 time, intros to specific clients, advice on a deal in progress, public recognition, being shielded from a specific stakeholder, more autonomy. Take this personally — it's about your behavior as CEO.</div>
+</div>
+
+<!-- SECTION 8: FEEDBACK FOR TERUO -->
+<h2><span class="num">8</span>Feedback for Teruo — 私へのフィードバック</h2>
+
+<div class="q">
+  <div class="q-head"><div class="q-num">Q19</div><div class="q-en">What's one thing I do as CEO that you'd want me to keep doing?</div></div>
+  <div class="q-jp">私のCEOとしての行動で、「これは続けてほしい」と思うことは？</div>
+  <div class="hint"><b>Why start positive</b>Builds the trust needed for Q20. Also useful for you — knowing what's working is as valuable as knowing what isn't.</div>
+</div>
+
+<div class="q">
+  <div class="q-head"><div class="q-num">Q20</div><div class="q-en">And one thing you wish I'd do differently — or stop doing entirely?</div></div>
+  <div class="q-jp">逆に、「ここはこうしてほしい」「これはやめてほしい」と思うことはありますか？</div>
+  <div class="hint"><b>Hardest question of the meeting</b>Sit with the silence. Do not justify. Do not explain why you did it. Just: "thank you, that's helpful — can you give me an example so I understand exactly when this happens?" Take notes.</div>
+</div>
+
+<!-- SECTION 9: CLOSE -->
+<h2><span class="num">9</span>Close &amp; Commit — まとめと約束</h2>
+
+<div class="q">
+  <div class="q-head"><div class="q-num">Q21</div><div class="q-en">Is there anything I didn't ask that you were hoping I would?</div></div>
+  <div class="q-jp">私が聞かなかったけれど、本当は聞いてほしかったことはありますか？</div>
+  <div class="hint"><b>Catches the iceberg</b>Always ask this. Sometimes the answer is "no" and you're done. Sometimes it's the most important thing said all hour.</div>
+</div>
+
+<div class="q">
+  <div class="q-head"><div class="q-num">Q22</div><div class="q-en">Before our next 1:1, what's one concrete thing each of us will commit to? One from you, one from me.</div></div>
+  <div class="q-jp">次回の1on1までに、お互いに一つずつ約束する具体的なアクションは何にしましょうか？私から一つ、あなたから一つ。</div>
+  <div class="hint"><b>Why mutual commitment</b>If only they commit, it feels like homework. If only you commit, it feels like a complaint session. Both → it's a partnership. Write both down on a shared page. Reference them at the start of next 1:1.</div>
+</div>
+
+<!-- AFTER THE MEETING -->
+<div class="recap">
+  <h3>After the Meeting — 24時間以内にやること</h3>
+  <div class="line"><div class="k">Within 1 hour</div><div class="v">Write down your raw notes while fresh. Star the 2–3 things that surprised you.</div></div>
+  <div class="line"><div class="k">Within 24 hours</div><div class="v">Send a short recap email in their preferred language. Restate their goal, both commitments, and one specific thing you appreciated.</div></div>
+  <div class="line"><div class="k">Within 1 week</div><div class="v">Take action on at least one piece of support they asked for. Even small action builds trust faster than a perfect plan.</div></div>
+  <div class="line"><div class="k">Across all 1:1s</div><div class="v">Keep a private grid: agent × theme. When 3+ agents raise the same concern, that's a company-level issue, not an agent issue. Address it at the team level.</div></div>
+  <div class="line"><div class="k">Never</div><div class="v">Quote one agent to another. Even casually. Even positively. Even "X also said that." Trust is built in years and broken in one sentence.</div></div>
+</div>
+
+<footer>
+  Exceed Real Estate · Teruo CEO 1:1 Field Guide · v1 · 2026-06-02
+</footer>
+
+</div>
+</body>
+</html>
